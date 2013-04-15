@@ -11,6 +11,7 @@ import unittest
 from serial.core import DelimitedWriter
 from serial.core import FixedWidthWriter
 from serial.core import IntType
+from serial.core import ArrayType
 
 
 # Utility functions.
@@ -19,21 +20,21 @@ def accept_filter(record):
     """ A filter function to accept records.
 
     """
-    return True
+    return True  # accept all records
 
 
 def reject_filter(record):
     """ A filter function to reject records.
 
     """
-    return record["A"] != 1  # reject if record["A"] == 1
+    return record["B"] != 3  # reject if record["B"] == 1
 
 
 def modify_filter(record):
     """ A filter function to modify records in place.
 
     """
-    record["A"] *= 2  # modify in place
+    record["B"] *= 2  # modify in place
     return True
 
 
@@ -54,7 +55,9 @@ class TabularWriterTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.data = [{"A": 1, "B": 2}, {"A": 3, "B": 4}]
+        self.data = [
+            {"A": [{"x": 1, "y": 2}], "B": 3},
+            {"A": [{"x": 4, "y": 5}], "B": 6}]
         self.stream = StringIO.StringIO()
         return
 
@@ -88,9 +91,10 @@ class DelimitedWriterTest(TabularWriterTest):
 
         """
         super(DelimitedWriterTest, self).setUp()
-        fields = (("A", 0, IntType()), ("B", 1, IntType()))
+        atype = ArrayType((("x", 0, IntType()), ("y", 1, IntType())))
+        fields = (("A", (0, 1), atype), ("B", 2, IntType()))
         self.writer = DelimitedWriter(self.stream, fields, ",", "X")
-        self.output = "1,2X3,4X"
+        self.output = "1,2,3X4,5,6X"
         return
 
     def test_filter_reject(self):
@@ -100,7 +104,7 @@ class DelimitedWriterTest(TabularWriterTest):
         self.writer.filter(accept_filter)  # test chained filters
         self.writer.filter(reject_filter)
         map(self.writer.write, self.data)
-        self.assertEqual("3,4X", self.stream.getvalue())
+        self.assertEqual("4,5,6X", self.stream.getvalue())
         return
 
     def test_filter_modify(self):
@@ -109,7 +113,7 @@ class DelimitedWriterTest(TabularWriterTest):
         """
         self.writer.filter(modify_filter)
         map(self.writer.write, self.data)
-        self.assertEqual("2,2X6,4X", self.stream.getvalue())
+        self.assertEqual("1,2,6X4,5,12X", self.stream.getvalue())
         return
 
 
@@ -125,9 +129,10 @@ class FixedWidthWriterTest(TabularWriterTest):
 
         """
         super(FixedWidthWriterTest, self).setUp()
-        fields = (("A", (0, 2), IntType("2d")), ("B", (2, 4), IntType("2d")))
+        atype = ArrayType((("x", 0, IntType("2d")), ("y", 1, IntType("2d"))))
+        fields = (("A", (0, 4), atype), ("B", (4, 6), IntType("2d")))
         self.writer = FixedWidthWriter(self.stream, fields, "X")
-        self.output = " 1 2X 3 4X"
+        self.output = " 1 2 3X 4 5 6X"
         return
 
     def test_filter_reject(self):
@@ -137,7 +142,7 @@ class FixedWidthWriterTest(TabularWriterTest):
         self.writer.filter(accept_filter)  # test chained filters
         self.writer.filter(reject_filter)
         map(self.writer.write, self.data)
-        self.assertEqual(" 3 4X", self.stream.getvalue())
+        self.assertEqual(" 4 5 6X", self.stream.getvalue())
         return
 
     def test_filter_modify(self):
@@ -146,7 +151,7 @@ class FixedWidthWriterTest(TabularWriterTest):
         """
         self.writer.filter(modify_filter)
         map(self.writer.write, self.data)
-        self.assertEqual(" 2 2X 6 4X", self.stream.getvalue())
+        self.assertEqual(" 1 2 6X 4 512X", self.stream.getvalue())
         return
 
 
