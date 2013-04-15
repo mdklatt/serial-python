@@ -92,7 +92,7 @@ class DelimitedWriterTest(TabularWriterTest):
         """
         super(DelimitedWriterTest, self).setUp()
         atype = ArrayType((("x", 0, IntType()), ("y", 1, IntType())))
-        fields = (("A", (0, 1), atype), ("B", 2, IntType()))
+        fields = (("A", (0, 2), atype), ("B", 2, IntType()))
         self.writer = DelimitedWriter(self.stream, fields, ",", "X")
         self.output = "1,2,3X4,5,6X"
         return

@@ -11,6 +11,7 @@ import unittest
 from serial.core import DelimitedReader
 from serial.core import FixedWidthReader
 from serial.core import IntType
+from serial.core import ArrayType
 
 
 # Utility functions.
@@ -26,14 +27,14 @@ def reject_filter(record):
     """ A filter function to reject records.
 
     """
-    return record["A"] != 1  # reject if record["A"] == 1
+    return record["B"] != 3  # reject if record["B"] == 3
 
 
 def modify_filter(record):
     """ A filter function to modify records in place.
 
     """
-    record["A"] *= 2  # modify in place
+    record["B"] *= 2  # modify in place
     return True
 
 
@@ -54,7 +55,9 @@ class TabularReaderTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.data = [{"A": 1, "B": 2}, {"A": 3, "B": 4}]
+        self.data = [
+            {"A": [{"x": 1, "y": 2}], "B": 3},
+            {"A": [{"x": 4, "y": 5}], "B": 6}]
         return
 
     def test_next(self):
@@ -93,7 +96,7 @@ class TabularReaderTest(unittest.TestCase):
 
         """
         self.reader.filter(modify_filter)
-        self.assertEqual({"A": 2, "B": 2}, self.reader.next())
+        self.assertEqual({"A": [{"x": 1, "y": 2}], "B": 6}, self.reader.next())
         return
 
 
@@ -109,8 +112,9 @@ class DelimitedReaderTest(TabularReaderTest):
 
         """
         super(DelimitedReaderTest, self).setUp()
-        stream = StringIO.StringIO("1,2\n3,4\n")
-        fields = (("A", 0, IntType()), ("B", 1, IntType()))
+        stream = StringIO.StringIO("1,2,3\n4,5,6\n")
+        atype = ArrayType((("x", 0, IntType()), ("y", 1, IntType())))
+        fields = (("A", (0, 2), atype), ("B", 2, IntType()))
         self.reader = DelimitedReader(stream, fields, ",")
         return
 
@@ -127,8 +131,11 @@ class FixedWidthReaderTest(TabularReaderTest):
 
         """
         super(FixedWidthReaderTest, self).setUp()
-        stream = StringIO.StringIO(" 1 2\n 3 4\n")
-        fields = (("A", (0, 2), IntType()), ("B", (2, 4), IntType()))
+        stream = StringIO.StringIO(" 1 2 3\n 4 5 6\n")
+        atype = ArrayType((
+            ("x", (0, 2), IntType("2d")),
+            ("y", (2, 4), IntType("2d"))))
+        fields = (("A", (0, 4), atype), ("B", (4, 6), IntType("2d")))
         self.reader = FixedWidthReader(stream, fields)
         return
 
