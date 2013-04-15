@@ -1,4 +1,4 @@
-""" Distutils setup script for the datalect library.
+""" Distutils setup script for the serial.core library package.
 
 For basic installation in the current user's site-packages directory:
     python setup.py install --user
@@ -7,14 +7,14 @@ For basic installation in the current user's site-packages directory:
 from distutils.core import setup
 from sys import exit
 
-from datalect.core import __version__
+from serial.core import __version__
 
 
 def main():
     config = {
-        "name": "datalect",
+        "name": "serial-core",
         "version": __version__,
-        "packages": ("datalect", "datalect.core", "datalect.core.serial"),
+        "packages": ("serial", "serial.core"),
         "author": "Michael Klatt",
         "author_email": "mdklatt@ou.edu"}
     setup(**config)

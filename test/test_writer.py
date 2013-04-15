@@ -8,31 +8,30 @@ import _path
 import StringIO
 import unittest
 
-
-from datalect.core import DelimitedWriter
-from datalect.core import FixedWidthWriter
-from datalect.core import IntType
+from serial.core import DelimitedWriter
+from serial.core import FixedWidthWriter
+from serial.core import IntType
 
 
 # Utility functions.
 
 def accept_filter(record):
     """ A filter function to accept records.
-    
+
     """
     return True
 
 
 def reject_filter(record):
     """ A filter function to reject records.
-    
+
     """
     return record["A"] != 1  # reject if record["A"] == 1
 
 
 def modify_filter(record):
     """ A filter function to modify records in place.
-    
+
     """
     record["A"] *= 2  # modify in place
     return True
@@ -43,17 +42,17 @@ def modify_filter(record):
 
 class TabularWriterTest(unittest.TestCase):
     """ Unit testing for TabularReader classes.
-    
+
     This is an abstract class and should not be called directly by any test
     runners.
-    
+
     """
     def setUp(self):
         """ Set up the test fixture.
-    
+
         This is called before each test is run so that they are isolated from
         any side effects. This is part of the unittest API.
-    
+
         """
         self.data = [{"A": 1, "B": 2}, {"A": 3, "B": 4}]
         self.stream = StringIO.StringIO()
@@ -69,7 +68,7 @@ class TabularWriterTest(unittest.TestCase):
 
     def test_filter_accept(self):
         """ Test a filter that accepts all records.
-        
+
         """
         self.writer.filter(accept_filter)
         map(self.writer.write, self.data)
@@ -79,14 +78,14 @@ class TabularWriterTest(unittest.TestCase):
 
 class DelimitedWriterTest(TabularWriterTest):
     """ Unit testing for the DelimitedWriter class.
-    
+
     """
     def setUp(self):
         """ Set up the test fixture.
-    
+
         This is called before each test is run so that they are isolated from
         any side effects. This is part of the unittest API.
-    
+
         """
         super(DelimitedWriterTest, self).setUp()
         fields = (("A", 0, IntType()), ("B", 1, IntType()))
@@ -96,7 +95,7 @@ class DelimitedWriterTest(TabularWriterTest):
 
     def test_filter_reject(self):
         """ Test a filter that rejects a record.
-        
+
         """
         self.writer.filter(accept_filter)  # test chained filters
         self.writer.filter(reject_filter)
@@ -106,34 +105,34 @@ class DelimitedWriterTest(TabularWriterTest):
 
     def test_filter_modify(self):
         """ Test a filter that modifies records
-        
+
         """
         self.writer.filter(modify_filter)
         map(self.writer.write, self.data)
         self.assertEqual("2,2X6,4X", self.stream.getvalue())
         return
-        
+
 
 class FixedWidthWriterTest(TabularWriterTest):
     """ Unit testing for the DelimitedWriter class.
-    
+
     """
     def setUp(self):
         """ Set up the test fixture.
-    
+
         This is called before each test is run so that they are isolated from
         any side effects. This is part of the unittest API.
-    
+
         """
         super(FixedWidthWriterTest, self).setUp()
         fields = (("A", (0, 2), IntType("2d")), ("B", (2, 4), IntType("2d")))
         self.writer = FixedWidthWriter(self.stream, fields, "X")
         self.output = " 1 2X 3 4X"
         return
-    
+
     def test_filter_reject(self):
         """ Test a filter that rejects a record.
-        
+
         """
         self.writer.filter(accept_filter)  # test chained filters
         self.writer.filter(reject_filter)
@@ -143,14 +142,14 @@ class FixedWidthWriterTest(TabularWriterTest):
 
     def test_filter_modify(self):
         """ Test a filter that modifies records
-        
+
         """
         self.writer.filter(modify_filter)
         map(self.writer.write, self.data)
         self.assertEqual(" 2 2X 6 4X", self.stream.getvalue())
         return
 
-        
+
 # Specify the test cases to run for this module (disables automatic discovery).
 
 _TEST_CASES = (DelimitedWriterTest, FixedWidthWriterTest)
