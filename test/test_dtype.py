@@ -159,11 +159,11 @@ class DatetimeTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
-        self.value = datetime.datetime(2012, 12, 12)
-        self.token = "2012-12-12"
+        self.value = datetime.datetime(2012, 12, 12, 0, 0, 0, 123000)
+        self.token = "2012-12-12T00:00:00.123"
         self.null_value = datetime.datetime(1901, 1, 1)
-        self.null_token = "1901-01-01"
-        self.field = DatetimeType("%Y-%m-%d", self.null_value)
+        self.null_token = "1901-01-01T00:00:00.000"
+        self.field = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, self.null_value)
         return
 
 
