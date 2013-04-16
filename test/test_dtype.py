@@ -30,11 +30,11 @@ class DataTypeTest(unittest.TestCase):
         self.assertEqual(self.value, self.field.decode(self.token))
         return
 
-    def test_decode_null(self):
-        """ Test the decode() method for null input.
+    def test_decode_default(self):
+        """ Test the decode() method for default input.
 
         """
-        self.assertEqual(self.null_value, self.field.decode(" "))
+        self.assertEqual(self.default_value, self.field.decode(" "))
         return
 
     def test_encode(self):
@@ -44,11 +44,11 @@ class DataTypeTest(unittest.TestCase):
         self.assertEqual(self.token, self.field.encode(self.value))
         return
 
-    def test_encode_null(self):
-         """ Test the encode() method for null input.
+    def test_encode_default(self):
+         """ Test the encode() method for default input.
 
          """
-         self.assertEqual(self.null_token, self.field.encode(None))
+         self.assertEqual(self.default_token, self.field.encode(None))
          return
 
 
@@ -65,8 +65,8 @@ class ConstTypeTest(DataTypeTest):
         """
         self.value = 999
         self.token = " 999"
-        self.null_value = self.value
-        self.null_token = self.token
+        self.default_value = self.value
+        self.default_token = self.token
         self.field = ConstType(self.value, "4d")
         return
 
@@ -84,9 +84,9 @@ class IntTypeTest(DataTypeTest):
         """
         self.value = 123
         self.token = " 123"
-        self.null_value = -999
-        self.null_token = "-999"
-        self.field = IntType("4d", self.null_value)
+        self.default_value = -999
+        self.default_token = "-999"
+        self.field = IntType("4d", self.default_value)
         return
 
 
@@ -103,9 +103,9 @@ class FloatTypeTest(DataTypeTest):
         """
         self.value = 1.23
         self.token = " 1.23"
-        self.null_value = -9.99
-        self.null_token = "-9.99"
-        self.field = FloatType("5.2f", self.null_value)
+        self.default_value = -9.99
+        self.default_token = "-9.99"
+        self.field = FloatType("5.2f", self.default_value)
         return
 
 
@@ -122,9 +122,9 @@ class StringTypeTest(DataTypeTest):
         """
         self.value = "abc"
         self.token = "abc "
-        self.null_value = "xyz"
-        self.null_token = "xyz "
-        self.field = StringType("4s", null=self.null_value)
+        self.default_value = "xyz"
+        self.default_token = "xyz "
+        self.field = StringType("4s", default=self.default_value)
         return
 
     def test_decode_quote(self):
@@ -161,9 +161,9 @@ class DatetimeTypeTest(DataTypeTest):
         """
         self.value = datetime.datetime(2012, 12, 12, 0, 0, 0, 123000)
         self.token = "2012-12-12T00:00:00.123"
-        self.null_value = datetime.datetime(1901, 1, 1)
-        self.null_token = "1901-01-01T00:00:00.000"
-        self.field = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, self.null_value)
+        self.default_value = datetime.datetime(1901, 1, 1)
+        self.default_token = "1901-01-01T00:00:00.000"
+        self.field = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, self.default_value)
         return
 
 

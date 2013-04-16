@@ -15,18 +15,18 @@ class DataType(object):
     """ Base class for all data types.
 
     """
-    def __init__(self, dtype, fmt, null):
+    def __init__(self, dtype, fmt, default):
         """ Initialize this object.
 
         The dtype argument is the Python data type for this type, fmt is a
-        Python format string (e.g. '>10s'), and null is used for missing
+        Python format string (e.g. '>10s'), and default is used for missing
         input/output fields. For fixed-width fields fmt *must* specify the
         field width.
 
         """
         self._dtype = dtype
         self._fmt = fmt
-        self._null = null
+        self._default = default
         return
 
     def decode(self, token):
@@ -36,7 +36,7 @@ class DataType(object):
         try:
             value = self._dtype(token.strip())
         except ValueError:  # type conversion failed
-            value = self._null
+            value = self._default
         return value
 
     def encode(self, value):
@@ -44,7 +44,7 @@ class DataType(object):
 
         """
         if value is None:
-            value = self._null
+            value = self._default
         return format(value, self._fmt)
 
 
@@ -77,11 +77,11 @@ class IntType(DataType):
     """ An integer value.
 
     """
-    def __init__(self, fmt="d", null=None):
+    def __init__(self, fmt="d", default=None):
         """ Initialize this object.
 
         """
-        super(IntType, self).__init__(int, fmt, null)
+        super(IntType, self).__init__(int, fmt, default)
         return
 
 
@@ -89,11 +89,11 @@ class FloatType(DataType):
     """ A floating point value.
 
     """
-    def __init__(self, fmt="f", null=None):
+    def __init__(self, fmt="f", default=None):
         """ Initialize this object.
 
         """
-        super(FloatType, self).__init__(float, fmt, null)
+        super(FloatType, self).__init__(float, fmt, default)
         return
 
 
@@ -101,11 +101,11 @@ class StringType(DataType):
     """ A string value.
 
     """
-    def __init__(self, fmt="s", quote="", null=None):
+    def __init__(self, fmt="s", quote="", default=None):
         """ Initialize this object.
 
         """
-        super(StringType, self).__init__(str, fmt, null)
+        super(StringType, self).__init__(str, fmt, default)
         self._quote = quote
         return
 
@@ -115,7 +115,7 @@ class StringType(DataType):
         """
         value = token.strip().strip(self._quote)
         if not value:
-            value = self._null
+            value = self._default
         return value
 
     def encode(self, value):
@@ -123,7 +123,7 @@ class StringType(DataType):
 
         """
         if value is None:
-            value = self._null
+            value = self._default
         return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
 
 
@@ -131,7 +131,7 @@ class DatetimeType(DataType):
     """ A datetime value.
 
     """
-    def __init__(self, timefmt, prec=0, null=None):
+    def __init__(self, timefmt, prec=0, default=None):
         """ Initialize this object.
 
         The precision argument specifies precision to use for fractional
@@ -139,7 +139,7 @@ class DatetimeType(DataType):
         decoding).
 
         """
-        super(DatetimeType, self).__init__(datetime, "{:s}", null)
+        super(DatetimeType, self).__init__(datetime, "{:s}", default)
         self._timefmt = timefmt
         self._prec = min(max(prec, 0), 6)  # max precision is microseconds
         return
@@ -150,7 +150,7 @@ class DatetimeType(DataType):
         """
         token = token.strip()
         if not token:
-            value = self._null
+            value = self._default
         else:
             value = datetime.strptime(token, self._timefmt)
         return value
@@ -162,7 +162,7 @@ class DatetimeType(DataType):
         try:
             token = value.strftime(self._timefmt)
         except AttributeError:
-            token = self._null.strftime(self._timefmt)
+            token = self._default.strftime(self._timefmt)
         if (self._prec > 0):
             time, usecs = token.split(".")
             token = "{0:s}.{1:s}".format(time, usecs[0:self._prec])
@@ -173,11 +173,11 @@ class ArrayType(DataType):
     """ An array of DataTypes.
 
     """
-    def __init__(self, fields, null=list()):
+    def __init__(self, fields, default=list()):
         """ Initialize this object.
 
         """
-        super(ArrayType, self).__init__(list, "{:s}", null)
+        super(ArrayType, self).__init__(list, "{:s}", default)
         Field = namedtuple("Field", ("name", "pos", "dtype"))
         self._fields = []
         self._elem_width = 0
@@ -206,4 +206,4 @@ class ArrayType(DataType):
 
         """
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
-                product(values, self._fields)]
+                product(values, self._fields)] if values else self._default
