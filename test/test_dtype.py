@@ -27,30 +27,36 @@ class DataTypeTest(unittest.TestCase):
         """ Test the decode() method.
 
         """
-        self.assertEqual(self.value, self.field.decode(self.token))
+        self.assertEqual(self.value, self.dtype.decode(self.token))
         return
 
     def test_decode_default(self):
         """ Test the decode() method for default input.
 
         """
-        self.assertEqual(self.default_value, self.field.decode(" "))
+        self.assertEqual(self.default_value, self.default_dtype.decode(" "))
         return
 
     def test_encode(self):
         """ Test the encode() method.
 
         """
-        self.assertEqual(self.token, self.field.encode(self.value))
+        self.assertEqual(self.token, self.dtype.encode(self.value))
         return
+
+    def test_encode_required(self):
+         """ Test the encode() method if no default has been specified.
+
+         """
+         self.assertRaises(ValueError, self.dtype.encode, None)
+         return
 
     def test_encode_default(self):
          """ Test the encode() method for default input.
 
          """
-         self.assertEqual(self.default_token, self.field.encode(None))
+         self.assertEqual(self.default_token, self.default_dtype.encode(None))
          return
-
 
 class ConstTypeTest(DataTypeTest):
     """ Unit testing for the ConstType class.
@@ -65,10 +71,17 @@ class ConstTypeTest(DataTypeTest):
         """
         self.value = 999
         self.token = " 999"
+        self.dtype = ConstType(self.value, "4d")
         self.default_value = self.value
         self.default_token = self.token
-        self.field = ConstType(self.value, "4d")
+        self.default_dtype = self.dtype
         return
+    
+    def test_encode_required(self):
+         """ Test the encode() method if no default has been specified.
+
+         """
+         pass  # ConstTypes always have a default value
 
 
 class IntTypeTest(DataTypeTest):
@@ -84,9 +97,10 @@ class IntTypeTest(DataTypeTest):
         """
         self.value = 123
         self.token = " 123"
+        self.dtype = IntType("4d")
         self.default_value = -999
         self.default_token = "-999"
-        self.field = IntType("4d", self.default_value)
+        self.default_dtype = IntType("4d", self.default_value)
         return
 
 
@@ -103,9 +117,10 @@ class FloatTypeTest(DataTypeTest):
         """
         self.value = 1.23
         self.token = " 1.23"
+        self.dtype = FloatType("5.2f")
         self.default_value = -9.99
         self.default_token = "-9.99"
-        self.field = FloatType("5.2f", self.default_value)
+        self.default_dtype = FloatType("5.2f", self.default_value)
         return
 
 
@@ -122,9 +137,10 @@ class StringTypeTest(DataTypeTest):
         """
         self.value = "abc"
         self.token = "abc "
+        self.dtype = StringType("4s")
         self.default_value = "xyz"
         self.default_token = "xyz "
-        self.field = StringType("4s", default=self.default_value)
+        self.default_dtype = StringType("4s", default=self.default_value)
         return
 
     def test_decode_quote(self):
@@ -133,8 +149,8 @@ class StringTypeTest(DataTypeTest):
         """
         self.value = "abc"
         self.token = "'abc'"
-        self.field = StringType("s", "'")
-        self.assertEqual(self.value, self.field.decode(self.token))
+        self.dtype = StringType("s", "'")
+        self.assertEqual(self.value, self.dtype.decode(self.token))
         return
 
     def test_encode_quote(self):
@@ -143,8 +159,8 @@ class StringTypeTest(DataTypeTest):
         """
         self.value = "abc"
         self.token = "'abc'"
-        self.field = StringType("s", "'")
-        self.assertEqual(self.token, self.field.encode(self.value))
+        self.dtype = StringType("s", "'")
+        self.assertEqual(self.token, self.dtype.encode(self.value))
         return
 
 
@@ -161,9 +177,11 @@ class DatetimeTypeTest(DataTypeTest):
         """
         self.value = datetime.datetime(2012, 12, 12, 0, 0, 0, 123000)
         self.token = "2012-12-12T00:00:00.123"
+        self.dtype = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3)
         self.default_value = datetime.datetime(1901, 1, 1)
         self.default_token = "1901-01-01T00:00:00.000"
-        self.field = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, self.default_value)
+        self.default_dtype = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, 
+                                          self.default_value)
         return
 
 
@@ -178,24 +196,25 @@ class ArrayTypeTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        fields = (("A", 0, IntType("2d")), ("B", 1, IntType("2d")))
+        dtypes = (("A", 0, IntType("2d")), ("B", 1, IntType("2d")))
+        self.dtype = ArrayType(dtypes)
         self.values = [{"A": 1, "B": 2}, {"A": 3, "B": 4}]
         self.tokens = [" 1", " 2", " 3", " 4"]
-        self.field = ArrayType(fields)
+        self.default_dtype = ArrayType(dtypes, list())
         return
 
     def test_decode(self):
         """ Test the decode() method.
 
         """
-        self.assertEqual(self.values, self.field.decode(self.tokens))
+        self.assertEqual(self.values, self.dtype.decode(self.tokens))
         return
 
     def test_encode(self):
         """ Test the encode() method.
 
         """
-        self.assertEqual(self.tokens, self.field.encode(self.values))
+        self.assertEqual(self.tokens, self.dtype.encode(self.values))
         return
 
 

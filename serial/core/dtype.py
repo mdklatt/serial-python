@@ -44,6 +44,8 @@ class DataType(object):
 
         """
         if value is None:
+            if self._default is None:
+                raise ValueError("required field is missing")
             value = self._default
         return format(value, self._fmt)
 
@@ -123,6 +125,8 @@ class StringType(DataType):
 
         """
         if value is None:
+            if self._default is None:
+                raise ValueError("required field is missing")
             value = self._default
         return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
 
@@ -159,10 +163,11 @@ class DatetimeType(DataType):
         """ Convert a datetime to a text token.
 
         """
-        try:
-            token = value.strftime(self._timefmt)
-        except AttributeError:
-            token = self._default.strftime(self._timefmt)
+        if value is None:
+            if self._default is None:
+                raise ValueError("required field is missing")
+            value = self._default
+        token = value.strftime(self._timefmt)
         if (self._prec > 0):
             time, usecs = token.split(".")
             token = "{0:s}.{1:s}".format(time, usecs[0:self._prec])
@@ -173,7 +178,7 @@ class ArrayType(DataType):
     """ An array of DataTypes.
 
     """
-    def __init__(self, fields, default=list()):
+    def __init__(self, fields, default=None):
         """ Initialize this object.
 
         """
@@ -205,5 +210,9 @@ class ArrayType(DataType):
         """ Convert an array of values to a sequence of text tokens.
 
         """
+        if not values:
+            if self._default is None:
+                raise ValueError("required field is missing")
+            values = self._default
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
-                product(values, self._fields)] if values else self._default
+                product(values, self._fields)]
