@@ -5,7 +5,7 @@ The module can be executed on its own or incorporated into a larger test suite.
 """
 import _path
 
-import StringIO
+from StringIO import StringIO
 import unittest
 
 from serial.core import DelimitedReader
@@ -35,6 +35,15 @@ def modify_filter(record):
 
     """
     record["B"] *= 2  # modify in place
+    return True
+
+
+def stop_filter(record):
+    """ A filter function to stop iteration.
+
+    """
+    if record["B"] == 6:
+        raise StopIteration
     return True
 
 
@@ -99,6 +108,15 @@ class TabularReaderTest(unittest.TestCase):
         self.assertEqual({"A": [{"x": 1, "y": 2}], "B": 6}, self.reader.next())
         return
 
+    def test_filter_stop(self):
+        """ Test a filter that stops iteration.
+
+        """
+        self.reader.filter(stop_filter)
+        self.assertSequenceEqual(self.data[:1], list(self.reader))
+        return
+
+
 
 class DelimitedReaderTest(TabularReaderTest):
     """ Unit testing for the DelimitedReader class.
@@ -112,7 +130,7 @@ class DelimitedReaderTest(TabularReaderTest):
 
         """
         super(DelimitedReaderTest, self).setUp()
-        stream = StringIO.StringIO("1,2,3\n4,5,6\n")
+        stream = StringIO("1,2,3\n4,5,6\n")
         atype = ArrayType((("x", 0, IntType()), ("y", 1, IntType())))
         fields = (("A", (0, 2), atype), ("B", 2, IntType()))
         self.reader = DelimitedReader(stream, fields, ",")
@@ -131,7 +149,7 @@ class FixedWidthReaderTest(TabularReaderTest):
 
         """
         super(FixedWidthReaderTest, self).setUp()
-        stream = StringIO.StringIO(" 1 2 3\n 4 5 6\n")
+        stream = StringIO(" 1 2 3\n 4 5 6\n")
         atype = ArrayType((
             ("x", (0, 2), IntType("2d")),
             ("y", (2, 4), IntType("2d"))))
