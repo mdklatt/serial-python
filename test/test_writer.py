@@ -20,22 +20,23 @@ def accept_filter(record):
     """ A filter function to accept records.
 
     """
-    return True  # accept all records
+    return record  # accept all records
 
 
 def reject_filter(record):
     """ A filter function to reject records.
 
     """
-    return record["B"] != 3  # reject if record["B"] == 1
+    return record if record["B"] != 3 else None
 
 
 def modify_filter(record):
     """ A filter function to modify records in place.
 
     """
-    record["B"] *= 2  # modify in place
-    return True
+    record = record.copy()  # output should be idempotent
+    record["B"] *= 2
+    return record
 
 
 # Define the TestCase classes for this module. Each public component of the

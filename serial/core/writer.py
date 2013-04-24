@@ -53,29 +53,33 @@ class TabularWriter(SerialWriter):
         """ Write a record to the output stream.
 
         """
-        for func in self._filters:
-            if not func(record):
+        for callback in self._filters:
+            record = callback(record)
+            if record is None:
                 return
         tokens = [field.dtype.encode(record.get(field.name)) for field in
                   self._fields]
         return self._putline(self._merge(tokens))
 
-    def filter(self, func=None):
+    def filter(self, callback=None):
         """ Add a filter to this object or clear all filters.
 
-        A filter is a function that accecpts a data record as its argument.
-        The function returns to True to accept the argument or False to reject
-        it (it will be not passed to the user). Because the record is a dict,
-        the function can also modify it in place. Records are passed through
-        all filters in the order they were added.
-
-        Calling the function with no arguments will clear all filters.
+        A filter is a callable object that accepts a data record as its only
+        argument. Based on this record the filter can perform the following
+        actions:
+        1. Return None to reject the record (it will not be written).
+        2. Return the data record as is.
+        3. Return a *new record.
+        4. Raise StopIteration to signal the end of input.
+        
+        *Take care not to modify the argument unless the caller doesn't
+         expect write() to be free of side effects.
 
         """
-        if func is None:
+        if callback is None:
             self._filters = []
         else:
-            self._filters.append(func)
+            self._filters.append(callback)
         return
 
     def _merge(self, tokens):
