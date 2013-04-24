@@ -20,22 +20,23 @@ def accept_filter(record):
     """ A filter function to accept records.
 
     """
-    return True
+    return record
 
 
 def reject_filter(record):
     """ A filter function to reject records.
 
     """
-    return record["B"] != 3  # reject if record["B"] == 3
+    return record if record["B"] != 3 else None
 
 
 def modify_filter(record):
     """ A filter function to modify records in place.
 
     """
-    record["B"] *= 2  # modify in place
-    return True
+    # Input filters can safely modify record.
+    record["B"] *= 2 
+    return record
 
 
 def stop_filter(record):
@@ -44,7 +45,7 @@ def stop_filter(record):
     """
     if record["B"] == 6:
         raise StopIteration
-    return True
+    return record
 
 
 # Define the TestCase classes for this module. Each public component of the
