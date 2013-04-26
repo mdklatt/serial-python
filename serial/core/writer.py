@@ -14,55 +14,17 @@ class SerialWriter(object):
     Serial data consists of individual records stored as lines of text.
 
     """
-    def __init__(self, stream, endl):
+    def __init__(self):
         """ Initialize this object.
 
         The stream can be any object that has a write() method.
 
         """
-        self._stream = stream
-        self._endl = endl
-        return
-
-    def _putline(self, line):
-        """ Write a line to the stream.
-
-        """
-        self._stream.write(line + self._endl)
-        return
-
-
-class TabularWriter(SerialWriter):
-    """ Abstract base class for tabular data writers.
-
-    Tabular data is organized fields such that each field occupies the same
-    position in each record. One line of text corresponds to a one complete
-    record.
-
-    """
-    def __init__(self, stream, fields, endl="\n"):
-        """ Initialize this object.
-
-        """
-        super(TabularWriter, self).__init__(stream, endl)
-        self._fields = make_fields(fields)
         self._filters = []
         return
 
-    def write(self, record):
-        """ Write a record to the output stream.
-
-        """
-        for callback in self._filters:
-            record = callback(record)
-            if record is None:
-                return
-        tokens = [field.dtype.encode(record.get(field.name)) for field in
-                  self._fields]
-        return self._putline(self._merge(tokens))
-
     def filter(self, callback=None):
-        """ Add a filter to this object or clear all filters.
+        """ Add a filter to this writer or clear all filters.
 
         A filter is a callable object that accepts a data record as its only
         argument. Based on this record the filter can perform the following
@@ -82,11 +44,60 @@ class TabularWriter(SerialWriter):
             self._filters.append(callback)
         return
 
+    def write(self, record):
+        """
+        
+        """
+        for callback in self._filters:
+            record = callback(record)
+            if record is None:
+                return
+        self._put(record)
+        return
+
+    def _put(self, record):
+        raise NotImplementedError
+
+
+class TabularWriter(SerialWriter):
+    """ Abstract base class for tabular data writers.
+
+    Tabular data is organized fields such that each field occupies the same
+    position in each record. One line of text corresponds to a one complete
+    record.
+
+    """
+    def __init__(self, stream, fields, endl="\n"):
+        """ Initialize this object.
+
+        """
+        super(TabularWriter, self).__init__()
+        self._stream = stream
+        self._endl = endl
+        self._fields = make_fields(fields)
+        return
+
+    def _put(self, record):
+        """ Write a filtered record to the output stream.
+
+        """
+        tokens = [field.dtype.encode(record.get(field.name)) for field in
+                  self._fields]
+        self._putline(self._merge(tokens))
+        return
+
     def _merge(self, tokens):
         """ Create a line of text from a sequence of tokens.
 
         """
         raise NotImplementedError
+
+    def _putline(self, line):
+        """ Write a line of text to the stream.
+
+        """
+        self._stream.write(line + self._endl)
+        return
 
 
 class DelimitedWriter(TabularWriter):
