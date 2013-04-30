@@ -16,10 +16,14 @@ class SerialReader(object):
     the data using filters.
 
     """
-    def __init__(self):
+    def __init__(self, stream):
         """ Initialize this object.
         
+        The input stream is any object that implements next() to return the
+        next line of text input.
+        
         """
+        self._stream = stream
         self._filters = []
         return
 
@@ -91,12 +95,8 @@ class TabularReader(SerialReader):
     def __init__(self, stream, fields):
         """ Initialize this object.
 
-        The stream can be any object that implements a readline() method.
-
         """
-        super(TabularReader, self).__init__()
-        self._stream = stream
-        self._buffer = []
+        super(TabularReader, self).__init__(stream)
         self._fields = make_fields(fields)
         return
 
@@ -107,7 +107,7 @@ class TabularReader(SerialReader):
         StopIterator exception when the input stream is exhausted.
 
         """
-        line = self._getline()
+        line = self._stream.next()
         return {field.name: field.dtype.decode(token) for (field, token)
                 in zip(self._fields, self._parse(line.rstrip()))}
 
@@ -116,30 +116,6 @@ class TabularReader(SerialReader):
 
         """
         raise NotImplementedError
-
-    def _getline(self):
-        """ Get the next line from the stream.
-
-        """
-        try:
-            line = self._buffer.pop(0)
-        except IndexError:  # _buffer is empty
-            line = self._stream.readline()
-        if not line:
-            raise StopIteration
-        return line
-
-    def _putback(self, line):
-        """ Place a line into the read buffer.
-
-        This is useful, for example, for parsing file headers where the only
-        way to know the header is complete is by encountering the first line of
-        data. The data line can then be put back into the read buffer and read
-        as normal.
-
-        """
-        self._buffer.append(line)
-        return line
 
 
 class DelimitedReader(TabularReader):
