@@ -14,12 +14,14 @@ class SerialWriter(object):
     Serial data consists of individual records stored as lines of text.
 
     """
-    def __init__(self):
+    def __init__(self, stream):
         """ Initialize this object.
 
-        The stream can be any object that has a write() method.
+        The output stream is any object that implements write() to write a line
+        of text.
 
         """
+        self._stream = stream
         self._filters = []
         return
 
@@ -71,10 +73,9 @@ class TabularWriter(SerialWriter):
         """ Initialize this object.
 
         """
-        super(TabularWriter, self).__init__()
-        self._stream = stream
-        self._endl = endl
+        super(TabularWriter, self).__init__(stream)
         self._fields = make_fields(fields)
+        self._endl = endl
         return
 
     def _put(self, record):
@@ -83,7 +84,7 @@ class TabularWriter(SerialWriter):
         """
         tokens = [field.dtype.encode(record.get(field.name)) for field in
                   self._fields]
-        self._putline(self._merge(tokens))
+        self._stream.write(self._merge(tokens) + self._endl)
         return
 
     def _merge(self, tokens):
@@ -91,13 +92,6 @@ class TabularWriter(SerialWriter):
 
         """
         raise NotImplementedError
-
-    def _putline(self, line):
-        """ Write a line of text to the stream.
-
-        """
-        self._stream.write(line + self._endl)
-        return
 
 
 class DelimitedWriter(TabularWriter):
@@ -161,4 +155,3 @@ class FixedWidthWriter(TabularWriter):
                 tokens[pos:pos+1] = token
                 pos += len(token)
         return "".join(tokens)
-
