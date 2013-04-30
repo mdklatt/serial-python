@@ -4,7 +4,7 @@
 __all__ = ("IStreamAdaptor", "IStreamBuffer", "OStreamAdaptor")
 
 
-class IStreamAdaptor:
+class IStreamAdaptor(object):
     """ Abstract base class for an input stream adaptor.
 
     An adaptor can be used to make an input source compatible with the Reader
