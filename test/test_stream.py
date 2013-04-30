@@ -25,20 +25,30 @@ class IStreamBufferTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.buffer = IStreamBuffer(StringIO("abc\ndef\n"), 3)
-        self.lines = ("abc\n", "def\n")
+        self.bufsize = 2
+        self.buffer = IStreamBuffer(StringIO("abc\ndef\nghi\n"), self.bufsize)
+        self.lines = ("abc\n", "def\n", "ghi\n")
         return
 
     def test_iter(self):
         """ Test the iterator protocol.
 
-        Tests both __iter__() and next() as well as rewind().
+        Tests both __iter__() and next().
 
         """
         self.assertSequenceEqual(self.lines, list(self.buffer))
-        self.buffer.rewind(3)  # try to rewind past begging of buffer
+        return
+        
+    def test_rewind(self):
+        """ Test the rewind() method.
+        
+        """
+        self.buffer.next()
+        self.buffer.rewind()  # back to first line
         self.assertSequenceEqual(self.lines, list(self.buffer))
-        self.assertSequenceEqual([], list(self.buffer))
+        self.buffer.rewind(100)  # try to advance past beginning of buffer
+        self.assertSequenceEqual(self.lines[-self.bufsize:], list(self.buffer))
+        self.assertSequenceEqual([], list(self.buffer))  # stream is exhausted
         return
 
 

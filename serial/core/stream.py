@@ -66,6 +66,7 @@ class IStreamBuffer(IStreamAdaptor):
             # At the end of the buffer, so get a new line.
             line = self._stream.next()
             del self._buffer[0]
+            self._buffer.append(line)
         return line
 
     def rewind(self, count=1):
