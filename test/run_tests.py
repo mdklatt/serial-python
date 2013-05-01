@@ -1,10 +1,10 @@
-""" Master test script for the datalect.core package.
+""" Master test script.
 
 """
-import os
+import os.path
 import sys
-import unittest
 
+import _unittest as unittest
 
 def main(argv):
     """ Run all tests in this directory.

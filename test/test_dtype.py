@@ -3,10 +3,10 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import _path
+from datetime import datetime
 
-import datetime
-import unittest
+import _path
+import _unittest as unittest
 
 from serial.core import ConstType
 from serial.core import IntType
@@ -175,10 +175,10 @@ class DatetimeTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
-        self.value = datetime.datetime(2012, 12, 12, 0, 0, 0, 123000)
+        self.value = datetime(2012, 12, 12, 0, 0, 0, 123000)
         self.token = "2012-12-12T00:00:00.123"
         self.dtype = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3)
-        self.default_value = datetime.datetime(1901, 1, 1)
+        self.default_value = datetime(1901, 1, 1)
         self.default_token = "1901-01-01T00:00:00.000"
         self.default_dtype = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, 
                                           self.default_value)

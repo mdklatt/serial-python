@@ -3,10 +3,10 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import _path
-
 from StringIO import StringIO
-import unittest
+
+import _path
+import _unittest as unittest
 
 from serial.core import DelimitedReader
 from serial.core import FixedWidthReader
@@ -20,7 +20,7 @@ def accept_filter(record):
     """ A filter function to accept records.
 
     """
-    return record
+    return record  # accept all records
 
 
 def reject_filter(record):

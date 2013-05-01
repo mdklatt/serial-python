@@ -3,10 +3,10 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import _path
+from StringIO import StringIO
 
-import StringIO
-import unittest
+import _path
+import _unittest as unittest
 
 from serial.core import DelimitedWriter
 from serial.core import FixedWidthWriter
@@ -59,7 +59,7 @@ class TabularWriterTest(unittest.TestCase):
         self.data = [
             {"A": [{"x": 1, "y": 2}], "B": 3},
             {"A": [{"x": 4, "y": 5}], "B": 6}]
-        self.stream = StringIO.StringIO()
+        self.stream = StringIO()
         return
 
     def test_write(self):
