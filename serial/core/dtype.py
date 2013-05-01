@@ -199,20 +199,21 @@ class ArrayType(DataType):
         """ Convert a sequence of text tokens to an array of values.
 
         """
-        values = []
+        array = []
         for pos in range(0, len(tokens), self._elem_width):
             elem = tokens[pos:pos+self._elem_width]
-            values.append({field.name: field.dtype.decode(elem[field.pos]) for
-                           field in self._fields})
-        return values
+            values = dict([(field.name, field.dtype.decode(elem[field.pos]))
+                           for field in self._fields])
+            array.append(values)
+        return array
 
-    def encode(self, values):
+    def encode(self, array):
         """ Convert an array of values to a sequence of text tokens.
 
         """
-        if not values:
+        if not array:
             if self._default is None:
                 raise ValueError("required field is missing")
-            values = self._default
+            array = self._default
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
-                product(values, self._fields)]
+                product(array, self._fields)]

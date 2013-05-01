@@ -107,9 +107,9 @@ class TabularReader(SerialReader):
         StopIterator exception when the input stream is exhausted.
 
         """
-        line = self._stream.next()
-        return {field.name: field.dtype.decode(token) for (field, token)
-                in zip(self._fields, self._parse(line.rstrip()))}
+        tokens = self._parse(self._stream.next().rstrip())
+        return dict([(field.name, field.dtype.decode(token)) for (field, token)
+                     in zip(self._fields, tokens)])
 
     def _parse(self, line):
         """ Parse a line of text into a sequence of tokens.
