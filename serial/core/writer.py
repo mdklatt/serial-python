@@ -82,8 +82,12 @@ class TabularWriter(SerialWriter):
         """ Write a filtered record to the output stream.
 
         """
-        tokens = [field.dtype.encode(record.get(field.name)) for field in
-                  self._fields]
+        tokens = []
+        for field in self._fields:
+            try:
+                tokens.append(field.dtype.encode(record.get(field.name)))
+            except ValueError:  # field is None and has no default
+                raise ValueError("{0:s} field is required".format(field.name))
         self._stream.write(self._merge(tokens) + self._endl)
         return
 

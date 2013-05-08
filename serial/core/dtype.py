@@ -45,7 +45,7 @@ class DataType(object):
         """
         if value is None:
             if self._default is None:
-                raise ValueError("required field is missing")
+                raise ValueError("value is None and has no default")
             value = self._default
         return format(value, self._fmt)
 
