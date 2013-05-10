@@ -6,7 +6,7 @@ import sys
 
 import _unittest as unittest
 
-def main(argv):
+def main(argv=None):
     """ Run all tests in this directory.
 
     The test directory is searched for all test scripts ('test_*.py'), and all
