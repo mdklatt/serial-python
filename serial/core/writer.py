@@ -58,6 +58,11 @@ class SerialWriter(object):
         return
 
     def _put(self, record):
+        """ Write a record to the output stream.
+        
+        This is called after the record has been passed through all filters.
+        
+        """
         raise NotImplementedError
 
 

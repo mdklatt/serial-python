@@ -40,6 +40,7 @@ class IStreamBuffer(IStreamAdaptor):
         single line of text.
 
         """
+        super(IStreamBuffer, self).__init__()
         self._stream = stream
         self._buffer = []
         while len(self._buffer) < bufsize:

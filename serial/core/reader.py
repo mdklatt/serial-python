@@ -76,7 +76,7 @@ class SerialReader(object):
         """ Get the next parsed record from the input source.
         
         This is the last step before any filters get applied to the record and
-        its returned to the client. The implementation *must* raise a
+        it's returned to the client. The implementation must raise a
         StopIteration exception to signal that input has been exhausted.
             
         """
@@ -88,7 +88,7 @@ class TabularReader(SerialReader):
     """ Abstract base class for tabular data readers.
 
     Tabular data is organized into fields such that each field occupies the 
-    same position in each input record. One line of text corresponds to a one 
+    same position in each input record. One line of text corresponds to one 
     complete record.
 
     """
@@ -175,5 +175,3 @@ class FixedWidthReader(TabularReader):
 #         """
 #         # Return a dict of tokens keyed by the field name.
 #         pass
-
-
