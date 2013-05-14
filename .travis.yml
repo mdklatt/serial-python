@@ -1,0 +1,30 @@
+# Travis CI configuration for the serial-python library.
+#
+# The Travis CI service verifies each GitHub commit for correctness.
+# <http://travis-ci.org>
+
+
+# Language specifications
+
+language: python
+python:
+    - "2.6"
+    - "2.7"
+
+# Dependencies
+
+install:
+    - pip install --use-mirrors -r optional-requirements.txt
+
+
+# Test script
+
+script: python test/run_tests.py
+
+
+# Branch restrictions
+
+branches:
+    only:
+        - master
+        - dev-0.1
