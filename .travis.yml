@@ -27,4 +27,4 @@ script: python test/run_tests.py
 branches:
     only:
         - master
-        - dev-0.1
+        - dev
