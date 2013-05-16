@@ -30,8 +30,15 @@ class DataTypeTest(unittest.TestCase):
         self.assertEqual(self.value, self.dtype.decode(self.token))
         return
 
+    def test_decode_null(self):
+        """ Test the decode() method for null input.
+
+        """
+        self.assertEqual(None, self.dtype.decode(""))
+        return
+
     def test_decode_default(self):
-        """ Test the decode() method for default input.
+        """ Test the decode() method for null input with default value.
 
         """
         self.assertEqual(self.default_value, self.default_dtype.decode(" "))
@@ -44,15 +51,15 @@ class DataTypeTest(unittest.TestCase):
         self.assertEqual(self.token, self.dtype.encode(self.value))
         return
 
-    def test_encode_required(self):
-         """ Test the encode() method if no default has been specified.
+    def test_encode_null(self):
+        """ Test the encode() method for null output.
 
-         """
-         self.assertRaises(ValueError, self.dtype.encode, None)
-         return
+        """
+        self.assertEqual("", self.dtype.encode(None))
+        return
 
     def test_encode_default(self):
-         """ Test the encode() method for default input.
+         """ Test the encode() method for null output with default value.
 
          """
          self.assertEqual(self.default_token, self.default_dtype.encode(None))
@@ -76,12 +83,20 @@ class ConstTypeTest(DataTypeTest):
         self.default_token = self.token
         self.default_dtype = self.dtype
         return
-    
-    def test_encode_required(self):
-         """ Test the encode() method if no default has been specified.
 
-         """
-         pass  # ConstTypes always have a default value
+    def test_decode_null(self):
+        """ Test the decode() method for null input.
+
+        """
+        self.assertEqual(self.value, self.dtype.decode(""))
+        return
+    
+    def test_encode_null(self):
+        """ Test the decode() method for null input.
+
+        """
+        self.assertEqual(self.token, self.dtype.encode(None))
+        return
 
 
 class IntTypeTest(DataTypeTest):
@@ -163,6 +178,13 @@ class StringTypeTest(DataTypeTest):
         self.assertEqual(self.token, self.dtype.encode(self.value))
         return
 
+    def test_encode_null(self):
+        """ Test the decode() method for null input.
+
+        """
+        self.assertEqual(format("", "4s"), self.dtype.encode(None))
+        return
+
 
 class DatetimeTypeTest(DataTypeTest):
     """ Unit testing for the DatetimeType class.
@@ -200,7 +222,7 @@ class ArrayTypeTest(unittest.TestCase):
         self.dtype = ArrayType(dtypes)
         self.values = [{"A": 1, "B": 2}, {"A": 3, "B": 4}]
         self.tokens = [" 1", " 2", " 3", " 4"]
-        self.default_dtype = ArrayType(dtypes, list())
+        self.default_dtype = ArrayType(dtypes, [-999, -999])
         return
 
     def test_decode(self):

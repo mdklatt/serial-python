@@ -45,12 +45,13 @@ class DataType(object):
     def encode(self, value):
         """ Convert a Python value to a text token.
 
+        If value is None the default value for this field is used. A default
+        value of None is encoded as a blank string.
+        
         """
         if value is None:
-            if self._default is None:
-                raise ValueError("value is None and has no default")
             value = self._default
-        return format(value, self._fmt)
+        return format(value, self._fmt) if value is not None else ""
 
 
 class ConstType(DataType):
@@ -126,11 +127,12 @@ class StringType(DataType):
     def encode(self, value):
         """ Convert a string to a text token.
 
+        If value is None the default value for this field is used. A default
+        value of None is encoded as a blank string (with quoting if enabled).
+
         """
         if value is None:
-            if self._default is None:
-                raise ValueError("required field is missing")
-            value = self._default
+            value = self._default if self._default is not None else ""
         return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
 
 
@@ -165,10 +167,13 @@ class DatetimeType(DataType):
     def encode(self, value):
         """ Convert a datetime to a text token.
 
+        If value is None the default value for this field is used. A default
+        value of None is encoded as a blank string.
+
         """
         if value is None:
             if self._default is None:
-                raise ValueError("required field is missing")
+                return ""
             value = self._default
         token = strftime(value, self._timefmt)
         if (self._prec > 0):
@@ -181,7 +186,7 @@ class ArrayType(DataType):
     """ An array of DataTypes.
 
     """
-    def __init__(self, fields, default=None):
+    def __init__(self, fields, default=list()):
         """ Initialize this object.
 
         """
@@ -213,10 +218,11 @@ class ArrayType(DataType):
     def encode(self, array):
         """ Convert an array of values to a sequence of text tokens.
 
+        If value is not a non-empty sequence the default value for this field 
+        is used.
+
         """
         if not array:
-            if self._default is None:
-                raise ValueError("required field is missing")
             array = self._default
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
                 product(array, self._fields)]
