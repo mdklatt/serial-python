@@ -110,9 +110,9 @@ single `datetime` field. A `DatetimeType` must be initialized with a `datetime`
 
 During input, all fields in a record are assigned a value. If a field is blank
 it is given a value of None. A data type can be assigned a default value; this
-value will be used if the field is blank. The default value should be
-appropriate to that type, *e.g.* an `IntType` field should not have a default
-value of "N/A".
+value will be used instead of None if the field is blank. The default value 
+should be appropriate to that type, *e.g.* an `IntType` field should not have a 
+default value of "N/A".
 
     data_fields = (
         ("value", (0, 8), FloatType()),
@@ -226,10 +226,9 @@ when defining fields for a `FixedWidthWriter`, every field must be defined,
 even if it's blank. Also, fields must be listed in their correct order.
 
 A Writer expects a value to write for each of its fields for every data record
-to be written. If an output record is missing a field the Writer will use the
-default value for that field (None cannot be used as a default value). If no
-default is defined an exception is raised. Fields in the record that do not
-correspond to an output field are ignored.
+to be written. If a field is missing from an output record the Writer will use 
+the default value for that field (None is encoded as a blank field). Fields in 
+the record that do not correspond to an output field are ignored.
 
 Filters work for Writers like they do for Readers. The filters defined for a
 Writer are applied to each record passed to the write() method before the
