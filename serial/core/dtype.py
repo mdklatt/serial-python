@@ -7,6 +7,9 @@ from collections import namedtuple
 from datetime import datetime
 from itertools import product
 
+from ._util import strftime
+
+
 __all__ = ("ConstType", "IntType", "FloatType", "StringType", "DatetimeType",
            "ArrayType")
 
@@ -167,7 +170,7 @@ class DatetimeType(DataType):
             if self._default is None:
                 raise ValueError("required field is missing")
             value = self._default
-        token = value.strftime(self._timefmt)
+        token = strftime(value, self._timefmt)
         if (self._prec > 0):
             time, usecs = token.split(".")
             token = "{0:s}.{1:s}".format(time, usecs[0:self._prec])
