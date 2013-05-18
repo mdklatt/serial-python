@@ -79,6 +79,12 @@ class TabularWriterTest(unittest.TestCase):
         self.assertEqual(self.output, self.stream.getvalue())
         return
 
+    def test_fields(self):
+        """ Test the fields() method
+        
+        """
+        self.assertSequenceEqual(("A", "B"), self.writer.fields())            
+
     def test_filter_accept(self):
         """ Test a filter that accepts all records.
 

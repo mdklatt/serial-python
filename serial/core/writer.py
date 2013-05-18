@@ -91,6 +91,12 @@ class TabularWriter(SerialWriter):
         self._endl = endl
         return
 
+    def fields(self):
+        """ Return the field names defined for this writer.
+        
+        """
+        return tuple((field.name for field in self._fields))
+        
     def _put(self, record):
         """ Write a filtered record to the output stream.
 
