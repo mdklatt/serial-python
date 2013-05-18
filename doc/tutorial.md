@@ -233,7 +233,7 @@ the record that do not correspond to an output field are ignored.
 Filters work for Writers like they do for Readers. The filters defined for a
 Writer are applied to each record passed to the write() method before the
 record is written to the stream. If any filter return None the record is not
-written.
+written. A sequence of records can be written with a single call to dump().
 
 With some minor modifications the field definitions for reading the sample
 data can be used for writing it. In fact, the modified fields can still be used
@@ -255,6 +255,7 @@ format using one set of field definitions.
         reader = FixedWidthReader(istream, sample_fields)
         writer = FixedWidthWriter(ostream, sample_fields)
         for record in reader:
+            # Write all records in one call: writer.dump(reader)
             record.pop("timezone")  # rely on default value
             writer.write(record)
 
@@ -362,7 +363,7 @@ any object that implements a `write()` method to write a line of text. A Python
 `file` object satisfies the requirements for both types of streams. The
 `IStreamAdaptor` and `OStreamAdaptor` abstract classes declare the required
 interfaces and can be used to create adaptors for other types of streams,
-*e.g.* binary data.
+*e.g.* binary data. 
 
     from serial.core import IStreamAdaptor
     from serial.core import OStreamAdaptor
