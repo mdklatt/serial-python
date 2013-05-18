@@ -66,7 +66,16 @@ class TabularWriterTest(unittest.TestCase):
         """ Test the write() method.
 
         """
-        map(self.writer.write, self.data)
+        for record in self.data:
+            self.writer.write(record)
+        self.assertEqual(self.output, self.stream.getvalue())
+        return
+
+    def test_dump(self):
+        """ Test the dump() method.
+
+        """
+        self.writer.dump(self.data)
         self.assertEqual(self.output, self.stream.getvalue())
         return
 

@@ -47,7 +47,7 @@ class SerialWriter(object):
         return
 
     def write(self, record):
-        """
+        """ Write a record to the output stream.
         
         """
         for callback in self._filters:
@@ -55,6 +55,14 @@ class SerialWriter(object):
             if record is None:
                 return
         self._put(record)
+        return
+
+    def dump(self, records):
+        """ Write all records to the output stream.
+        
+        """
+        for record in records:
+            self.write(record)
         return
 
     def _put(self, record):
