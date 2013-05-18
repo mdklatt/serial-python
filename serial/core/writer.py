@@ -8,7 +8,7 @@ from ._util import make_fields
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
 
 
-class SerialWriter(object):
+class _Writer(object):
     """ Abstract base class for all serial data writers.
 
     Serial data consists of individual records stored as lines of text.
@@ -74,7 +74,7 @@ class SerialWriter(object):
         raise NotImplementedError
 
 
-class TabularWriter(SerialWriter):
+class _TabularWriter(_Writer):
     """ Abstract base class for tabular data writers.
 
     Tabular data is organized fields such that each field occupies the same
@@ -86,7 +86,7 @@ class TabularWriter(SerialWriter):
         """ Initialize this object.
 
         """
-        super(TabularWriter, self).__init__(stream)
+        super(_TabularWriter, self).__init__(stream)
         self._fields = make_fields(fields)
         self._endl = endl
         return
@@ -113,7 +113,7 @@ class TabularWriter(SerialWriter):
         raise NotImplementedError
 
 
-class DelimitedWriter(TabularWriter):
+class DelimitedWriter(_TabularWriter):
     """ A writer for fields delineated by a delimiter.
 
     The position of each scalar field is be given as an integer index, and the
@@ -149,7 +149,7 @@ class DelimitedWriter(TabularWriter):
         return self._delim.join(tokens)
 
 
-class FixedWidthWriter(TabularWriter):
+class FixedWidthWriter(_TabularWriter):
     """ A writer for fields delineated by character position.
 
     The character position of each field is given as the pair [beg, end).

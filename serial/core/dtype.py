@@ -14,8 +14,8 @@ __all__ = ("ConstType", "IntType", "FloatType", "StringType", "DatetimeType",
            "ArrayType")
 
 
-class DataType(object):
-    """ Base class for all data types.
+class _DataType(object):
+    """ Base class for data types.
 
     """
     def __init__(self, dtype, fmt, default):
@@ -54,7 +54,7 @@ class DataType(object):
         return format(value, self._fmt) if value is not None else ""
 
 
-class ConstType(DataType):
+class ConstType(_DataType):
     """ A constant value.
 
     """
@@ -79,7 +79,7 @@ class ConstType(DataType):
         return format(self._const, self._fmt)
 
 
-class IntType(DataType):
+class IntType(_DataType):
     """ An integer value.
 
     """
@@ -91,7 +91,7 @@ class IntType(DataType):
         return
 
 
-class FloatType(DataType):
+class FloatType(_DataType):
     """ A floating point value.
 
     """
@@ -103,7 +103,7 @@ class FloatType(DataType):
         return
 
 
-class StringType(DataType):
+class StringType(_DataType):
     """ A string value.
 
     """
@@ -136,7 +136,7 @@ class StringType(DataType):
         return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
 
 
-class DatetimeType(DataType):
+class DatetimeType(_DataType):
     """ A datetime value.
 
     """
@@ -182,8 +182,8 @@ class DatetimeType(DataType):
         return token
 
 
-class ArrayType(DataType):
-    """ An array of DataTypes.
+class ArrayType(_DataType):
+    """ An array of _DataTypes.
 
     """
     def __init__(self, fields, default=list()):

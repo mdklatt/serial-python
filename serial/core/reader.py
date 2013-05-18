@@ -8,12 +8,12 @@ from ._util import make_fields
 __all__ = ("DelimitedReader", "FixedWidthReader")
 
 
-class SerialReader(object):
+class _Reader(object):
     """ Abstract base class for all serial data readers.
 
-    Serial data consists of sequential records. A SerialReader provides an
-    iterator interface for reading serial data and allows for precprocessing of
-    the data using filters.
+    Serial data consists of sequential records. A _Reader provides an iterator
+    interface for reading serial data and allows for precprocessing of the data
+    using filters.
 
     """
     def __init__(self, stream):
@@ -84,7 +84,7 @@ class SerialReader(object):
         
         
 
-class TabularReader(SerialReader):
+class _TabularReader(_Reader):
     """ Abstract base class for tabular data readers.
 
     Tabular data is organized into fields such that each field occupies the 
@@ -96,7 +96,7 @@ class TabularReader(SerialReader):
         """ Initialize this object.
 
         """
-        super(TabularReader, self).__init__(stream)
+        super(_TabularReader, self).__init__(stream)
         self._fields = make_fields(fields)
         return
 
@@ -107,7 +107,7 @@ class TabularReader(SerialReader):
         return tuple((field.name for field in self._fields))
         
     def _get(self):
-        """ Return the next record from the stream.
+        """ Return the next parsed record from the stream.
 
         This function implements the Pyhthon iterator idiom and raises a
         StopIterator exception when the input stream is exhausted.
@@ -124,7 +124,7 @@ class TabularReader(SerialReader):
         raise NotImplementedError
 
 
-class DelimitedReader(TabularReader):
+class DelimitedReader(_TabularReader):
     """ A reader for delimited lines of text.
 
     The position of each scalar field is be given as an integer index, and the
@@ -153,7 +153,7 @@ class DelimitedReader(TabularReader):
         return [tokens[field.pos] for field in self._fields]
 
 
-class FixedWidthReader(TabularReader):
+class FixedWidthReader(_TabularReader):
     """ A reader for lines of text delineated by character position.
 
     The character position of each field is given as the pair [beg, end).
@@ -168,11 +168,11 @@ class FixedWidthReader(TabularReader):
         return [line[field.pos] for field in self._fields]
 
 
-# class ContextualReader(Reader):
+# class ContextualReader(_Reader):
 #     """ A reader for contextual lines.
 #
 #     Fields are determined by context rather than position, and all lines do not
-#     necessarily have the same fields.
+#     necessarily have the same fields, e.g. SHEF data.
 #
 #     """
 #     def _scan(line):
