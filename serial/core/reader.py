@@ -100,6 +100,12 @@ class TabularReader(SerialReader):
         self._fields = make_fields(fields)
         return
 
+    def fields(self):
+        """ Return the field names defined for this reader.
+        
+        """
+        return tuple((field.name for field in self._fields))
+        
     def _get(self):
         """ Return the next record from the stream.
 

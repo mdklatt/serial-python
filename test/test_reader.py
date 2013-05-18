@@ -70,6 +70,12 @@ class TabularReaderTest(unittest.TestCase):
             {"A": [{"x": 4, "y": 5}], "B": 6}]
         return
 
+    def test_fields(self):
+        """ Test the fields() method
+        
+        """
+        self.assertSequenceEqual(("A", "B"), self.reader.fields())            
+
     def test_next(self):
         """ Test the next() method.
 
