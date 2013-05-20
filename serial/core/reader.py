@@ -18,10 +18,10 @@ class _Reader(object):
     """
     def __init__(self, stream):
         """ Initialize this object.
-        
+
         The input stream is any object that implements next() to return the
         next line of text input.
-        
+
         """
         self._stream = stream
         self._filters = []
@@ -37,21 +37,21 @@ class _Reader(object):
         2. Return the data record as is.
         3. Return a *new record.
         4. Raise StopIteration to signal the end of input.
-        
+
         *Input filters can safely modify their argument.
-        
+
         """
         if callback is None:
             self._filters = []
         else:
             self._filters.append(callback)
         return
-        
+
     def next(self):
         """ Return the next filtered record.
-        
+
         This implements the Python iterator protocol.
-        
+
         """
         record = None
         while record is None:
@@ -64,48 +64,49 @@ class _Reader(object):
                 if record is None:
                     break
         return record
-        
+
     def __iter__(self):
         """ Iterate over all filtered input records.
-        
+
         """
         # Anything that implements next() is a Python iterator.
         return self
-            
+
     def _get(self):
         """ Get the next parsed record from the input source.
-        
+
         This is the last step before any filters get applied to the record and
         it's returned to the client. The implementation must raise a
         StopIteration exception to signal that input has been exhausted.
-            
+
         """
         raise NotImplementedError
-        
-        
+
+
 
 class _TabularReader(_Reader):
     """ Abstract base class for tabular data readers.
 
-    Tabular data is organized into fields such that each field occupies the 
-    same position in each input record. One line of text corresponds to one 
+    Tabular data is organized into fields such that each field occupies the
+    same position in each input record. One line of text corresponds to one
     complete record.
 
     """
-    def __init__(self, stream, fields):
+    def __init__(self, stream, fields, endl="\n"):
         """ Initialize this object.
 
         """
         super(_TabularReader, self).__init__(stream)
         self._fields = make_fields(fields)
+        self._endl = endl
         return
 
     def fields(self):
         """ Return the field names defined for this reader.
-        
+
         """
         return tuple((field.name for field in self._fields))
-        
+
     def _get(self):
         """ Return the next parsed record from the stream.
 
@@ -113,7 +114,7 @@ class _TabularReader(_Reader):
         StopIterator exception when the input stream is exhausted.
 
         """
-        tokens = self._parse(self._stream.next().rstrip())
+        tokens = self._parse(self._stream.next().rstrip(self._endl))
         return dict([(field.name, field.dtype.decode(token)) for (field, token)
                      in zip(self._fields, tokens)])
 
