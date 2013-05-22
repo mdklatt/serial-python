@@ -66,7 +66,8 @@ class IStreamBuffer(_IStreamAdaptor):
             try:
                 self._buffer.append(self._stream.next())
             except StopIteration:  # stream is exhausted
-                # Wait until the buffer is exhausted to raise an exception.
+                # Don't raise StopIteration until self.next() is called with an
+                # exhausted buffer.
                 break
         self._bufpos = 0  # always points to the current record
         return
@@ -82,17 +83,19 @@ class IStreamBuffer(_IStreamAdaptor):
             line = self._buffer[self._bufpos]
             self._bufpos += 1
         except IndexError:
-            # At the end of the buffer, so get a new line.
-            line = self._stream.next()
+            # At the end of the buffer so get a new line.
+            line = self._stream.next() 
             del self._buffer[0]
             self._buffer.append(line)
         return line
 
-    def rewind(self, count=1):
-        """ Rewind the stream buffer.
+    def rewind(self, count=None):
+        """ Rewind the stream.
+        
+        By default rewind to the beginning of the buffer.
 
         """
-        self._bufpos = max(0, self._bufpos - abs(count))
+        self._bufpos = 0 if count is None else max(0, self._bufpos - count)
         return
 
 

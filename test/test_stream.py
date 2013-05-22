@@ -47,10 +47,11 @@ class IStreamBufferTest(unittest.TestCase):
         """ Test the rewind() method.
         
         """
-        self.stream.next()
-        self.stream.rewind()  # back to first line
+        for _ in range(2):
+            self.stream.next()
+        self.stream.rewind(2)
         self.assertSequenceEqual(self.lines, list(self.stream))
-        self.stream.rewind(100)  # try to advance past beginning of buffer
+        self.stream.rewind()  # back to beginning of buffer
         self.assertSequenceEqual(self.lines[-self.bufsize:], list(self.stream))
         self.assertSequenceEqual([], list(self.stream))  # stream is exhausted
         return
