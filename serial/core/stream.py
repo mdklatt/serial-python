@@ -4,10 +4,10 @@
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("IStreamAdaptor", "OStreamAdaptor", "IStreamBuffer", "IStreamZlib")
+__all__ = ("IStreamBuffer", "IStreamZlib")
 
 
-class IStreamAdaptor(object):
+class _IStreamAdaptor(object):
     """ Abstract base class for an input stream adaptor.
 
     An adaptor can be used to make an input source compatible with the Reader
@@ -29,7 +29,7 @@ class IStreamAdaptor(object):
         return self
 
 
-class OStreamAdaptor(object):
+class _OStreamAdaptor(object):
     """ Abstract base class for an output stream adaptor.
 
     An adaptor can be used to make an output source compatible with the Writer
@@ -44,7 +44,7 @@ class OStreamAdaptor(object):
         raise NotImplementedError
 
 
-class IStreamBuffer(IStreamAdaptor):
+class IStreamBuffer(_IStreamAdaptor):
     """ Add buffering to an input stream.
 
     An IStreamBuffer buffers input from another stream so that it can support
@@ -96,7 +96,7 @@ class IStreamBuffer(IStreamAdaptor):
         return
 
 
-class IStreamZlib(IStreamAdaptor):
+class IStreamZlib(_IStreamAdaptor):
     """ Add zlib decompression to an input stream.
     
     This adaptor can be used with any zlib-compressed data (includes gzip).
