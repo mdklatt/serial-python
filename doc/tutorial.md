@@ -108,11 +108,10 @@ single `datetime` field. A `DatetimeType` must be initialized with a `datetime`
 
 ### Default Values ###
 
-During input, all fields in a record are assigned a value. If a field is blank
-it is given a value of None. A data type can be assigned a default value; this
-value will be used instead of None if the field is blank. The default value 
-should be appropriate to that type, *e.g.* an `IntType` field should not have a 
-default value of "N/A".
+During input all fields in a record are assigned a value. If a field is blank
+it is given the default value assigned to that field (`None` by default). The 
+default value should be appropriate to that type, *e.g.* an `IntType` field 
+should not have a string as its default value.
 
     data_fields = (
         ("value", (0, 8), FloatType()),
@@ -151,7 +150,7 @@ Any callable object can be a filter, including a class that defines a
 
         def __call__(self, record):
             """ The filter function. """
-            return record if record["timestamp"].month == 3 else None
+            return record if record["timestamp"].month == self._month else None
 
     ...
 
@@ -178,8 +177,8 @@ record altogether.
 
     reader.filter(LocalTime(-6))  # input is converted from UTC to CST
 
-Returning None from a filter will drop individual records, but input can be
-stopped altogether by raising a StopIteration exception. When filtering data by
+Returning `None` from a filter will drop individual records, but input can be
+stopped altogether by raising a `StopIteration` exception. When filtering data 
 by time, if the data are in chronological order it doesn't make sense to
 continue reading from the stream once the desired time period has been passed:
 
@@ -194,8 +193,8 @@ continue reading from the stream once the desired time period has been passed:
             """ Filter function. """
             month = record["timestamp"].month
             if month > self._month:
-                # File is in chronological order so there are no more records
-                # for the desired month.
+                # File is for one year in chronological order so there are no 
+                # more records for the desired month.
                 raise StopIteration
             return record if month == self._month else None
 
@@ -227,8 +226,8 @@ even if it's blank. Also, fields must be listed in their correct order.
 
 A Writer expects a value to write for each of its fields for every data record
 to be written. If a field is missing from an output record the Writer will use 
-the default value for that field (None is encoded as a blank field). Fields in 
-the record that do not correspond to an output field are ignored.
+the default value for that field (`None` is encoded as a blank field). Fields 
+in the record that do not correspond to an output field are ignored.
 
 Filters work for Writers like they do for Readers. The filters defined for a
 Writer are applied to each record passed to the write() method before the
@@ -357,33 +356,32 @@ classes can be bundled into a module for that format.
 ## Stream Adaptors ##
 
 Readers and Writers are both initialized with stream arguments. A Reader's
-input stream is any object that implements a `next()` method that return the
-record from the stream as a single line of text. A Writer's output stream is
-any object that implements a `write()` method to write a line of text. A Python
-`file` object satisfies the requirements for both types of streams. The
-`IStreamAdaptor` and `OStreamAdaptor` abstract classes declare the required
-interfaces and can be used to create adaptors for other types of streams,
-*e.g.* binary data. 
+input stream is any object that implements a `next()` method that returns a
+line of text from the stream. A Writer's output stream is any object that 
+implements a `write()` method to write a line of text. A Python `file` object 
+satisfies the requirements for both types of streams. The `_IStreamAdaptor` and 
+`_OStreamAdaptor` abstract classes declare the required interfaces and can be 
+used to create adaptors for other types of streams, *e.g.* binary data. 
 
-    from serial.core import IStreamAdaptor
-    from serial.core import OStreamAdaptor
+    from serial.core.stream import _IStreamAdaptor
+    from serial.core.stream import _OStreamAdaptor
 
-    class BinaryStream(IStreamAdaptor, OStreamAdaptor):
+    class BinaryStream(_IStreamAdaptor, _OStreamAdaptor):
         """ Interface for a binary data stream.
 
-        This can be used to initialize a serial Reader or Writer.
+        This can be used as the stream for a Reader or Writer.
 
         """
         ...
 
         def next(self):
-            """ IStreamAdaptor: Return the next record as a line of text. """
-            # Read the next record from the stream and convert to text.
+            """ IStreamAdaptor: Return a line of text from the stream. """
+            ...
             return line
 
         def write(self, line):
             """ OStreamAdaptor: Write a line of text to the stream. """
-            # Convert line of text to binary data and write to stream.
+            ...
             return
 
 
