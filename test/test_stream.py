@@ -3,6 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
+from contextlib import closing
 from gzip import GzipFile
 from io import BytesIO
 from StringIO import StringIO
@@ -77,7 +78,9 @@ class IStreamZlibTest(unittest.TestCase):
         
         """    
         buffer = BytesIO()
-        with  GzipFile(fileobj=buffer, mode="w") as stream:
+        with  closing(GzipFile(fileobj=buffer, mode="w")) as stream:
+            # Explicit closing() context is necessary for Python 2.6 but not
+            # for 2.7.
             for line in self.lines:
                 stream.write(line)
         buffer.seek(0)
