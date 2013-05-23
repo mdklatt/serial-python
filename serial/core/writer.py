@@ -103,11 +103,11 @@ class _TabularWriter(_Writer):
         """
         tokens = [field.dtype.encode(record.get(field.name)) for field in
                   self._fields]
-        self._stream.write(self._merge(tokens) + self._endl)
+        self._stream.write(self._join(tokens) + self._endl)
         return
 
-    def _merge(self, tokens):
-        """ Create a line of text from a sequence of tokens.
+    def _join(self, tokens):
+        """ Join a sequence of tokens into a line of text.
 
         """
         raise NotImplementedError
@@ -132,8 +132,8 @@ class DelimitedWriter(_TabularWriter):
         self._delim = delim
         return
 
-    def _merge(self, tokens):
-        """ Create a line of text from a sequence of tokens.
+    def _join(self, tokens):
+        """ Join a sequence of tokens into a line of text.
 
         """
         pos = 0
@@ -155,8 +155,8 @@ class FixedWidthWriter(_TabularWriter):
     The character position of each field is given as the pair [beg, end).
 
     """
-    def _merge(self, tokens):
-        """ Create a line of text from a sequence of tokens.
+    def _join(self, tokens):
+        """ Join a sequence of tokens into a line of text.
 
         """
         # The character positions in self.fields don't matter; tokens must be

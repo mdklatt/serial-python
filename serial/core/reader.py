@@ -114,12 +114,12 @@ class _TabularReader(_Reader):
         StopIterator exception when the input stream is exhausted.
 
         """
-        tokens = self._parse(self._stream.next().rstrip(self._endl))
+        tokens = self._split(self._stream.next().rstrip(self._endl))
         return dict([(field.name, field.dtype.decode(token)) for (field, token)
                      in zip(self._fields, tokens)])
 
-    def _parse(self, line):
-        """ Parse a line of text into a sequence of tokens.
+    def _split(self, line):
+        """ Split a line of text into a sequence of tokens.
 
         """
         raise NotImplementedError
@@ -143,8 +143,8 @@ class DelimitedReader(_TabularReader):
         self._delim = delim
         return
 
-    def _parse(self, line):
-        """ Parse each line of input into a sequence of tokens.
+    def _split(self, line):
+        """ Split a line of text into a sequence of tokens.
 
         Lines are split at each occurrence of the delimiter; the delimiter is
         discarded.
@@ -160,8 +160,8 @@ class FixedWidthReader(_TabularReader):
     The character position of each field is given as the pair [beg, end).
 
     """
-    def _parse(self, line):
-        """ Parse each line of input into a sequence of tokens.
+    def _split(self, line):
+        """ Split a line of text into a sequence of tokens.
 
         Lines are split based on the specified position of each field.
 
