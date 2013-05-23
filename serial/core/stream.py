@@ -102,9 +102,9 @@ class IStreamBuffer(_IStreamAdaptor):
 class IStreamZlib(_IStreamAdaptor):
     """ Add zlib decompression to an input stream.
     
-    This adaptor can be used with any zlib-compressed data (includes gzip).
-    Unlike the Python gzip module, this *will* work with network streams e.g. a 
-    urlopen() stream.
+    This adaptor can be used with any zlib-compressed data, including gzip
+    files. Unlike the Python gzip module, this will work with network files 
+    e.g. a urlopen() stream.
     
     """  
     # Adjust the block size to trade performance against memory usage. 
