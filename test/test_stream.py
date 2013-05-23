@@ -3,8 +3,10 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from StringIO import StringIO
+from gzip import GzipFile
 from io import BytesIO
+from StringIO import StringIO
+
 from zlib import compress
 
 import _path
@@ -68,28 +70,39 @@ class IStreamZlibTest(unittest.TestCase):
 
         """
         self.lines = ("abcd\n", "efgh\n", "ijkl")  # test with missing newline
-        self.stream = IStreamZlib(BytesIO(compress("".join(self.lines))))
+        return
+
+    def test_iter_gzip(self):
+        """ Test the iterator protocol for gzip data.
+        
+        """    
+        buffer = BytesIO()
+        with  GzipFile(fileobj=buffer, mode="w") as stream:
+            for line in self.lines:
+                stream.write(line)
+        buffer.seek(0)
+        self.assertSequenceEqual(self.lines, list(IStreamZlib(buffer)))
         return
 
     def test_iter_zlib(self):
-        """ Test the iterator protocol.
-    
-        Tests both __iter__() and next().
+        """ Test the iterator protocol for zlib data.
     
         """
-        self.assertSequenceEqual(self.lines, list(self.stream))
+        buffer = BytesIO(compress("".join(self.lines)))
+        stream = IStreamZlib(buffer)
+        self.assertSequenceEqual(self.lines, list(stream))
         return
-
+    
     def test_iter_long(self):
-        """ Test the iterator protocol for long lines.
-
-        Tests both __iter__() and next().
-
+        """ Test the iterator protocol for lines longer than the block size.
+    
         """
-        # Test for lines longer than than the block size.
-        self.stream.block_size = 4  # minimum block size
-        self.assertSequenceEqual(self.lines, list(self.stream))
+        buffer = BytesIO(compress("".join(self.lines)))
+        stream = IStreamZlib(buffer)
+        stream.block_size = 4  # minimum block size
+        self.assertSequenceEqual(self.lines, list(stream))
         return
+
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
