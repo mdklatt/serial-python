@@ -120,7 +120,7 @@ class DelimitedWriter(_TabularWriter):
     position of an array field is the pair [beg, end).
 
     """
-    def __init__(self, stream, fields, delim=" ", endl="\n"):
+    def __init__(self, stream, fields, delim, endl="\n"):
         """ Initialize this object.
 
         At this time there is no escaping of characters in the input records
