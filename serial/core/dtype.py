@@ -1,6 +1,7 @@
-""" Data types.
+""" Data types for converting text tokens to/from Python types.
 
-Data types are responsible for converting text tokens to/from Python values.
+Client code defines the _DataType for each input/ouput field, but the _Reader
+and _Writer classes are responsible for calling decode() and encode().
 
 """
 from collections import namedtuple
@@ -58,25 +59,24 @@ class ConstType(_DataType):
     """ A constant value.
 
     """
-    def __init__(self, const, fmt="s"):
+    def __init__(self, value, fmt="s"):
         """ Initialize this object.
 
         """
-        super(ConstType, self).__init__(type(const), fmt, const)
-        self._const = const
+        super(ConstType, self).__init__(type(value), fmt, value)
         return
 
     def decode(self, token):
         """ Return a const value (token is ignored).
 
         """
-        return self._const
+        return self._default
 
     def encode(self, value):
         """ Return a const value as a text token (value is ignored).
 
         """
-        return format(self._const, self._fmt)
+        return format(self._default, self._fmt)
 
 
 class IntType(_DataType):
