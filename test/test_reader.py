@@ -11,6 +11,7 @@ import _unittest as unittest
 from serial.core import DelimitedReader
 from serial.core import FixedWidthReader
 from serial.core import IntType
+from serial.core import StringType
 from serial.core import ArrayType
 
 
@@ -20,7 +21,7 @@ def reject_filter(record):
     """ A filter function to reject records.
 
     """
-    return record if record["B"] != 3 else None
+    return record if record["int"] != 123 else None
 
 
 def modify_filter(record):
@@ -28,7 +29,7 @@ def modify_filter(record):
 
     """
     # Input filters can safely modify record.
-    record["B"] *= 2 
+    record["int"] *= 10 
     return record
 
 
@@ -36,7 +37,7 @@ def stop_filter(record):
     """ A filter function to stop iteration.
 
     """
-    if record["B"] == 6:
+    if record["int"] == 456:
         raise StopIteration
     return record
 
@@ -58,46 +59,51 @@ class TabularReaderTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.data = [
-            {"A": [{"x": 1, "y": 2}], "B": 3},
-            {"A": [{"x": 4, "y": 5}], "B": 6}]
+        self.records = [
+            {"arr": [{"x": "abc", "y": "def"}], "int": 123},
+            {"arr": [{"x": "ghi", "y": "jkl"}], "int": 456}]
+        self.stream = StringIO(self.data)
         return
 
     def test_fields(self):
         """ Test the fields() method
         
         """
-        self.assertSequenceEqual(("A", "B"), self.reader.fields())            
+        self.assertSequenceEqual(("arr", "int"), self.reader.fields())
+        return            
 
     def test_next(self):
         """ Test the next() method.
 
         """
-        self.assertEqual(self.data[0], self.reader.next())
+        self.assertEqual(self.records[0], self.reader.next())
         return
 
     def test_iter(self):
         """ Test the __iter__() method.
 
         """
-        self.assertSequenceEqual(self.data, list(self.reader))
+        self.assertSequenceEqual(self.records, list(self.reader))
         return
 
     def test_filter(self):
         """ Test the filter method().
 
         """
+        self.records = self.records[1:]
+        self.records[0]["int"] = 4560
         self.reader.filter(reject_filter)
         self.reader.filter(modify_filter)
-        self.assertEqual({"A": [{"x": 4, "y": 5}], "B":12}, self.reader.next())
+        self.test_iter()
         return
 
     def test_filter_stop(self):
         """ Test a filter that stops iteration.
 
         """
+        self.records = self.records[:1]
         self.reader.filter(stop_filter)
-        self.assertSequenceEqual(self.data[:1], list(self.reader))
+        self.test_iter()
         return
 
 
@@ -112,11 +118,15 @@ class DelimitedReaderTest(TabularReaderTest):
         any side effects. This is part of the unittest API.
 
         """
+        array_fields = (
+            ("x", 0, StringType()), 
+            ("y", 1, StringType()))
+        record_fields = (
+            ("arr", (0, 2), ArrayType(array_fields)), 
+            ("int", 2, IntType()))
+        self.data = "abc,def,123\nghi,jkl,456\n"
         super(DelimitedReaderTest, self).setUp()
-        stream = StringIO("1,2,3\n4,5,6\n")
-        atype = ArrayType((("x", 0, IntType()), ("y", 1, IntType())))
-        fields = (("A", (0, 2), atype), ("B", 2, IntType()))
-        self.reader = DelimitedReader(stream, fields, ",")
+        self.reader = DelimitedReader(self.stream, record_fields, ",")
         return
 
 
@@ -131,13 +141,15 @@ class FixedWidthReaderTest(TabularReaderTest):
         any side effects. This is part of the unittest API.
 
         """
+        array_fields = (
+            ("x", (0, 3), StringType()), 
+            ("y", (3, 6), StringType()))
+        record_fields = (
+            ("arr", (0, 6), ArrayType(array_fields)), 
+            ("int", (6, 9), IntType()))
+        self.data = "abcdef123\nghijkl456\n"
         super(FixedWidthReaderTest, self).setUp()
-        stream = StringIO(" 1 2 3\n 4 5 6\n")
-        atype = ArrayType((
-            ("x", (0, 2), IntType("2d")),
-            ("y", (2, 4), IntType("2d"))))
-        fields = (("A", (0, 4), atype), ("B", (4, 6), IntType("2d")))
-        self.reader = FixedWidthReader(stream, fields)
+        self.reader = FixedWidthReader(self.stream, record_fields)
         return
 
 
