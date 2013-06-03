@@ -16,13 +16,6 @@ from serial.core import ArrayType
 
 # Utility functions.
 
-def accept_filter(record):
-    """ A filter function to accept records.
-
-    """
-    return record  # accept all records
-
-
 def reject_filter(record):
     """ A filter function to reject records.
 
@@ -31,7 +24,7 @@ def reject_filter(record):
 
 
 def modify_filter(record):
-    """ A filter function to modify records in place.
+    """ A filter function to modify records.
 
     """
     # Input filters can safely modify record.
@@ -90,29 +83,13 @@ class TabularReaderTest(unittest.TestCase):
         self.assertSequenceEqual(self.data, list(self.reader))
         return
 
-    def test_filter_accept(self):
-        """ Test a filter that accepts all records.
+    def test_filter(self):
+        """ Test the filter method().
 
         """
-        self.reader.filter(accept_filter)
-        self.assertEqual(self.data[0], self.reader.next())
-        return
-
-    def test_filter_reject(self):
-        """ Test a filter that rejects a record.
-
-        """
-        self.reader.filter(accept_filter)  # test chained filters
         self.reader.filter(reject_filter)
-        self.assertEqual(self.data[1], self.reader.next())
-        return
-
-    def test_filter_modify(self):
-        """ Test a filter that modifies records.
-
-        """
         self.reader.filter(modify_filter)
-        self.assertEqual({"A": [{"x": 1, "y": 2}], "B": 6}, self.reader.next())
+        self.assertEqual({"A": [{"x": 4, "y": 5}], "B":12}, self.reader.next())
         return
 
     def test_filter_stop(self):
@@ -122,7 +99,6 @@ class TabularReaderTest(unittest.TestCase):
         self.reader.filter(stop_filter)
         self.assertSequenceEqual(self.data[:1], list(self.reader))
         return
-
 
 
 class DelimitedReaderTest(TabularReaderTest):

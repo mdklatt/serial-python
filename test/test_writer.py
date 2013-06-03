@@ -16,13 +16,6 @@ from serial.core import ArrayType
 
 # Utility functions.
 
-def accept_filter(record):
-    """ A filter function to accept records.
-
-    """
-    return record  # accept all records
-
-
 def reject_filter(record):
     """ A filter function to reject records.
 
@@ -31,7 +24,7 @@ def reject_filter(record):
 
 
 def modify_filter(record):
-    """ A filter function to modify records in place.
+    """ A filter function to modify records.
 
     """
     record = record.copy()  # output should be idempotent
@@ -83,15 +76,7 @@ class TabularWriterTest(unittest.TestCase):
         """ Test the fields() method
         
         """
-        self.assertSequenceEqual(("A", "B"), self.writer.fields())            
-
-    def test_filter_accept(self):
-        """ Test a filter that accepts all records.
-
-        """
-        self.writer.filter(accept_filter)
-        map(self.writer.write, self.data)
-        self.assertEqual(self.output, self.stream.getvalue())
+        self.assertSequenceEqual(("A", "B"), self.writer.fields())
         return
 
 
@@ -113,23 +98,14 @@ class DelimitedWriterTest(TabularWriterTest):
         self.output = "1,2,3X4,5,6X"
         return
 
-    def test_filter_reject(self):
-        """ Test a filter that rejects a record.
+    def test_filter(self):
+        """ Test the filter() method.
 
         """
-        self.writer.filter(accept_filter)  # test chained filters
         self.writer.filter(reject_filter)
-        map(self.writer.write, self.data)
-        self.assertEqual("4,5,6X", self.stream.getvalue())
-        return
-
-    def test_filter_modify(self):
-        """ Test a filter that modifies records
-
-        """
         self.writer.filter(modify_filter)
-        map(self.writer.write, self.data)
-        self.assertEqual("1,2,6X4,5,12X", self.stream.getvalue())
+        self.writer.dump(self.data)
+        self.assertEqual("4,5,12X", self.stream.getvalue())
         return
 
 
@@ -151,23 +127,14 @@ class FixedWidthWriterTest(TabularWriterTest):
         self.output = " 1 2 3X 4 5 6X"
         return
 
-    def test_filter_reject(self):
-        """ Test a filter that rejects a record.
-
-        """
-        self.writer.filter(accept_filter)  # test chained filters
-        self.writer.filter(reject_filter)
-        map(self.writer.write, self.data)
-        self.assertEqual(" 4 5 6X", self.stream.getvalue())
-        return
-
-    def test_filter_modify(self):
+    def test_filter(self):
         """ Test a filter that modifies records
 
         """
+        self.writer.filter(reject_filter)
         self.writer.filter(modify_filter)
-        map(self.writer.write, self.data)
-        self.assertEqual(" 1 2 6X 4 512X", self.stream.getvalue())
+        self.writer.dump(self.data)
+        self.assertEqual(" 4 512X", self.stream.getvalue())
         return
 
 
