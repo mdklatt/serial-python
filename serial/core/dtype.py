@@ -148,7 +148,7 @@ class DatetimeType(_DataType):
         decoding).
 
         """
-        super(DatetimeType, self).__init__(datetime, "{0:s}", default)
+        super(DatetimeType, self).__init__(datetime, "s", default)
         self._timefmt = timefmt
         self._prec = min(max(prec, 0), 6)  # max precision is microseconds
         return
@@ -190,7 +190,7 @@ class ArrayType(_DataType):
         """ Initialize this object.
 
         """
-        super(ArrayType, self).__init__(list, "{0:s}", default)
+        super(ArrayType, self).__init__(list, "s", default)
         Field = namedtuple("Field", ("name", "pos", "dtype"))
         self._fields = []
         self._elem_width = 0
