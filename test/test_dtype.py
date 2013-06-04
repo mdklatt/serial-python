@@ -19,7 +19,7 @@ from serial.core import ArrayType
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class DataTypeTest(unittest.TestCase):
+class _DataTypeTest(unittest.TestCase):
     """ Base class for DataType unit tests.
 
     """
@@ -38,7 +38,7 @@ class DataTypeTest(unittest.TestCase):
         return
 
     def test_decode_default(self):
-        """ Test the decode() method for null input with default value.
+        """ Test the decode() method for a default value.
 
         """
         self.assertEqual(self.default_value, self.default_dtype.decode(" "))
@@ -59,13 +59,14 @@ class DataTypeTest(unittest.TestCase):
         return
 
     def test_encode_default(self):
-         """ Test the encode() method for null output with default value.
+         """ Test the encode() method for a default value.
 
          """
          self.assertEqual(self.default_token, self.default_dtype.encode(None))
          return
 
-class ConstTypeTest(DataTypeTest):
+
+class ConstTypeTest(_DataTypeTest):
     """ Unit testing for the ConstType class.
 
     """
@@ -76,30 +77,20 @@ class ConstTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
-        self.value = 999
-        self.token = " 999"
-        self.dtype = ConstType(self.value, "4d")
+        self.value = 9999
+        self.token = " 9999"
+        self.dtype = ConstType(self.value, "5d")
         self.default_value = self.value
         self.default_token = self.token
         self.default_dtype = self.dtype
         return
 
-    def test_decode_null(self):
-        """ Test the decode() method for null input.
-
-        """
-        self.assertEqual(self.value, self.dtype.decode(""))
-        return
-    
-    def test_encode_null(self):
-        """ Test the decode() method for null input.
-
-        """
-        self.assertEqual(self.token, self.dtype.encode(None))
-        return
+    # ConstTypes always have a non-null default value.
+    test_decode_null = _DataTypeTest.test_decode_default
+    test_encode_null = _DataTypeTest.test_encode_default
 
 
-class IntTypeTest(DataTypeTest):
+class IntTypeTest(_DataTypeTest):
     """ Unit testing for the IntType class.
 
     """
@@ -110,16 +101,17 @@ class IntTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
+        fmt = "4d"
         self.value = 123
         self.token = " 123"
-        self.dtype = IntType("4d")
+        self.dtype = IntType(fmt)
         self.default_value = -999
         self.default_token = "-999"
-        self.default_dtype = IntType("4d", self.default_value)
+        self.default_dtype = IntType(fmt, self.default_value)
         return
 
 
-class FloatTypeTest(DataTypeTest):
+class FloatTypeTest(_DataTypeTest):
     """ Unit testing for the FloatType class.
 
     """
@@ -130,16 +122,17 @@ class FloatTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
+        fmt = "6.3f"
         self.value = 1.23
-        self.token = " 1.23"
-        self.dtype = FloatType("5.2f")
-        self.default_value = -9.99
-        self.default_token = "-9.99"
-        self.default_dtype = FloatType("5.2f", self.default_value)
+        self.token = " 1.230"
+        self.dtype = FloatType(fmt)
+        self.default_value = -9.999
+        self.default_token = "-9.999"
+        self.default_dtype = FloatType(fmt, self.default_value)
         return
 
 
-class StringTypeTest(DataTypeTest):
+class StringTypeTest(_DataTypeTest):
     """ Unit testing for the StringType class.
 
     """
@@ -150,43 +143,41 @@ class StringTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
+        fmt = "4s"
         self.value = "abc"
         self.token = "abc "
-        self.dtype = StringType("4s")
+        self.dtype = StringType(fmt)
         self.default_value = "xyz"
         self.default_token = "xyz "
-        self.default_dtype = StringType("4s", default=self.default_value)
+        self.default_dtype = StringType(fmt, default=self.default_value)
+        self.quote_token = "'abc'"
+        self.quote_dtype = StringType(quote="'")
         return
 
     def test_decode_quote(self):
         """ Test the decode method() for a quoted string.
 
         """
-        self.value = "abc"
-        self.token = "'abc'"
-        self.dtype = StringType("s", "'")
-        self.assertEqual(self.value, self.dtype.decode(self.token))
+        self.assertEqual(self.value, self.quote_dtype.decode(self.quote_token))
         return
 
     def test_encode_quote(self):
         """ Test the decode method() for a quoted string.
 
         """
-        self.value = "abc"
-        self.token = "'abc'"
-        self.dtype = StringType("s", "'")
-        self.assertEqual(self.token, self.dtype.encode(self.value))
+        self.assertEqual(self.quote_token, self.quote_dtype.encode(self.value))
         return
 
     def test_encode_null(self):
         """ Test the decode() method for null input.
 
         """
+        # Override the base class to test for a fixed-width blank field.
         self.assertEqual(format("", "4s"), self.dtype.encode(None))
         return
 
 
-class DatetimeTypeTest(DataTypeTest):
+class DatetimeTypeTest(_DataTypeTest):
     """ Unit testing for the DatetimeType class.
 
     """
@@ -197,13 +188,13 @@ class DatetimeTypeTest(DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
-        self.value = datetime(2012, 12, 12, 0, 0, 0, 123000)
-        self.token = "2012-12-12T00:00:00.123"
-        self.dtype = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3)
+        timefmt = "%Y-%m-%dT%H:%M:%S.%f"
+        self.value = datetime(2012, 12, 31, 0, 0, 0, 456000)
+        self.token = "2012-12-31T00:00:00.456"
+        self.dtype = DatetimeType(timefmt, 3)
         self.default_value = datetime(1901, 1, 1)
         self.default_token = "1901-01-01T00:00:00.000"
-        self.default_dtype = DatetimeType("%Y-%m-%dT%H:%M:%S.%f", 3, 
-                                          self.default_value)
+        self.default_dtype = DatetimeType(timefmt, 3, self.default_value)
         return
 
 
