@@ -34,7 +34,7 @@ class _DataTypeTest(unittest.TestCase):
         """ Test the decode() method for null input.
 
         """
-        self.assertEqual(None, self.dtype.decode(""))
+        self.assertEqual(None, self.dtype.decode(" "))
         return
 
     def test_decode_default(self):
@@ -198,7 +198,7 @@ class DatetimeTypeTest(_DataTypeTest):
         return
 
 
-class ArrayTypeTest(unittest.TestCase):
+class ArrayTypeTest(_DataTypeTest):
     """ Unit testing for the ArrayType class.
 
     """
@@ -209,26 +209,35 @@ class ArrayTypeTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        dtypes = (("A", 0, IntType("2d")), ("B", 1, IntType("2d")))
-        self.dtype = ArrayType(dtypes)
-        self.values = [{"A": 1, "B": 2}, {"A": 3, "B": 4}]
-        self.tokens = [" 1", " 2", " 3", " 4"]
-        self.default_dtype = ArrayType(dtypes, [-999, -999])
+        fields =  (("str", 0, StringType()), ("int", 1, IntType()))
+        self.dtype = ArrayType(fields)
+        self.value = [{"str": "abc", "int": 123}, {"str": "def", "int": 456}]
+        self.token = ["abc", "123", "def", "456"]
         return
-
-    def test_decode(self):
-        """ Test the decode() method.
+ 
+    def test_decode_null(self):
+        """ Test the decode() method for null input.
 
         """
-        self.assertEqual(self.values, self.dtype.decode(self.tokens))
-        return
+        pass
 
-    def test_encode(self):
-        """ Test the encode() method.
+    def test_decode_default(self):
+        """ Test the decode() method for a default value.
 
         """
-        self.assertEqual(self.tokens, self.dtype.encode(self.values))
-        return
+        pass
+
+    def test_encode_null(self):
+        """ Test the encode() method for null output.
+
+        """
+        pass 
+
+    def test_encode_default(self):
+        """ Test the encode() method for a default value.
+
+        """
+        pass
 
 
 # Specify the test cases to run for this module (disables automatic discovery).
