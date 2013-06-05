@@ -209,35 +209,42 @@ class ArrayTypeTest(_DataTypeTest):
         any side effects. This is part of the unittest API.
 
         """
-        fields =  (("str", 0, StringType()), ("int", 1, IntType()))
-        self.dtype = ArrayType(fields)
+        array_fields =  (("str", 0, StringType()), ("int", 1, IntType()))
         self.value = [{"str": "abc", "int": 123}, {"str": "def", "int": 456}]
         self.token = ["abc", "123", "def", "456"]
+        self.dtype = ArrayType(array_fields)
+        self.default_value = [{"str": "xyz", "int": -999}]
+        self.default_token = ["xyz", "-999"]
+        self.default_dtype = ArrayType(array_fields, self.default_value)      
         return
  
     def test_decode_null(self):
         """ Test the decode() method for null input.
 
         """
-        pass
+        self.assertEqual([], self.dtype.decode([]))
+        return
 
     def test_decode_default(self):
         """ Test the decode() method for a default value.
-
+    
         """
-        pass
+        self.assertEqual(self.default_value, self.default_dtype.decode([]))
+        return
 
     def test_encode_null(self):
         """ Test the encode() method for null output.
-
+    
         """
-        pass 
+        self.assertEqual([], self.dtype.encode([]))
+        return
 
     def test_encode_default(self):
         """ Test the encode() method for a default value.
-
+    
         """
-        pass
+        self.assertEqual(self.default_token, self.default_dtype.encode([]))
+        return
 
 
 # Specify the test cases to run for this module (disables automatic discovery).

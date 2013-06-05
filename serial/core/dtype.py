@@ -211,9 +211,9 @@ class ArrayType(_DataType):
         for pos in range(0, len(tokens), self._elem_width):
             elem = tokens[pos:pos+self._elem_width]
             values = dict([(field.name, field.dtype.decode(elem[field.pos]))
-                           for field in self._fields])
+                          for field in self._fields])
             array.append(values)
-        return array
+        return array if array else self._default
 
     def encode(self, array):
         """ Convert an array of values to a sequence of text tokens.
