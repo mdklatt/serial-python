@@ -35,8 +35,8 @@ def modify_filter(record):
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class TabularWriterTest(unittest.TestCase):
-    """ Unit testing for TabularReader classes.
+class _TabularWriterTest(unittest.TestCase):
+    """ Unit testing for _TabularReader classes.
 
     This is an abstract class and should not be called directly by any test
     runners.
@@ -72,15 +72,8 @@ class TabularWriterTest(unittest.TestCase):
         self.assertEqual(self.output, self.stream.getvalue())
         return
 
-    def test_fields(self):
-        """ Test the fields() method
-        
-        """
-        self.assertSequenceEqual(("A", "B"), self.writer.fields())
-        return
 
-
-class DelimitedWriterTest(TabularWriterTest):
+class DelimitedWriterTest(_TabularWriterTest):
     """ Unit testing for the DelimitedWriter class.
 
     """
@@ -109,7 +102,7 @@ class DelimitedWriterTest(TabularWriterTest):
         return
 
 
-class FixedWidthWriterTest(TabularWriterTest):
+class FixedWidthWriterTest(_TabularWriterTest):
     """ Unit testing for the DelimitedWriter class.
 
     """

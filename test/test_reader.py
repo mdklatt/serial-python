@@ -45,8 +45,8 @@ def stop_filter(record):
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class TabularReaderTest(unittest.TestCase):
-    """ Unit testing for TabularReader classes.
+class _TabularReaderTest(unittest.TestCase):
+    """ Unit testing for _TabularReader classes.
 
     This is an abstract class and should not be called directly by any test
     runners.
@@ -64,13 +64,6 @@ class TabularReaderTest(unittest.TestCase):
             {"arr": [{"x": "ghi", "y": "jkl"}], "int": 456}]
         self.stream = StringIO(self.data)
         return
-
-    def test_fields(self):
-        """ Test the fields() method
-        
-        """
-        self.assertSequenceEqual(("arr", "int"), self.reader.fields())
-        return            
 
     def test_next(self):
         """ Test the next() method.
@@ -107,7 +100,7 @@ class TabularReaderTest(unittest.TestCase):
         return
 
 
-class DelimitedReaderTest(TabularReaderTest):
+class DelimitedReaderTest(_TabularReaderTest):
     """ Unit testing for the DelimitedReader class.
 
     """
@@ -130,7 +123,7 @@ class DelimitedReaderTest(TabularReaderTest):
         return
 
 
-class FixedWidthReaderTest(TabularReaderTest):
+class FixedWidthReaderTest(_TabularReaderTest):
     """ Unit testing for the FixedWidthReader class.
 
     """

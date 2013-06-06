@@ -83,7 +83,6 @@ class _Reader(object):
         raise NotImplementedError
 
 
-
 class _TabularReader(_Reader):
     """ Abstract base class for tabular data readers.
 
@@ -100,12 +99,6 @@ class _TabularReader(_Reader):
         self._fields = make_fields(fields)
         self._endl = endl
         return
-
-    def fields(self):
-        """ Return the field names defined for this reader.
-
-        """
-        return tuple((field.name for field in self._fields))
 
     def _get(self):
         """ Return the next parsed record from the stream.
