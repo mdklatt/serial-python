@@ -203,26 +203,27 @@ class ArrayType(_DataType):
             self._fields.append(Field(name, pos, dtype))
         return
 
-    def decode(self, tokens):
+    def decode(self, token_array):
         """ Convert a sequence of text tokens to an array of values.
 
         """
         array = []
-        for pos in range(0, len(tokens), self._elem_width):
-            elem = tokens[pos:pos+self._elem_width]
+        for pos in range(0, len(token_array), self._elem_width):
+            elem = token_array[pos:pos+self._elem_width]
             values = dict([(field.name, field.dtype.decode(elem[field.pos]))
                           for field in self._fields])
             array.append(values)
         return array if array else self._default
 
-    def encode(self, array):
+    def encode(self, value_array):
         """ Convert an array of values to a sequence of text tokens.
 
-        If value is not a non-empty sequence the default value for this field 
-        is used.
+        If value_array is an empty sequence the default value for this field is 
+        used. Each element of the array should be a dict-like object that
+        conforms to the field definitions for this array.
 
         """
-        if not array:
-            array = self._default
+        if not value_array:
+            value_array = self._default
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
-                product(array, self._fields)]
+                product(value_array, self._fields)]
