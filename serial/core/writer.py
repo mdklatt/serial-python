@@ -3,7 +3,7 @@
 Writers convert data records to lines of text.
 
 """
-from ._util import make_fields
+from ._util import field_type
 
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
 
@@ -87,7 +87,7 @@ class _TabularWriter(_Writer):
 
         """
         super(_TabularWriter, self).__init__(stream)
-        self._fields = make_fields(fields)
+        self._fields = [field_type(*args) for args in fields]
         self._endl = endl
         return
 

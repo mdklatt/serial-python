@@ -1,22 +1,21 @@
 """ Private utility functions.
 
 """
-import collections
+from collections import namedtuple
 
 
-def make_fields(fields):
-    """ Convert (name, pos, dtype) sequences to Fields
+Field = namedtuple("Field", ("name", "pos", "dtype", "width"))
+
+def field_type(name, pos, dtype):
+    """ Create a Field tuple.
     
     """
-    Field = collections.namedtuple("Field", ("name", "pos", "dtype"))
-    arr = []
-    for name, pos, dtype in fields:
-        try:
-            pos = slice(*pos)
-        except TypeError:  # pos is an int
-            pass
-        arr.append(Field(name, pos, dtype))
-    return arr
+    try:
+        pos = slice(*pos)
+        width = pos.stop - pos.start
+    except TypeError:  # pos is an int
+        width = 1
+    return Field(name, pos, dtype, width)    
 
 
 def strftime(time, timefmt):
@@ -29,8 +28,8 @@ def strftime(time, timefmt):
     datetime = []
     pos = 0
     while pos < len(timefmt):
-        s = timefmt[pos]
-        if s == strftime._esc:
+        char = timefmt[pos]
+        if char == strftime._esc:
             pos += 1
             try:
                 fmt, get = strftime._fields[timefmt[pos]]
@@ -38,8 +37,8 @@ def strftime(time, timefmt):
                 raise ValueError("unknown strftime field: {0:s}".format(s))
             except IndexError:
                 raise ValueError("timefmt cannot end with escape character")
-            s = format(get(time), fmt)
-        datetime.append(s)
+            char = format(get(time), fmt)
+        datetime.append(char)
         pos += 1
     return "".join(datetime)
 
@@ -47,14 +46,14 @@ def strftime(time, timefmt):
 
 strftime._esc = "%"
 strftime._fields = {
-    strftime._esc: ("s", lambda t: strftime._esc),
-    "d": ("02d", lambda t: t.day),
-    "f": ("06d", lambda t: t.microsecond),
-    "H": ("02d", lambda t: t.hour),
-    "I": ("02d", lambda t: t.hour%12),
-    "M": ("02d", lambda t: t.minute),
-    "m": ("02d", lambda t: t.month),
-    "p": ("s", lambda t: "AM" if t.hour < 12 else "PM"),  # no locale
-    "S": ("02d", lambda t: t.second),
-    "Y": ("04d", lambda t: t.year),
-    "y": ("02d", lambda t: t.year%100)}
+    strftime._esc: ("s", lambda time: strftime._esc),
+    "d": ("02d", lambda time: time.day),
+    "f": ("06d", lambda time: time.microsecond),
+    "H": ("02d", lambda time: time.hour),
+    "I": ("02d", lambda time: time.hour%12),
+    "M": ("02d", lambda time: time.minute),
+    "m": ("02d", lambda time: time.month),
+    "p": ("s", lambda time: "AM" if t.hour < 12 else "PM"),  # no locale
+    "S": ("02d", lambda time: time.second),
+    "Y": ("04d", lambda time: time.year),
+    "y": ("02d", lambda time: time.year%100)}
