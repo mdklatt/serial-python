@@ -4,10 +4,10 @@ Client code defines the _DataType for each input/ouput field, but the _Reader
 and _Writer classes are responsible for calling decode() and encode().
 
 """
-from collections import namedtuple
 from datetime import datetime
 from itertools import product
 
+from ._util import field_type
 from ._util import strftime
 
 
@@ -191,39 +191,52 @@ class ArrayType(_DataType):
 
         """
         super(ArrayType, self).__init__(list, "s", default)
-        Field = namedtuple("Field", ("name", "pos", "dtype"))
         self._fields = []
-        self._elem_width = 0
+        self._stride = 0  
         for name, pos, dtype in fields:
-            try:
-                pos = slice(*pos)
-                self._elem_width += pos.stop - pos.start
-            except TypeError:  # pos is an int
-                self._elem_width += 1
-            self._fields.append(Field(name, pos, dtype))
+            field = field_type(name, pos, dtype)
+            self._fields.append(field)
+            self._stride += field.width
         return
 
     def decode(self, token_array):
         """ Convert a sequence of text tokens to an array of values.
 
+        This works for sequences of strings (e.g. from DelimitedReader) or a 
+        string as a sequence (e.g. from FixedWidthReader). Each decoded value
+        is an array of elements where each element is a dict corresponding to
+        the fields defined for this array.
+        
         """
-        array = []
-        for pos in range(0, len(token_array), self._elem_width):
-            elem = token_array[pos:pos+self._elem_width]
+        value_array = []
+        for elem in self._elements(token_array):
+            # Decode the fields in each element into a dict.
             values = dict([(field.name, field.dtype.decode(elem[field.pos]))
                           for field in self._fields])
-            array.append(values)
-        return array if array else self._default
+            value_array.append(values)
+        return value_array if value_array else self._default
 
     def encode(self, value_array):
         """ Convert an array of values to a sequence of text tokens.
 
         If value_array is an empty sequence the default value for this field is 
         used. Each element of the array should be a dict-like object that
-        conforms to the field definitions for this array.
+        corresponds to the field definitions for this array.
 
         """
         if not value_array:
             value_array = self._default
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
                 product(value_array, self._fields)]
+                                
+    def _elements(self, token_array):
+        """ Split token_array into array elements.
+        
+        If the length of the input array is not a multiple of _stride the last
+        element will be incomplete.
+        
+        """
+        for beg in xrange(0, len(token_array), self._stride):
+            end = beg + self._stride
+            yield token_array[beg:end]
+        return
