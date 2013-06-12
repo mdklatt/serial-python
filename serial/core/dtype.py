@@ -159,10 +159,8 @@ class DatetimeType(_DataType):
         """
         token = token.strip()
         if not token:
-            value = self._default
-        else:
-            value = datetime.strptime(token, self._timefmt)
-        return value
+            return self._default
+        return datetime.strptime(token, self._timefmt)
 
     def encode(self, value):
         """ Convert a datetime to a text token.

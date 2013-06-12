@@ -114,12 +114,12 @@ class DelimitedReaderTest(_TabularReaderTest):
         array_fields = (
             ("x", 0, StringType()), 
             ("y", 1, StringType()))
-        record_fields = (
+        fields = (
             ("arr", (0, 2), ArrayType(array_fields)), 
             ("int", 2, IntType()))
-        self.data = "abc,def,123\nghi,jkl,456\n"
+        self.data = "abc, def, 123\nghi, jkl, 456\n"
         super(DelimitedReaderTest, self).setUp()
-        self.reader = DelimitedReader(self.stream, record_fields, ",")
+        self.reader = DelimitedReader(self.stream, fields, ",")
         return
 
 
@@ -135,14 +135,14 @@ class FixedWidthReaderTest(_TabularReaderTest):
 
         """
         array_fields = (
-            ("x", (0, 3), StringType()), 
-            ("y", (3, 6), StringType()))
-        record_fields = (
+            ("x", (0, 3), StringType("3s")), 
+            ("y", (3, 6), StringType("3s")))
+        fields = (
             ("arr", (0, 6), ArrayType(array_fields)), 
-            ("int", (6, 9), IntType()))
+            ("int", (6, 9), IntType("3d")))
         self.data = "abcdef123\nghijkl456\n"
         super(FixedWidthReaderTest, self).setUp()
-        self.reader = FixedWidthReader(self.stream, record_fields)
+        self.reader = FixedWidthReader(self.stream, fields)
         return
 
 
