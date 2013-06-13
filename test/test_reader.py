@@ -29,7 +29,7 @@ def modify_filter(record):
 
     """
     # Input filters can safely modify record.
-    record["int"] *= 10 
+    record["int"] *= 2 
     return record
 
 
@@ -84,7 +84,7 @@ class _TabularReaderTest(unittest.TestCase):
 
         """
         self.records = self.records[1:]
-        self.records[0]["int"] = 4560
+        self.records[0]["int"] = 912
         self.reader.filter(reject_filter)
         self.reader.filter(modify_filter)
         self.test_iter()
