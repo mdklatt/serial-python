@@ -34,7 +34,6 @@ class _Writer(object):
         1. Return None to reject the record (it will not be written).
         2. Return the data record as is.
         3. Return a *new record.
-        4. Raise StopIteration to signal the end of input.
         
         *Take care not to modify the argument unless the caller doesn't
          expect write() to be free of side effects.
@@ -143,28 +142,19 @@ class DelimitedWriter(_TabularWriter):
         return self._delim.join(tokens)
 
 
-class FixedWidthWriter(_TabularWriter):
+class FixedWidthWriter(DelimitedWriter):
     """ A writer for fields delineated by character position.
 
     The character position of each field is given as the pair [beg, end).
 
     """
-    def _join(self, tokens):
-        """ Join a sequence of tokens into a line of text.
-
+    # In this implementation the positions in self.fields don't matter; tokens
+    # must in he correct order, and each token must be the correct width for
+    # that field. The _DataType format for a fixed-width field *MUST* have a
+    # field width, e.g. '6.2f'.       
+    def __init__(self, stream, field, endl="\n"):
+        """ Initialize this object.
+        
         """
-        # The character positions in self.fields don't matter; tokens must be
-        # in the correct order, and each token must be the correct width for
-        # that field. The DataType format for a fixed-width field *MUST* have
-        # a field width, e.g. '8s'.
-        pos = 0
-        while pos < len(tokens):
-            # A token can itself be a sequence of tokens (c.f. ArrayType).
-            token = tokens[pos]
-            if isinstance(token, basestring):
-                pos += 1
-            else:
-                # A sequence of tokens; expand inline.
-                tokens[pos:pos+1] = token
-                pos += len(token)
-        return "".join(tokens)
+        super(FixedWidthWriter, self).__init__(stream, field, "", endl)
+        return
