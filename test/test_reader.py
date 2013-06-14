@@ -85,8 +85,7 @@ class _TabularReaderTest(unittest.TestCase):
         """
         self.records = self.records[1:]
         self.records[0]["int"] = 4560
-        self.reader.filter(reject_filter)
-        self.reader.filter(modify_filter)
+        self.reader.filter(reject_filter, modify_filter)
         self.test_iter()
         return
 
