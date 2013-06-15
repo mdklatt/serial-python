@@ -12,9 +12,14 @@ def field_type(name, pos, dtype):
     """
     try:
         pos = slice(*pos)
-        width = pos.stop - pos.start
     except TypeError:  # pos is an int
         width = 1
+    else:
+        try:
+            width = pos.stop - pos.start
+        except TypeError:  # stop is None
+            # Variable-width field; width is determined during encode/decode.
+            width = None
     return Field(name, pos, dtype, width)    
 
 
