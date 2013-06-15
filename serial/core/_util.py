@@ -1,26 +1,31 @@
 """ Private utility functions.
 
 """
-from collections import namedtuple
 
-
-Field = namedtuple("Field", ("name", "pos", "dtype", "width"))
-
-def field_type(name, pos, dtype):
-    """ Create a Field tuple.
+class Field(object):
+    """ A serial data field.
     
     """
-    try:
-        pos = slice(*pos)
-    except TypeError:  # pos is an int
-        width = 1
-    else:
+    def __init__(self, name, pos, dtype):
+        """ Initialize this object.
+        
+        """
         try:
-            width = pos.stop - pos.start
-        except TypeError:  # stop is None
-            # Variable-width field; width is determined during encode/decode.
-            width = None
-    return Field(name, pos, dtype, width)    
+            pos = slice(*pos)
+        except TypeError:  # pos is an int
+            width = 1
+        else:
+            try:
+                width = pos.stop - pos.start
+            except TypeError:  # stop is None
+                # Variable-length field; acutual width must be determined
+                # during encoding or decoding.
+                width = None
+        self.pos = pos
+        self.name = name
+        self.dtype = dtype
+        self.width = width
+        return
 
 
 def strftime(time, timefmt):

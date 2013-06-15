@@ -3,7 +3,7 @@
 Readers convert lines of text to data records.
 
 """
-from ._util import field_type
+from ._util import Field
 
 __all__ = ("DelimitedReader", "FixedWidthReader")
 
@@ -96,7 +96,7 @@ class _TabularReader(_Reader):
 
         """
         super(_TabularReader, self).__init__(stream)
-        self._fields = [field_type(*args) for args in fields]
+        self._fields = [Field(*args) for args in fields]
         self._endl = endl
         return
 

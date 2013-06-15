@@ -7,7 +7,7 @@ and _Writer classes are responsible for calling decode() and encode().
 from datetime import datetime
 from itertools import product
 
-from ._util import field_type
+from ._util import Field
 from ._util import strftime
 
 
@@ -192,7 +192,7 @@ class ArrayType(_DataType):
         self._fields = []
         self._stride = 0  
         for name, pos, dtype in fields:
-            field = field_type(name, pos, dtype)
+            field = Field(name, pos, dtype)
             self._fields.append(field)
             self._stride += field.width
         return
