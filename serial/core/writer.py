@@ -94,8 +94,14 @@ class _TabularWriter(_Writer):
         """ Write a filtered record to the output stream.
 
         """
-        tokens = [field.dtype.encode(record.get(field.name)) for field in
-                  self._fields]
+        tokens = []
+        for field in self._fields:
+            token = field.dtype.encode(record.get(field.name))
+            if isinstance(token, basestring):
+                tokens.append(token)
+            else:
+                # A sequence of tokens (e.g. an ArrayType); expand inline.
+                tokens.extend(token)
         self._stream.write(self._join(tokens) + self._endl)
         return
 
@@ -129,16 +135,6 @@ class DelimitedWriter(_TabularWriter):
         """ Join a sequence of tokens into a line of text.
 
         """
-        pos = 0
-        while pos < len(tokens):
-            # A token can itself be a sequence of tokens (c.f. ArrayType).
-            token = tokens[pos]
-            if isinstance(token, basestring):
-                pos += 1
-            else:
-                # A sequence of tokens; expand inline.
-                tokens[pos:pos+1] = token
-                pos += len(token)
         return self._delim.join(tokens)
 
 
