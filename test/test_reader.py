@@ -60,8 +60,8 @@ class _TabularReaderTest(unittest.TestCase):
 
         """
         self.records = [
-            {"arr": [{"x": "abc", "y": "def"}], "int": 123},
-            {"arr": [{"x": "ghi", "y": "jkl"}], "int": 456}]
+            {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
+            {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]}]
         self.stream = StringIO(self.data)
         return
 
@@ -114,9 +114,9 @@ class DelimitedReaderTest(_TabularReaderTest):
             ("x", 0, StringType()), 
             ("y", 1, StringType()))
         fields = (
-            ("arr", (0, 2), ArrayType(array_fields)), 
-            ("int", 2, IntType()))
-        self.data = "abc, def, 123\nghi, jkl, 456\n"
+            ("int", 0, IntType()),
+            ("arr", (1, None), ArrayType(array_fields))) 
+        self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
         self.reader = DelimitedReader(self.stream, fields, ",")
         return
@@ -137,9 +137,9 @@ class FixedWidthReaderTest(_TabularReaderTest):
             ("x", (0, 3), StringType("3s")), 
             ("y", (3, 6), StringType("3s")))
         fields = (
-            ("arr", (0, 6), ArrayType(array_fields)), 
-            ("int", (6, 9), IntType("3d")))
-        self.data = "abcdef123\nghijkl456\n"
+            ("int", (0, 3), IntType("3d")),
+            ("arr", (3, None), ArrayType(array_fields))) 
+        self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
         self.reader = FixedWidthReader(self.stream, fields)
         return

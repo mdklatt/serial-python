@@ -50,8 +50,8 @@ class _TabularWriterTest(unittest.TestCase):
 
         """
         self.records = (
-            {"arr": [{"x": "abc", "y": "def"}], "int": 123},
-            {"arr": [{"x": "ghi", "y": "jkl"}], "int": 456})
+            {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
+            {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]})
         self.stream = StringIO()
         return
 
@@ -88,11 +88,11 @@ class DelimitedWriterTest(_TabularWriterTest):
             ("x", 0, StringType()), 
             ("y", 1, StringType()))
         fields = (
-            ("arr", (0, 2), ArrayType(array_fields)), 
-            ("int", 2, IntType()))
+            ("int", 0, IntType()),
+            ("arr", (1, None), ArrayType(array_fields))) 
         super(DelimitedWriterTest, self).setUp()
         self.writer = DelimitedWriter(self.stream, fields, ",", "X")
-        self.data = "abc,def,123Xghi,jkl,456X"
+        self.data = "123,abc,defX456,ghi,jklX"
         return
 
     def test_filter(self):
@@ -100,7 +100,7 @@ class DelimitedWriterTest(_TabularWriterTest):
 
         """
         self.writer.filter(reject_filter, modify_filter)
-        self.data = "ghi,jkl,912X"
+        self.data = "912,ghi,jklX"
         self.test_dump()
         return
 
@@ -120,11 +120,11 @@ class FixedWidthWriterTest(_TabularWriterTest):
             ("x", (0, 3), StringType("3s")), 
             ("y", (3, 6), StringType("3s")))
         fields = (
-            ("arr", (0, 6), ArrayType(array_fields)), 
-            ("int", (6, 9), IntType("3d")))
+            ("int", (0, 3), IntType("3d")),
+            ("arr", (3, None), ArrayType(array_fields))) 
         super(FixedWidthWriterTest, self).setUp()
         self.writer = FixedWidthWriter(self.stream, fields, "X")
-        self.data = "abcdef123Xghijkl456X"
+        self.data = "123abcdefX456ghijklX"
         return
 
     def test_filter(self):
@@ -132,7 +132,7 @@ class FixedWidthWriterTest(_TabularWriterTest):
 
         """
         self.writer.filter(reject_filter, modify_filter)
-        self.data = "ghijkl912X"
+        self.data = "912ghijklX"
         self.test_dump()
         return
 
