@@ -99,8 +99,7 @@ class DelimitedWriterTest(_TabularWriterTest):
         """ Test the filter() method.
 
         """
-        self.writer.filter(reject_filter)
-        self.writer.filter(modify_filter)
+        self.writer.filter(reject_filter, modify_filter)
         self.data = "ghi,jkl,912X"
         self.test_dump()
         return
@@ -132,8 +131,7 @@ class FixedWidthWriterTest(_TabularWriterTest):
         """ Test a filter that modifies records
 
         """
-        self.writer.filter(reject_filter)
-        self.writer.filter(modify_filter)
+        self.writer.filter(reject_filter, modify_filter)
         self.data = "ghijkl912X"
         self.test_dump()
         return

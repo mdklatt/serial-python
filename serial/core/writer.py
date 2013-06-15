@@ -25,7 +25,7 @@ class _Writer(object):
         self._filters = []
         return
 
-    def filter(self, callback=None):
+    def filter(self, *callbacks):
         """ Add a filter to this writer or clear all filters.
 
         A filter is a callable object that accepts a data record as its only
@@ -33,16 +33,16 @@ class _Writer(object):
         actions:
         1. Return None to reject the record (it will not be written).
         2. Return the data record as is.
-        3. Return a *new record.
+        3. Return a new* record.
         
-        *Take care not to modify the argument unless the caller doesn't
+        *Take care not to modify a mutable argument unless the caller doesn't
          expect write() to be free of side effects.
 
         """
-        if callback is None:
+        if not callbacks:
             self._filters = []
         else:
-            self._filters.append(callback)
+            self._filters.extend(callbacks)
         return
 
     def write(self, record):
