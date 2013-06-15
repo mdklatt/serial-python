@@ -27,24 +27,24 @@ class _Reader(object):
         self._filters = []
         return
 
-    def filter(self, callback=None):
-        """ Add a filter to this reader or clear all filters (default).
+    def filter(self, *callbacks):
+        """ Add filters to this reader or clear all filters (default).
 
         A filter is a callable object that accepts a data record as its only
         argument. Based on this record the filter can perform the following
         actions:
         1. Return None to reject the record (the iterator will drop it).
         2. Return the data record as is.
-        3. Return a *new record.
+        3. Return a new* record.
         4. Raise StopIteration to signal the end of input.
 
-        *Input filters can safely modify their argument.
+        *Input filters can safely modify a mutable argument.
 
         """
-        if callback is None:
+        if not callbacks:
             self._filters = []
         else:
-            self._filters.append(callback)
+            self._filters.extend(callbacks)
         return
 
     def next(self):
