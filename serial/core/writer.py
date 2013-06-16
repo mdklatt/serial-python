@@ -95,13 +95,19 @@ class _TabularWriter(_Writer):
 
         """
         tokens = []
-        for field in self._fields:
+        for index, field in enumerate(self._fields):
             token = field.dtype.encode(record.get(field.name))
             if isinstance(token, basestring):
                 tokens.append(token)
             else:
-                # A sequence of tokens (e.g. an ArrayType); expand inline.
+                # A sequence of tokens (e.g. an ArrayType); expand inline and
+                # update the field width and position based on the actual size
+                # of the field.
                 tokens.extend(token)
+                end = field.pos.start + field.dtype.width
+                field.pos = slice(field.pos.start, end)
+                field.width = field.dtype.width
+                self._fields[index] = field
         self._stream.write(self._join(tokens) + self._endl)
         return
 
@@ -145,7 +151,7 @@ class FixedWidthWriter(DelimitedWriter):
 
     """
     # In this implementation the positions in self.fields don't matter; tokens
-    # must in he correct order, and each token must be the correct width for
+    # must be in he correct order, and each token must be the correct width for
     # that field. The _DataType format for a fixed-width field *MUST* have a
     # field width, e.g. '6.2f'.       
     def __init__(self, stream, field, endl="\n"):
