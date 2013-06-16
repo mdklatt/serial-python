@@ -189,8 +189,9 @@ class ArrayType(_DataType):
 
         """
         super(ArrayType, self).__init__(list, "s", default)
+        self.width = None
         self._fields = []
-        self._stride = 0  
+        self._stride = 0
         for name, pos, dtype in fields:
             field = Field(name, pos, dtype)
             self._fields.append(field)
@@ -212,7 +213,10 @@ class ArrayType(_DataType):
             values = dict([(field.name, field.dtype.decode(elem[field.pos]))
                           for field in self._fields])
             value_array.append(values)
-        return value_array if value_array else self._default
+        if not value_array:
+            value_array = self._default
+        self.width = len(value_array) * self._stride
+        return value_array
 
     def encode(self, value_array):
         """ Convert an array of values to a sequence of text tokens.
@@ -224,6 +228,7 @@ class ArrayType(_DataType):
         """
         if not value_array:
             value_array = self._default
+        self.width = len(value_array) * self._stride
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
                 product(value_array, self._fields)]
                                 
