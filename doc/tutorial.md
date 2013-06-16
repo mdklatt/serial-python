@@ -1,4 +1,4 @@
-# Tutorial #
+# serial.core Tutorial #
 
 
 ## Reading Data ##
@@ -24,18 +24,18 @@ fields.
     from serial.core import FloatType
 
     fields = (
-        ("stid", (0, 6), StringType()),
-        ("date", (6, 17), StringType()),
+        ("stid", (0, 7), StringType()),
+        ("date", (7, 17), StringType()),
         ("time", (17, 23), StringType()),
         ("data1", (27, 35), FloatType()),
         ("flag1", (35, 36), StringType()),
         ("data2", (36, 44), FloatType()),
         ("flag2", (44, 45), StringType()))
 
-    stream = open("data.txt", "r")
-    reader = FixedWidthReader(stream, fields)
-    for record in reader:
-        print(record)
+    with open("data.txt", "r") as istream:
+        reader = FixedWidthReader(istream, fields)
+        for record in reader:
+            print(record)
 
 
 ###  Array Fields ###
@@ -52,22 +52,22 @@ individual element.
 
     from serial.core import ArrayType
 
-    data_fields = (
+    array_fields = (
         ("value", (0, 8), FloatType()),  # don't forget leading space
         ("flag", (8, 9), StringType()))
 
     sample_fields = (
         # Ignoring time zone field.
-        ("stid", (0, 6), StringType()),
-        ("date", (6, 17), StringType()),
+        ("stid", (0, 7), StringType()),
+        ("date", (7, 17), StringType()),
         ("time", (17, 23), StringType()),
-        ("data", (27, 45), ArrayType(data_fields)))
+        ("data", (27, 45), ArrayType(array_fields)))
 
     stream = open("data.txt", "r")
     reader = FixedWidthReader(stream, fields)
     for record in reader:
-        for sensor in record["data"]
-            print(sensor["value"], sensor["flag"])
+        for sensor in record["data"]:
+            print(record["date"], sensor["value"], sensor["flag"])
 
 By using a variable-length array, the same format definition can be used if the
 the number of sensors varies from file to file or even record to record. A
@@ -75,17 +75,10 @@ variable-length array is created by setting its end position to None.
 *Variable-length arrays must be at the end of the record*.
 
     sample_fields = (
-        ("stid", (0, 6), StringType()),
-        ("date", (6, 17), StringType()),
+        ("stid", (0, 7), StringType()),
+        ("date", (7, 17), StringType()),
         ("time", (17, 23), StringType()),
-        ("data", (27, None), ArrayType(data_fields)))  # variable length
-
-    ...
-
-    for record in reader:
-        print("total sensors: {0:d}".format(len(record["data"])))
-        for sensor in record["data"]
-            print(sensor["value"], sensor["flag"])
+        ("data", (27, None), ArrayType(array_fields)))  # variable length
 
 
 ### Datetime Fields ###
@@ -102,8 +95,8 @@ single `datetime` field. A `DatetimeType` must be initialized with a `datetime`
     sample_fields = (
         # Ignoring time zone field.
         ("stid", (0, 6), StringType()),
-        ("timestamp", (6, 23), DatetimeType("%Y-%m-%d %H:%M:%S")),
-        ("data", (27, None), ArrayType(data_fields)))  # variable length
+        ("timestamp", (6, 23), DatetimeType("%Y-%m-%d %H:%M")),
+        ("data", (27, None), ArrayType(array_fields)))  # variable length
 
 
 ### Default Values ###
@@ -113,7 +106,7 @@ it is given the default value assigned to that field (`None` by default). The
 default value should be appropriate to that type, *e.g.* an `IntType` field 
 should not have a string as its default value.
 
-    data_fields = (
+    array_fields = (
         ("value", (0, 8), FloatType()),
         ("flag", (8, 9), StringType(default="M")))  # replace blanks with M
 
@@ -156,6 +149,7 @@ Any callable object can be a filter, including a class that defines a
 
     reader.filter(MonthFilter(3))  # input is restricted to March
 
+
 A filter can return a modified version of its input record or a different
 record altogether.
 
@@ -164,8 +158,8 @@ record altogether.
     class LocalTime(object):
         """ Convert from UTC to local time. """
 
-        def __init__(self, local)
-            self._offset = timedelta(hours=local)
+        def __init__(self, offset):
+            self._offset = timedelta(hours=offset)
             return
 
         def __call__(self, record):
@@ -176,6 +170,7 @@ record altogether.
     ...
 
     reader.filter(LocalTime(-6))  # input is converted from UTC to CST
+
 
 Returning `None` from a filter will drop individual records, but input can be
 stopped altogether by raising a `StopIteration` exception. When filtering data 
@@ -193,18 +188,17 @@ continue reading from the stream once the desired time period has been passed:
             """ Filter function. """
             month = record["timestamp"].month
             if month > self._month:
-                # File is for one year in chronological order so there are no 
+                # Data are for one year in chronological order so there are no 
                 # more records for the desired month.
                 raise StopIteration
             return record if month == self._month else None
 
 Filters can be chained and are called in order for each record. If any filter
-returns None chaining is immediately stopped and the record is dropped. For
+returns None chaining is immediately stopped, and the record is dropped. For
 the best performance filters should be ordered from most restrictive (most
 likely to return None) to least.
 
-    reader.filter(MonthFilter(3))
-    reader.filter(LocalTime())
+    reader.filter(MonthFilter(3), LocalTime(-6))
     for record in reader:
         """ All records in March with timestamp converted to CST. """
         print(record)
@@ -231,7 +225,7 @@ in the record that do not correspond to an output field are ignored.
 
 Filters work for Writers like they do for Readers. The filters defined for a
 Writer are applied to each record passed to the write() method before the
-record is written to the stream. If any filter return None the record is not
+record is written to the stream. If any filter returns None the record is not
 written. A sequence of records can be written with a single call to dump().
 
 With some minor modifications the field definitions for reading the sample
@@ -239,15 +233,17 @@ data can be used for writing it. In fact, the modified fields can still be used
 for reading the data, so a Reader and a Writer can be defined for a given data
 format using one set of field definitions.
 
-    data_fields = (
+    from serial.core import FixedWidthWriter 
+
+    array_fields = (
         ("value", (0, 8), FloatType("8.2f")),  # don't forget leading space
         ("flag", (8, 9), StringType("1s")))
 
     sample_fields = (
-        ("stid", (0, 6), StringType("6s")),
-        ("timestamp", (6, 23), DatetimeType("%Y-%m-%d %H:%M:%S")),
+        ("stid", (0, 7), StringType("7s")),  # trailing space
+        ("timestamp", (7, 23), DatetimeType("%Y-%m-%d %H:%M")),
         ("timezone", (23, 27), StringType(">4s", default="UTC")),
-        ("data", (27, None), ArrayType(data_fields)))  # no format string
+        ("data", (27, None), ArrayType(array_fields)))  # no format string
 
     with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
         # Copy "data.txt" to "copy.txt".
@@ -255,7 +251,7 @@ format using one set of field definitions.
         writer = FixedWidthWriter(ostream, sample_fields)
         for record in reader:
             # Write all records in one call: writer.dump(reader)
-            record.pop("timezone")  # rely on default value
+            del record["timezone"]  # rely on default value
             writer.write(record)
 
 
@@ -274,18 +270,18 @@ Scalar field positions are a single number while array field positions are a
 [begin, end) pair. The format string is optional for most field types because a
 width is not required.
 
-    from serial.core import DelimiteReader
-    from serial.core import DelimiteWriter
+    from serial.core import DelimitedReader
+    from serial.core import DelimitedWriter
 
-    data_fields = (
+    array_fields = (
         ("value", 0, FloatType(".2f")),  # don't need width
         ("flag", 1, StringType()))  # default format
 
     sample_fields = (
         ("stid", 0, StringType()),  # default format
-        ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M:%S")),  # format required
+        ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M")),  # format required
         ("timezone", 2, StringType(default="UTC")),  # default format
-        ("data", (3, None), ArrayType(data_fields)))  # variable length
+        ("data", (3, None), ArrayType(array_fields)))  # variable length
 
     delim = ","
     reader = DelimitedReader(istream, sample_fields, delim)
@@ -304,35 +300,38 @@ classes can be bundled into a module for that format.
 
     """
     ...
-    from serial.core import ConstType
+    
+    from serial.core import ConstType  # a constant-value field
 
-    _DATA_FIELDS = (
+    _ARRAY_FIELDS = (
       ("value", 0, FloatType(".2f")),
       ("flag", 1, StringType()))
 
     _SAMPLE_FIELDS = (
       ("stid", 0, StringType()),
-      ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M:%S")),
-      ("timezone", 2, ConstType("UTC")),  # constant-valued field
-      ("data", (3, None), ArrayType(data_fields)))
+      ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M")),
+      ("timezone", 2, ConstType("UTC")),
+      ("data", (3, None), ArrayType(_ARRAY_FIELDS)))
 
+    _DELIM = ","
+    
     class SampleReader(DelimitedReader):
         """ Sample data reader.
 
         Base class implements iterator protocol for reading records.
 
         """
-        def __init__(self, offset=-6):
-            super(SampleReader, self).__init__(_SAMPLE_FIELDS, _DELIM)
+        def __init__(self, stream, offset=-6):
+            super(SampleReader, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(self._timstamp_filter)
+            self.filter(self._timestamp_filter)
             return
 
         def _timestamp_filter(self, record):
             """ Filter function for LST corrections. """
             record["timestamp"] += self._offset  # UTC to LST
             record["timezone"] = "LST"
-            return
+            return record
 
     class SampleWriter(DelimitedWriter):
         """ Sample data writer.
@@ -340,17 +339,25 @@ classes can be bundled into a module for that format.
         Base class defines write() for writing records.
 
         """
-        def __init__(self, offset=-6):
-            super(SampleWriter, self).__init__(_SAMPLE_FIELDS, _DELIM)
+        def __init__(self, stream, offset=-6):
+            super(SampleWriter, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
             self.filter(self._timestamp_filter)
-            return
+            return record
 
         def _timestamp_filter(self, record):
             """ Filter function for UTC corrections. """
             record["timestamp"] -= self._offset  # LST to UTC
             record["timezone"] = "UTC"
             return
+    
+    
+    # Test the module. 
+
+    with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
+        # Copy "data.txt" to "copy.txt".
+        SampleWriter(ostream).dump(SampleReader(istream))
+
 
 
 ## Stream Adaptors ##
@@ -361,7 +368,7 @@ line of text from the stream. A Writer's output stream is any object that
 implements a `write()` method to write a line of text. A Python `file` object 
 satisfies the requirements for both types of streams. The `_IStreamAdaptor` and 
 `_OStreamAdaptor` abstract classes declare the required interfaces and can be 
-used to create adaptors for other types of streams, *e.g.* binary data. 
+used to create adaptors for other types of streams, *e.g.* binary data: 
 
     from serial.core.stream import _IStreamAdaptor
     from serial.core.stream import _OStreamAdaptor
@@ -386,6 +393,26 @@ used to create adaptors for other types of streams, *e.g.* binary data.
 
 
 ## Tips and Tricks ##
+
+### Quoted Strings ###
+
+The `StringType` data type can read and write quoted strings by initializing it
+with the quote character to use:
+
+    StringType(quote='"')  # double-quoted string
+
+Quoting for a `DatetimeType` is controlled by its format string:
+
+    DatetimeType("'%Y-%m-%d'")  # single-quoted date string
+
+
+### Nonstandard Line Endings ###
+
+By default, lines of text are assumed to end with the newline character ("\n"), 
+but other line endings can be specified for both Readers and Writers:
+
+    writer = DelimitedWriter(stream, fields, delim, endl="")  # no trailing \n
+
 
 ### Header Data ###
 
@@ -413,7 +440,7 @@ can only be identified by encountering the first data record.
                 # Parse header. At the end of the loop the first data record
                 # has already been read.
                 ...
-            stream.rewind()  # reposition at first data record
+            stream.rewind(1)  # reposition at first data record
             super(DataReader, self).__init__(stream, _FIELDS, _DELIM)
             return
 
@@ -448,6 +475,20 @@ multiple fields in the data record, or *vice versa*.
         record["time"] = record["timestamp"].time()
         return record
 
+
+### Compressed Data ###
+
+The `IStreamZlib` stream adapter can be used to read any zlib-compressed data
+including gzip files. Unlike the built-in Python `gzip.GzipFile`, an 
+`IStreamZlib` can handle streaming data such as network files.
+
+    from serial.core import IStreamZlib
+
+    stream = urllib2.urlopen("http://data.org/path/data.gz")
+    reader = FixedWidthReader(IStreamZlib(stream), fields)
+    
+
+ 
 <!-- REFERENCES -->
 [1]: http://docs.python.org/2/library/datetime.html#strftime-strptime-behavior "datetime documentation"
 [2]: http://docs.python.org/2/library/string.html#formatspec "format strings"
