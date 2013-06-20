@@ -3,7 +3,7 @@
 Readers convert lines of text to data records.
 
 """
-from ._util import Field
+from . _util import Field
 
 __all__ = ("DelimitedReader", "FixedWidthReader")
 

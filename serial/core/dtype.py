@@ -7,8 +7,8 @@ and _Writer classes are responsible for calling decode() and encode().
 from datetime import datetime
 from itertools import product
 
-from ._util import Field
-from ._util import strftime
+from . _util import Field
+from . _util import strftime
 
 
 __all__ = ("ConstType", "IntType", "FloatType", "StringType", "DatetimeType",
@@ -188,7 +188,7 @@ class ArrayType(_DataType):
         """ Initialize this object.
 
         """
-        super(ArrayType, self).__init__(list, "s", default)
+        super(ArrayType, self).__init__(list, None, default)
         self.width = None
         self._fields = []
         self._stride = 0

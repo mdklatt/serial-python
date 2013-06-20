@@ -3,7 +3,7 @@
 Writers convert data records to lines of text.
 
 """
-from ._util import Field
+from . _util import Field
 
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
 
