@@ -336,10 +336,10 @@ classes can be bundled into a module for that format.
         def __init__(self, stream, offset=-6):
             super(SampleReader, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(self._timestamp_filter)
+            self.filter(self._lst_filter)
             return
 
-        def _timestamp_filter(self, record):
+        def _lst_filter(self, record):
             """ Filter function for LST corrections. """
             record["timestamp"] += self._offset  # UTC to LST
             record["timezone"] = "LST"
@@ -348,16 +348,16 @@ classes can be bundled into a module for that format.
     class SampleWriter(DelimitedWriter):
         """ Sample data writer.
 
-        Base class defines write() for writing records.
+        Base class defines write() and dump() for writing records.
 
         """
         def __init__(self, stream, offset=-6):
             super(SampleWriter, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(self._timestamp_filter)
+            self.filter(self._utc_filter)
             return record
 
-        def _timestamp_filter(self, record):
+        def _utc_filter(self, record):
             """ Filter function for UTC corrections. """
             record["timestamp"] -= self._offset  # LST to UTC
             record["timezone"] = "UTC"
@@ -500,6 +500,30 @@ including gzip files. Unlike the built-in Python `gzip.GzipFile`, an
     reader = FixedWidthReader(IStreamZlib(stream), fields)
     
 
+### Low Level Text Manipulation ###
+
+Stream adaptors can be used to manipulate text before it is parsed by a Reader
+or after it has been processed by a Writer.
+
+    class TextPreprocessor(_IStreamAdaptor):
+        """ Remove comments and blanks lines from an input stream.
+
+        """
+        def __init__(self, stream):
+            """ Initialize this object.
+    
+            """
+            self._stream = stream
+            return
+    
+        def next(self):
+            """ Return the next line of data from the stream.
+    
+            """
+            while True:  # repeat until a data line is encountered
+                line = self._stream.next()
+                if line.strip() and not line.startswith("#"):
+                    return line
  
 <!-- REFERENCES -->
 [1]: http://docs.python.org/2/library/datetime.html#strftime-strptime-behavior "datetime documentation"
