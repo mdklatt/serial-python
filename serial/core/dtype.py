@@ -4,6 +4,8 @@ Client code defines the _DataType for each input/ouput field, but the _Reader
 and _Writer classes are responsible for calling decode() and encode().
 
 """
+from __future__ import absolute_import
+
 from datetime import datetime
 from itertools import product
 

@@ -1,6 +1,8 @@
 """ Tools for working with streams.
 
 """
+from __future__ import absolute_import
+
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
@@ -60,7 +62,7 @@ class IStreamBuffer(_IStreamAdaptor):
         """
         super(IStreamBuffer, self).__init__()
         self._stream = stream
-        self._buffer = []
+        self._buffer = []  # newest record at end
         while len(self._buffer) < bufsize:
             # Fill the buffer one record at a time.
             try:
@@ -90,7 +92,7 @@ class IStreamBuffer(_IStreamAdaptor):
         return line
 
     def rewind(self, count=None):
-        """ Rewind the stream.
+        """ Rewind the buffer.
         
         By default rewind to the beginning of the buffer.
 

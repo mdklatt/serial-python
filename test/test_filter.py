@@ -26,7 +26,7 @@ class _FilterTest(unittest.TestCase):
         This is called before each test is run so that they are isolated from
         any side effects. This is part of the unittest API.
 
-        Base classes need to define the appropriate filter object.
+        Derived classes need to define the appropriate filter object.
 
         """
         self.accept = ({"test": "abc"}, {"test": "def"})

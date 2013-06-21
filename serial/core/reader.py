@@ -3,6 +3,8 @@
 Readers convert lines of text to data records.
 
 """
+from __future__ import absolute_import
+
 from . _util import Field
 
 __all__ = ("DelimitedReader", "FixedWidthReader")
@@ -68,7 +70,6 @@ class _Reader(object):
         """ Iterate over all filtered input records.
 
         """
-        # Anything that implements next() is a Python iterator.
         return self
 
     def _get(self):

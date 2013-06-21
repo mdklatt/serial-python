@@ -3,10 +3,12 @@
 Buffers sit between client code and a reader or writer and do additional post-
 or preprocessing, respectively. They are similar to filters except that they
 are designed to operate on groups of records. Buffers are used as wrappers
-around of a reader or writer (or another buffer), while filters act more like 
+around a reader or writer (or another buffer), while filters act more like 
 decorators.
 
 """
+from __future__ import absolute_import
+
 
 class _ReaderBuffer(object):
     """ Abstract base class for all reader buffers.

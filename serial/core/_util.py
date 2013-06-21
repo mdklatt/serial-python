@@ -1,6 +1,8 @@
-""" Private utility clases functions.
+""" Private utility clases and functions.
 
 """
+from __future__ import absolute_import
+
 
 def strftime(time, timefmt):
     """ Return a datetime-like object as a formatted string. 
