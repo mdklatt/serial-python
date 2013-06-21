@@ -9,3 +9,4 @@ from . reader import *
 from . writer import *
 from . stream import *
 from . filter import *
+from . buffer import *
