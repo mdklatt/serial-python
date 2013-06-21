@@ -16,14 +16,13 @@ class _Reader(object):
     using filters.
 
     """
-    def __init__(self, stream):
+    def __init__(self):
         """ Initialize this object.
 
         The input stream is any object that implements next() to return the
         next line of text input.
 
         """
-        self._stream = stream
         self._filters = []
         return
 
@@ -95,7 +94,8 @@ class _TabularReader(_Reader):
         """ Initialize this object.
 
         """
-        super(_TabularReader, self).__init__(stream)
+        super(_TabularReader, self).__init__()
+        self._stream = stream
         self._fields = [Field(*args) for args in fields]
         self._endl = endl
         return

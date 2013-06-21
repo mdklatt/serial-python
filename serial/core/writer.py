@@ -14,14 +14,13 @@ class _Writer(object):
     Serial data consists of individual records stored as lines of text.
 
     """
-    def __init__(self, stream):
+    def __init__(self):
         """ Initialize this object.
 
         The output stream is any object that implements write() to write a line
         of text.
 
         """
-        self._stream = stream
         self._filters = []
         return
 
@@ -85,7 +84,8 @@ class _TabularWriter(_Writer):
         """ Initialize this object.
 
         """
-        super(_TabularWriter, self).__init__(stream)
+        super(_TabularWriter, self).__init__()
+        self._stream = stream
         self._fields = [Field(*args) for args in fields]
         self._endl = endl
         return
