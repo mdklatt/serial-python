@@ -7,8 +7,6 @@ around of a reader or writer (or another buffer), while filters act more like
 decorators.
 
 """
-__all__ = ()
-
 
 class _ReaderBuffer(object):
     """ Abstract base class for all reader buffers.
@@ -41,7 +39,7 @@ class _ReaderBuffer(object):
                 self._reader = None
                 self._flush()
                 break
-            self._read(record)
+            self._queue(record)
         try:
             return self._output.pop(0)
         except IndexError:  # _output is empty
@@ -55,11 +53,11 @@ class _ReaderBuffer(object):
         """
         return self
 
-    def _read(self, record):
-        """ Do something with this record.
+    def _queue(self, record):
+        """ Process this record.
         
         The derived class must implement this method to add records to the 
-        output queue as input records are processed.
+        output queue as records are read from _reader.
         
         """
         raise NotImplementedError
@@ -71,6 +69,80 @@ class _ReaderBuffer(object):
         derived class has one last chance to do something before iteration is 
         halted. If there are any remaining records in the buffer they should be
         queued in _output.
+        
+        """
+        return
+        
+
+class _WriterBuffer(object):
+    """ Abstract base class for all writer buffers.
+    
+    This implements the basic _Writer interface for writing records.
+    
+    """
+    def __init__(self, writer):
+        """ Initialize this object.
+        
+        The writer can be a _Writer or another _WriterBuffer.
+        
+        """
+        self._writer = writer
+        self._output = []  # FIFO
+        return
+        
+    def write(self, record):
+        """ Write this record to the buffer.
+        
+        """
+        # Process this record, then write any new records in the output queue
+        # to the destination writer.
+        self._queue(record)
+        while self._output:
+            self._writer.write(self._output.pop(0))
+        return
+        
+    def dump(self, records):
+        """ Write all records to the destination writer.
+        
+        This automatically calls close().
+        
+        """
+        for record in records:
+            self.write(record)
+        self.close()
+        return
+
+    def close(self):
+        """ Close the buffer.
+        
+        All remaining records in the buffer will be written to the destination
+        writer, and no further writes should be done to the buffer.  This does 
+        not close the destination writer itself.
+        
+        """
+        self._flush()
+        for record in self._output:
+            self._writer.write(record)
+        self._output = None
+        self._writer = None
+        return
+
+    def _queue(self, record):
+        """ Process this record.
+        
+        The derived class must implement this method to add records to the 
+        output queue as records are written to the buffer.
+        
+        """
+        raise NotImplementedError
+
+    def _flush(self):
+        """ Complete any buffering operations.
+        
+        This is called as soon as close() is called, so the derived class has
+        one last chance to do something. There will be no more records to
+        process, so any remaining records in the buffer should be queued in
+        _output.
         
         """
         return
