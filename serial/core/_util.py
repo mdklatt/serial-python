@@ -1,32 +1,6 @@
-""" Private utility functions.
+""" Private utility clases functions.
 
 """
-
-class Field(object):
-    """ A serial data field.
-    
-    """
-    def __init__(self, name, pos, dtype):
-        """ Initialize this object.
-        
-        """
-        try:
-            pos = slice(*pos)
-        except TypeError:  # pos is an int
-            width = 1
-        else:
-            try:
-                width = pos.stop - pos.start
-            except TypeError:  # stop is None
-                # Variable-length field; acutual width must be determined
-                # during encoding or decoding.
-                width = None
-        self.pos = pos
-        self.name = name
-        self.dtype = dtype
-        self.width = width
-        return
-
 
 def strftime(time, timefmt):
     """ Return a datetime-like object as a formatted string. 
@@ -67,3 +41,29 @@ strftime._fields = {
     "S": ("02d", lambda time: time.second),
     "Y": ("04d", lambda time: time.year),
     "y": ("02d", lambda time: time.year%100)}
+
+
+class Field(object):
+    """ A serial data field.
+    
+    """
+    def __init__(self, name, pos, dtype):
+        """ Initialize this object.
+        
+        """
+        try:
+            pos = slice(*pos)
+        except TypeError:  # pos is an int
+            width = 1
+        else:
+            try:
+                width = pos.stop - pos.start
+            except TypeError:  # stop is None
+                # Variable-length field; acutual width must be determined
+                # during encoding or decoding.
+                width = None
+        self.pos = pos
+        self.name = name
+        self.dtype = dtype
+        self.width = width
+        return

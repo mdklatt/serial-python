@@ -46,7 +46,7 @@ def stop_filter(record):
 # module being tested has its own TestCase.
 
 class _TabularReaderTest(unittest.TestCase):
-    """ Unit testing for _TabularReader classes.
+    """ Unit testing for tabular reader classes.
 
     This is an abstract class and should not be called directly by any test
     runners.

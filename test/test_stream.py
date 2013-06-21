@@ -1,4 +1,4 @@
-""" Testing for the the writer.py module
+""" Testing for the the stream.py module
 
 The module can be executed on its own or incorporated into a larger test suite.
 

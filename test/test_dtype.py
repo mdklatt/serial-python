@@ -20,7 +20,10 @@ from serial.core import ArrayType
 # module being tested has its own TestCase.
 
 class _DataTypeTest(unittest.TestCase):
-    """ Base class for DataType unit tests.
+    """ Unit testing for data type classes.
+
+    This is an abstract class and should not be called directly by any test
+    runners.
 
     """
     def test_decode(self):

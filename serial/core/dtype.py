@@ -210,8 +210,8 @@ class ArrayType(_DataType):
         value_array = []
         for elem in self._elements(token_array):
             # Decode the fields in each element into a dict.
-            values = dict([(field.name, field.dtype.decode(elem[field.pos]))
-                          for field in self._fields])
+            values = dict((field.name, field.dtype.decode(elem[field.pos]))
+                          for field in self._fields)
             value_array.append(values)
         if not value_array:
             value_array = self._default

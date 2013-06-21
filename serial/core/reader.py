@@ -108,8 +108,8 @@ class _TabularReader(_Reader):
 
         """
         tokens = self._split(self._stream.next().rstrip(self._endl))
-        return dict([(field.name, field.dtype.decode(token)) for (field, token)
-                     in zip(self._fields, tokens)])
+        return dict((field.name, field.dtype.decode(token)) for (field, token)
+                     in zip(self._fields, tokens))
 
     def _split(self, line):
         """ Split a line of text into a sequence of tokens.
@@ -144,7 +144,7 @@ class DelimitedReader(_TabularReader):
 
         """
         tokens = line.split(self._delim)
-        return [tokens[field.pos] for field in self._fields]
+        return tuple(tokens[field.pos] for field in self._fields)
 
 
 class FixedWidthReader(_TabularReader):
@@ -159,7 +159,7 @@ class FixedWidthReader(_TabularReader):
         Lines are split based on the specified position of each field.
 
         """
-        return [line[field.pos] for field in self._fields]
+        return tuple(line[field.pos] for field in self._fields)
 
 
 # class ContextualReader(_Reader):
