@@ -36,13 +36,12 @@ class MockReaderBuffer(_ReaderBuffer):
         return
 
     def _flush(self):
-        """ Flush the buffer on input EOF.
+        """ Complete any buffering operations. 
         
         """
         if self._buffer:
             # No more input, so output the last record as-is.
             self._output.append(self._buffer)
-            self._buffer = None  # because _flush() will be called again
         return
 
 
