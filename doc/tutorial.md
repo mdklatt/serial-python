@@ -200,10 +200,22 @@ likely to return None) to least.
 
     reader.filter(MonthFilter(3), LocalTime(-6))
     for record in reader:
-        """ All records in March with timestamp converted to CST. """
+        # All records in March with timestamp converted to CST.
         print(record)
 
+Two filters are predefined by the library.
 
+    from serial.core import BlacklistFilter
+    from serial.core import WhitelistFilter
+    
+    ...
+    
+    # Reject all records where the "color" field is "orange" or "black".
+    reader.filter(BlacklistFilter("color", ("orange", "black")))
+    
+    # Reject all records where the "color" field is not "crimson" or "white".
+    reader.filter(WhitelistFilter("color", ("crimson", "white")))
+    
 
 ## Writing Data ##
 
