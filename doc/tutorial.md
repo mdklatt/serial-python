@@ -215,7 +215,6 @@ Two filters are predefined by the library.
     
     # Reject all records where the "color" field is not "crimson" or "white".
     reader.filter(WhitelistFilter("color", ("crimson", "white")))
-    
 
 ## Writing Data ##
 
@@ -370,6 +369,61 @@ classes can be bundled into a module for that format.
         # Copy "data.txt" to "copy.txt".
         SampleWriter(ostream).dump(SampleReader(istream))
 
+
+## Buffers ##
+
+Like Filters, Buffers allow for postprocssing of input records or preprocessing
+of output records. However, Buffers are designed to work on groups of records,
+and they are implemented as wrappers around a Reader or Writer (or another 
+Buffer). A Buffer implementation should be derived from `_ReaderBuffer` or
+`_WriterBuffer`. A common use case for a Buffer is to map a single incoming 
+record to multiple outgoing records. Buffers can also be used for aggregation
+(multiple incoming records to one outgoing record), but a preferred solution
+for this might be a combination of `map()` and `itertools.groupby()`.
+
+    from serial.core.buffer import _ReaderBuffer
+    
+    class Expander(_ReaderBuffer):
+        """ Expand an incoming record into multiple outgoing records.
+        
+        The base class implements the iterator protocol for accessing the new
+        records.
+        
+        """
+        def __init__(self, reader):
+            """ Initialize this object.
+            
+            The reader can be a Reader object or another _ReaderBuffer.
+            
+            """
+            super(Expander, self).__init__(reader)
+            ...
+            return
+        
+        def _read(self, record)
+            """ _ReaderBuffer: Process each incoming record.
+            
+            This must be defined by all derived classes.
+            
+            """
+            # Generate a sequence of multiple records from each incoming record
+            # and queue them for output.
+            ...
+            self._output.extend(record_list)  # FIFO
+            return
+
+        def _flush(self):
+            """ Finalize the buffer.
+        
+            This is called when the input reader is exhausted. The default 
+            version does nothing, and derived classes should override it as
+            necessary.
+        
+            """
+            # This will often be used by an aggregator to flush any remaining
+            # records in its buffer to the output queue, but in this case 
+            # it doesn't need to do anything.
+            return            
 
 
 ## Stream Adaptors ##
