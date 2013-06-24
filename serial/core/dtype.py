@@ -10,7 +10,7 @@ from datetime import datetime
 from itertools import product
 
 from . _util import Field
-from . _util import strftime
+from . _util import TimeFormat
 
 
 __all__ = ("ConstType", "IntType", "FloatType", "StringType", "DatetimeType",
@@ -151,7 +151,8 @@ class DatetimeType(_DataType):
 
         """
         super(DatetimeType, self).__init__(datetime, "s", default)
-        self._timefmt = timefmt
+        self._fmtstr = timefmt
+        self._fmtobj = TimeFormat(timefmt)
         self._prec = min(max(prec, 0), 6)  # max precision is microseconds
         return
 
@@ -162,7 +163,7 @@ class DatetimeType(_DataType):
         token = token.strip()
         if not token:
             return self._default
-        return datetime.strptime(token, self._timefmt)
+        return datetime.strptime(token, self._fmtstr)
 
     def encode(self, value):
         """ Convert a datetime to a text token.
@@ -175,7 +176,7 @@ class DatetimeType(_DataType):
             if self._default is None:
                 return ""
             value = self._default
-        token = strftime(value, self._timefmt)
+        token = self._fmtobj(value)
         if (self._prec > 0):
             time, usecs = token.split(".")
             token = "{0:s}.{1:s}".format(time, usecs[0:self._prec])
