@@ -36,7 +36,7 @@ class _Reader(object):
         actions:
         1. Return None to reject the record (the iterator will drop it).
         2. Return the data record as is.
-        3. Return a new* record.
+        3. Return a *new record.
         4. Raise StopIteration to signal the end of input.
 
         *Input filters can safely modify a mutable argument.
@@ -54,6 +54,9 @@ class _Reader(object):
         This implements the Python iterator protocol.
 
         """
+        # Recursion would simplify this, but would fail for any combination of
+        # filters that rejected more than 1000 consecutive records (the Python
+        # recursion limit).
         record = None
         while record is None:
             # Repeat until a record passes all filters.

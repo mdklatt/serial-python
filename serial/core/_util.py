@@ -1,7 +1,8 @@
-""" Internal utility clases and functions for the serial.core package.
+""" Internal utility clases for the serial.core package.
 
 """
 from __future__ import absolute_import
+
 
 class Field(object):
     """ A serial data field.
@@ -44,7 +45,7 @@ class TimeFormat(object):
         "I": ("02d", lambda time: time.hour%12),
         "M": ("02d", lambda time: time.minute),
         "m": ("02d", lambda time: time.month),
-        "p": ("s", lambda time: "AM" if t.hour < 12 else "PM"),  # no locale
+        "p": ("s", lambda time: "AM" if time.hour < 12 else "PM"),  # no locale
         "S": ("02d", lambda time: time.second),
         "Y": ("04d", lambda time: time.year),
         "y": ("02d", lambda time: time.year%100)}

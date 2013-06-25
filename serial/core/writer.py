@@ -34,7 +34,7 @@ class _Writer(object):
         actions:
         1. Return None to reject the record (it will not be written).
         2. Return the data record as is.
-        3. Return a new* record.
+        3. Return a *new record.
         
         *Take care not to modify a mutable argument unless the caller doesn't
          expect write() to be free of side effects.

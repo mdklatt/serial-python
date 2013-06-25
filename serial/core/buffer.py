@@ -13,7 +13,8 @@ from __future__ import absolute_import
 class _ReaderBuffer(object):
     """ Abstract base class for all reader buffers.
     
-    This implements the basic _Reader interface for iterating over records.
+    The Python iterator protocol is implemented for retrieving records from the
+    buffer.
     
     """
     def __init__(self, reader):
@@ -79,7 +80,7 @@ class _ReaderBuffer(object):
 class _WriterBuffer(object):
     """ Abstract base class for all writer buffers.
     
-    This implements the basic _Writer interface for writing records.
+    Records are written to the buffer using the write() or dump() methods.
     
     """
     def __init__(self, writer):
@@ -118,7 +119,7 @@ class _WriterBuffer(object):
         """ Close the buffer.
         
         All remaining records in the buffer will be written to the destination
-        writer, and no further writes should be done to the buffer.  This does 
+        writer, and no further writes should be done to the buffer. This does 
         not close the destination writer itself.
         
         """

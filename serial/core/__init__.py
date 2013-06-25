@@ -1,6 +1,4 @@
-""" The serial.core package.
-
-This package provides the core tools of the serial library.
+""" The serial.core package for reading and writing record-based serial data.
 
 """
 from __future__ import absolute_import

@@ -1,7 +1,7 @@
-""" Data types for converting text tokens to/from Python types.
+""" Data types convert text tokens to/from Python types.
 
 Client code defines the _DataType for each input/ouput field, but the _Reader
-and _Writer classes are responsible for calling decode() and encode().
+and _Writer classes are responsible for actually using them.
 
 """
 from __future__ import absolute_import
@@ -52,7 +52,7 @@ class _DataType(object):
         value of None is encoded as a blank string.
         
         """
-        if value is None:
+        if value is None:  # need explict None test
             value = self._default
         return format(value, self._fmt) if value is not None else ""
 
@@ -121,10 +121,7 @@ class StringType(_DataType):
         """ Convert a text token to a string.
 
         """
-        value = token.strip().strip(self._quote)
-        if not value:
-            value = self._default
-        return value
+        return token.strip().strip(self._quote) or self._default
 
     def encode(self, value):
         """ Convert a string to a text token.
@@ -133,8 +130,7 @@ class StringType(_DataType):
         value of None is encoded as a blank string (with quoting if enabled).
 
         """
-        if value is None:
-            value = self._default if self._default is not None else ""
+        value = value or self._default or ""
         return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
 
 
@@ -172,10 +168,9 @@ class DatetimeType(_DataType):
         value of None is encoded as a blank string.
 
         """
+        value = value or self._default
         if value is None:
-            if self._default is None:
-                return ""
-            value = self._default
+            return ""
         token = self._fmtobj(value)
         if (self._prec > 0):
             time, usecs = token.split(".")
@@ -216,8 +211,7 @@ class ArrayType(_DataType):
             values = dict((field.name, field.dtype.decode(elem[field.pos]))
                           for field in self._fields)
             value_array.append(values)
-        if not value_array:
-            value_array = self._default
+        value_array = value_array or self._default
         self.width = len(value_array) * self._stride
         return value_array
 
@@ -229,8 +223,7 @@ class ArrayType(_DataType):
         corresponds to the field definitions for this array.
 
         """
-        if not value_array:
-            value_array = self._default
+        value_array = value_array or self._default
         self.width = len(value_array) * self._stride
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
                 product(value_array, self._fields)]
