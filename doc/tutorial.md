@@ -387,10 +387,13 @@ Like filters, Buffers allow for postprocssing of input records or preprocessing
 of output records. However, Buffers are designed to work on groups of records,
 and they are implemented as a wrapper around a Reader or Writer (or another 
 Buffer). A Buffer implementation should be derived from `_ReaderBuffer` or
-`_WriterBuffer`. A common use case for a Buffer is to map a single incoming 
-record to multiple outgoing records. Buffers can also be used for sorting or
-aggregation (but Python's built-in [`sorted()`][3] or [`map()`][4] and 
-[`itertools.groupby()`][5] functions are preferred for those applications). 
+`_WriterBuffer`. Like Readers and Writers, Buffers have filtering capability;
+filters are applied to records after the buffering stage.
+
+A common use case for a Buffer is to map a single incoming record to multiple
+outgoing records. Buffers can also be used for sorting or aggregation (but
+Python's built-in [`sorted()`][3] or [`map()`][4] and [`itertools.groupby()`][5]
+functions are preferred for those applications). 
 
     from serial.core.buffer import _ReaderBuffer
     
@@ -411,15 +414,17 @@ aggregation (but Python's built-in [`sorted()`][3] or [`map()`][4] and
             ...
             return
         
-        def _read(self, record)
-            """ _ReaderBuffer: Process each incoming record.
+        def _queue(self, record)
+            """ Process each incoming record.
             
-            This must be defined by all derived classes.
+            This must be implemented by all derived classes.
             
             """
             # Generate a sequence of multiple records from each incoming record
             # and queue them for output.
+            
             ...
+            
             self._output.extend(record_list)  # FIFO
             return
 
@@ -431,9 +436,10 @@ aggregation (but Python's built-in [`sorted()`][3] or [`map()`][4] and
             necessary.
         
             """
-            # This will often be used by an aggregator to flush any remaining
-            # records in its buffer to the output queue, but in this case 
-            # it doesn't need to do anything.
+            # This is often needed for aggregation or sorting.
+            
+            ...
+            
             return            
 
 
