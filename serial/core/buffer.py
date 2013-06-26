@@ -9,8 +9,10 @@ decorators.
 """
 from __future__ import absolute_import
 
+from . reader import _Reader
 
-class _ReaderBuffer(object):
+
+class _ReaderBuffer(_Reader):
     """ Abstract base class for all reader buffers.
     
     The Python iterator protocol is implemented for retrieving records from the
@@ -23,11 +25,12 @@ class _ReaderBuffer(object):
         The input reader can be a _Reader or another _ReaderBuffer.
         
         """
+        super(_ReaderBuffer, self).__init__()
         self._reader = reader
         self._output = []  # FIFO
         return
         
-    def next(self):
+    def _get(self):
         """ Return the next buffered input record.
         
         """
@@ -50,12 +53,6 @@ class _ReaderBuffer(object):
             # time to stop.
             raise StopIteration
             
-    def __iter__(self):
-        """ Return an iterator for this object.
-
-        """
-        return self
-
     def _queue(self, record):
         """ Process this record.
         
