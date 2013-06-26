@@ -124,8 +124,9 @@ class _WriterBuffer(_Writer):
         # Process this record, then write any new records in the output queue
         # to the destination writer.
         self._queue(record)
-        while self._output:
-            self._writer.write(self._output.pop(0))
+        for record in self._output:
+            self._writer.write(record)
+        self._output = []
         return
         
     def _queue(self, record):
