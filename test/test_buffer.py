@@ -115,7 +115,7 @@ class _BufferTest(unittest.TestCase):
         """ Filter function to reject a record.
         
         """
-        return record if record["int"] != 789 else None
+        return record if record["int"] != 123 else None
 
     def setUp(self):
         """ Set up the test fixture.
@@ -167,7 +167,7 @@ class ReaderBufferTest(_BufferTest):
         # For now, relying on _Reader's test suite for more exhaustive tests so
         # just test the basics here.
         self.buffer.filter(self.reject_filter)
-        self.assertSequenceEqual(self.output[:-1], list(self.buffer))
+        self.assertSequenceEqual(self.output[1:], list(self.buffer))
         return
     
 
@@ -213,7 +213,7 @@ class WriterBufferTest(_BufferTest):
         # just test the basics here.
         self.buffer.filter(self.reject_filter)
         self.buffer.dump(self.input)
-        self.assertSequenceEqual(self.output[:-1], self.writer.output)
+        self.assertSequenceEqual(self.output[1:], self.writer.output)
         return
 
 

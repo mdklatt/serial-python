@@ -112,12 +112,13 @@ class _WriterBuffer(_Writer):
         """
         self._flush()
         for record in self._output:
-            self._writer.write(record)
+            # Base class write() applies filters.
+            super(_WriterBuffer, self).write(record) 
         self._output = None
         self._writer = None
         return
 
-    def _put(self, record):
+    def write(self, record):
         """ Write this record to the buffer.
         
         """
@@ -125,10 +126,19 @@ class _WriterBuffer(_Writer):
         # to the destination writer.
         self._queue(record)
         for record in self._output:
-            self._writer.write(record)
+            # Base class write() applies filters.
+            super(_WriterBuffer, self).write(record) 
         self._output = []
         return
         
+    def _put(self, record):
+        """ Write this record to the destination writer.
+        
+        """
+        # At this point the record has already been buffered and filtered.
+        self._writer.write(record)
+        return
+
     def _queue(self, record):
         """ Process this record.
         
