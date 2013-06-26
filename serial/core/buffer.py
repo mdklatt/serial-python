@@ -10,6 +10,7 @@ decorators.
 from __future__ import absolute_import
 
 from . reader import _Reader
+from . writer import _Writer
 
 
 class _ReaderBuffer(_Reader):
@@ -74,7 +75,7 @@ class _ReaderBuffer(_Reader):
         return
         
 
-class _WriterBuffer(object):
+class _WriterBuffer(_Writer):
     """ Abstract base class for all writer buffers.
     
     Records are written to the buffer using the write() or dump() methods.
@@ -86,19 +87,9 @@ class _WriterBuffer(object):
         The writer can be a _Writer or another _WriterBuffer.
         
         """
+        super(_WriterBuffer, self).__init__()
         self._writer = writer
         self._output = []  # FIFO
-        return
-        
-    def write(self, record):
-        """ Write this record to the buffer.
-        
-        """
-        # Process this record, then write any new records in the output queue
-        # to the destination writer.
-        self._queue(record)
-        while self._output:
-            self._writer.write(self._output.pop(0))
         return
         
     def dump(self, records):
@@ -107,8 +98,7 @@ class _WriterBuffer(object):
         This automatically calls close().
         
         """
-        for record in records:
-            self.write(record)
+        super(_WriterBuffer, self).dump(records)
         self.close()
         return
 
@@ -127,6 +117,17 @@ class _WriterBuffer(object):
         self._writer = None
         return
 
+    def _put(self, record):
+        """ Write this record to the buffer.
+        
+        """
+        # Process this record, then write any new records in the output queue
+        # to the destination writer.
+        self._queue(record)
+        while self._output:
+            self._writer.write(self._output.pop(0))
+        return
+        
     def _queue(self, record):
         """ Process this record.
         
