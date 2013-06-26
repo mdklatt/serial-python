@@ -87,19 +87,6 @@ class WriterBuffer(_WriterBuffer):
 
 # Mock objects to use for testing.
 
-class MockReader(object):
-    """ Simulate a _Reader for testing purposes.
-    
-    """
-    def __init__(self, records):
-        """ Initialize this object.
-        
-        """
-        self._iter = iter(records)
-        self.next = self._iter.next
-        return
-                
-        
 class MockWriter(object):
     """ Simulate a _Writer for testing purposes.
     
@@ -123,6 +110,13 @@ class _BufferTest(unittest.TestCase):
     runners.
 
     """
+    @staticmethod
+    def reject_filter(record):
+        """ Filter function to reject a record.
+        
+        """
+        return record if record["int"] != 789 else None
+
     def setUp(self):
         """ Set up the test fixture.
 
@@ -139,25 +133,43 @@ class _BufferTest(unittest.TestCase):
         self.output = (
             {"int": 123, "arr": [{"x": "ghi", "y": "jkl"}]},
             {"int": 789, "arr": [{"x": "mno", "y": "pqr"}]})
-        self.reader = MockReader(self.input)
-        self.writer = MockWriter()   
         return
-
+        
 
 class ReaderBufferTest(_BufferTest):
     """ Unit testing for the ReaderBuffer class.
 
     """    
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        super(ReaderBufferTest, self).setUp()
+        self.buffer = ReaderBuffer(iter(self.input))
+        return
+        
     def test_iter(self):
         """ Test the iterator protocol.
 
         Tests both __iter__() and next().
 
         """
-        buffer = ReaderBuffer(self.reader)
-        self.assertSequenceEqual(self.output, list(buffer))
+        self.assertSequenceEqual(self.output, list(self.buffer))
         return
-
+    
+    def test_filter(self):
+        """ Test the filter() method.
+        
+        """
+        # For now, relying on _Reader's test suite for more exhaustive tests so
+        # just test the basics here.
+        self.buffer.filter(self.reject_filter)
+        self.assertSequenceEqual(self.output[:-1], list(self.buffer))
+        return
+    
 
 class WriterBufferTest(_BufferTest):
     """ Unit testing for the WriterBuffer class.
@@ -169,10 +181,9 @@ class WriterBufferTest(_BufferTest):
         This is called before each test is run so that they are isolated from
         any side effects. This is part of the unittest API.
 
-        Derived classes need to define the appropriate filter object.
-
         """
         super(WriterBufferTest, self).setUp()
+        self.writer = MockWriter()
         self.buffer = WriterBuffer(self.writer)  
         return
 
@@ -192,6 +203,17 @@ class WriterBufferTest(_BufferTest):
         """
         self.buffer.dump(self.input)
         self.assertSequenceEqual(self.output, self.writer.output)
+        return
+
+    def test_filter(self):
+        """ Test the filter() method.
+        
+        """
+        # For now, relying on _Writer's test suite for more exhaustive tests so
+        # just test the basics here.
+        self.buffer.filter(self.reject_filter)
+        self.buffer.dump(self.input)
+        self.assertSequenceEqual(self.output[:-1], self.writer.output)
         return
 
 
