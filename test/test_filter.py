@@ -33,18 +33,18 @@ class _FilterTest(unittest.TestCase):
         self.reject = ({"test": "uvw"}, {"test": "xyz"})
         return
         
-    def test_call_accept(self):
-        """ Test the __call__() method for records that are accepted.
+    def test_accept(self):
+        """ Test for records that are accepted.
 
         """
-        self.assertSequenceEqual(map(self.filter, self.accept), self.accept)
+        self.assertSequenceEqual(self.accept, map(self.filter, self.accept))
         return
         
-    def test_call_reject(self):
-        """ Test the __call__() method for records that are rejected.
+    def test_reject(self):
+        """ Test for records that are rejected.
 
         """
-        self.assertSequenceEqual(map(self.filter, self.reject), (None, None))
+        self.assertSequenceEqual((None, None), map(self.filter, self.reject))
         return
         
 
