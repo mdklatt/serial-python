@@ -260,7 +260,7 @@ record altogether.
 
     reader.filter(LocalTime(-6))  # input is converted from UTC to CST
 
-    
+
 ### Stopping Iteration ###
 
 Returning `None` from a filter will drop individual records, but input can be
@@ -285,7 +285,7 @@ continue reading from the stream once the desired time period has been passed:
                 raise StopIteration  # don't do this in an output filter
             return record if month == self._month else None
 
-            
+
 ### Multiple Filters ###
             
 Filters can be chained and are called in order for each record. If a filter
@@ -383,66 +383,129 @@ classes can be bundled into a module for that format.
 
 ## Buffers ##
 
-Like filters, Buffers allow for postprocssing of input records or preprocessing
-of output records. However, Buffers are designed to work on groups of records,
-and they are implemented as a wrapper around a Reader or Writer (or another 
-Buffer). A Buffer implementation should be derived from `_ReaderBuffer` or
-`_WriterBuffer`. Like Readers and Writers, Buffers have filtering capability;
-filters are applied to records after the buffering stage.
+Like filters, Buffers allow for postprocessing of input records from a Reader
+or preprocessing of output records to a Writer. However, Buffers can operate 
+on more than one record at a time. Buffers can be used, for example, to split
+or merge records before passing them on. Like Readers and Writers, Buffers
+support filtering; records are filtered after they have passed through the 
+Buffer.
 
-A common use case for a Buffer is to map a single incoming record to multiple
-outgoing records. Buffers can also be used for sorting or aggregation (but
-Python's built-in [`sorted()`][3] or [`map()`][4] and [`itertools.groupby()`][5]
-functions are preferred for those applications). 
+
+### Input Buffering ###
+
+An input Buffer is basically a Reader that reads records from another Reader 
+(including another input Buffer) instead of lines of text from a stream. An 
+input Buffer should derive from the `_ReaderBuffer` base class. It must 
+implement a `_queue()` method to process records being read from its Reader, 
+and it may override the `_flush()` method to finalize processing:
 
     from serial.core.buffer import _ReaderBuffer
     
-    class Expander(_ReaderBuffer):
-        """ Expand an incoming record into multiple outgoing records.
+    class MonthlyTotal(_ReaderBuffer):
+        """ Combine daily input records into monthly records. 
         
-        The base class implements the iterator protocol for accessing the new
-        records.
+        The base class implements the Reader interface including filtering and
+        the iterator protocol.
         
         """
+        # This is an example of aggregation; a more straightforward solution 
+        # might be to use the built-in map() and itertools.groupby() functions.
+        
         def __init__(self, reader):
-            """ Initialize this object.
+            """ Initialize this object. """
             
-            The reader can be a Reader object or another _ReaderBuffer.
-            
-            """
-            super(Expander, self).__init__(reader)
-            ...
+            super(MonthlTotal, self).__init__(writer)
+            self._buffer = None
             return
         
-        def _queue(self, record)
+        def _queue(self, record):
             """ Process each incoming record.
-            
-            This must be implemented by all derived classes.
-            
+        
+            Convert incoming daily records to monthly records. The incoming
+            data is assumed to be sorted in chronological order.
+        
             """
-            # Generate a sequence of multiple records from each incoming record
-            # and queue them for output.
+            month = record["date"].replace(day=1)
+            if self._buffer and self._buffer["date"] == month:
+                # Add this record to the current month.
+                self._buffer["value"] += record["value"]
+            else:
+                # Output the previous month and start a new month.
+                self._output.append(self._buffer)  # FIFO queue
+                self._buffer = record
+                self._buffer["date"] = month
+            return
+                
+        def _flush(self, record):
+            """ Complete any buffering operations.
+    
+            This is called when input has been exhausted. The base class
+            version does nothing, but derived classes can override it to 
+            finalize any output as necessary.
+          
+            """
+            # No more records are coming, so finish the current month.
+            if self._buffer:
+                self._output.append(self._buffer)
+            return
             
-            ...
+        ...
+        
+        monthly_records = list(MonthlyTotal(reader)
             
-            self._output.extend(record_list)  # FIFO
+            
+### Output Buffering ###
+
+An output Buffer is basically a Writer that writes records to another Writer
+(including another output Buffer) instead of lines of text to a stream. An 
+output buffer should derive from the `_WriterBuffer` base class. It must 
+implement a `_queue()` method to process records being written to it, and it 
+may override the `_flush()` method to finalize processing:
+            
+    from serial.core.buffer import _WriterBuffer
+
+    class DataExpander(_WtierBuffer):
+        """ Output individual elements of an array field.
+
+        The base class implements the basic writer interface including 
+        filtering and the write() and dump() methods. An additional method, 
+        close(), should be called by the client code to signal that no more 
+        records will be written. If multiple buffers are chained together their
+        close() methods must be called in the correct order (outermost buffer 
+        first).
+
+        """
+        def __init__(self, writer):
+            """ Initialize this object. """
+            
+            super(DataExpander, self).__init__(writer)
             return
 
-        def _flush(self):
-            """ Finalize the buffer.
-        
-            This is called when the input reader is exhausted. The default 
-            version does nothing, and derived classes should override it as
-            necessary.
-        
+        def _queue(self, record)
+            """ Process each outgoing record. 
+            
+            Each item the record's array field will be output as an
+            individual record.
+            
             """
-            # This is often needed for aggregation or sorting.
+            for item in record["data"]:
+                # Create an output record for this item. 
+                item = item.copy()  # output should be free of side effects
+                item["stid"] = record["stid"]
+                item["timestamp"] = record["timestamp"]
+                self._output.append(item)  # FIFO queue
+            return
             
-            ...
-            
-            return            
+        # Like _ReaderBuffer, _WriterBuffer has a _flush() method that can be
+        # overriden to finalize output. _WriterBuffer._flush() is called when
+        # close() is called on the buffer. For this example, _flush() does not
+        # need to do anything.
 
-
+    ...
+    
+    DataExpander(writer).dump(reader)  # dump() calls close()
+    
+    
 ## Stream Adaptors ##
 
 Readers and Writers are both initialized with stream arguments. A Reader's
@@ -465,12 +528,12 @@ used to create adaptors for other types of streams, *e.g.* binary data:
         ...
 
         def next(self):
-            """ IStreamAdaptor: Return a line of text from the stream. """
+            """ _IStreamAdaptor: Return a line of text from the stream. """
             ...
             return line
 
         def write(self, line):
-            """ OStreamAdaptor: Write a line of text to the stream. """
+            """ _OStreamAdaptor: Write a line of text to the stream. """
             ...
             return
 
@@ -565,8 +628,8 @@ multiple fields in the data record, or vice versa:
 
 ### Compressed Data ###
 
-The `IStreamZlib` stream adapter can be used to read any zlib-compressed data
-including gzip files. Unlike the built-in Python `gzip.GzipFile`, an 
+The `IStreamZlib` stream adaptor can be used to read any zlib-compressed data,
+including gzip files. Unlike the built-inin Python `gzip.GzipFile`, an 
 `IStreamZlib` can handle streaming data such as network files:
 
     from conxtextlib import closing
@@ -585,6 +648,7 @@ or after it has been processed by a Writer:
 
     class TextPreprocessor(_IStreamAdaptor):
         """ Remove comments and blanks lines from an input stream. """
+        
         def __init__(self, stream):
             """ Initialize this object. """
             self._stream = stream
@@ -600,6 +664,3 @@ or after it has been processed by a Writer:
 <!-- REFERENCES -->
 [1]: http://docs.python.org/2/library/datetime.html#strftime-strptime-behavior "datetime class"
 [2]: http://docs.python.org/2/library/string.html#formatspec "format strings"
-[3]: http://docs.python.org/2/library/functions.html#sorted "sorted() function"
-[4]: http://docs.python.org/2/library/functions.html#map "map() function"
-[5]: http://docs.python.org/2/library/itertools.html?#itertools.groupby "groupby() function"

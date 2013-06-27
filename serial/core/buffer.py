@@ -1,10 +1,9 @@
-""" Buffer types.
+""" Classes for buffering input and output records.
 
-Buffers sit between client code and a reader or writer and do additional post-
-or preprocessing, respectively. They are similar to filters except that they
-are designed to operate on groups of records. Buffers are used as wrappers
-around a reader or writer (or another buffer), while filters act more like 
-decorators.
+Unlike filters, buffers can operate on muliple records simulataneously. Thus,
+a buffer split one record into multiple records, merge multiple records into
+one record, reorder records, or any combination thereof. Buffers can also do
+basic filtering.
 
 """
 from __future__ import absolute_import
@@ -16,8 +15,9 @@ from . writer import _Writer
 class _ReaderBuffer(_Reader):
     """ Abstract base class for all reader buffers.
     
-    The Python iterator protocol is implemented for retrieving records from the
-    buffer.
+    A _ReaderBuffer applies postprocessing to records from another _Reader. The
+    base class implements the Python iterator protocol for reading records
+    from the buffer.
     
     """
     def __init__(self, reader):
@@ -78,7 +78,8 @@ class _ReaderBuffer(_Reader):
 class _WriterBuffer(_Writer):
     """ Abstract base class for all writer buffers.
     
-    Records are written to the buffer using the write() or dump() methods.
+    The base class implements write() and dump() for writing records to the
+    buffer.
     
     """
     def __init__(self, writer):
@@ -108,6 +109,9 @@ class _WriterBuffer(_Writer):
         All remaining records in the buffer will be written to the destination
         writer, and no further writes should be done to the buffer. This does 
         not close the destination writer itself.
+        
+        If multiple _WriterBuffers are being chained, their close() methods
+        should be called in correct order, outermost buffer first.
         
         """
         self._flush()
