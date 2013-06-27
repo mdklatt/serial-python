@@ -167,7 +167,8 @@ class ReaderBufferTest(_BufferTest):
         # For now, relying on _Reader's test suite for more exhaustive tests so
         # just test the basics here.
         self.buffer.filter(self.reject_filter)
-        self.assertSequenceEqual(self.output[1:], list(self.buffer))
+        self.output = self.output[1:]
+        self.test_iter() 
         return
     
 
@@ -212,8 +213,8 @@ class WriterBufferTest(_BufferTest):
         # For now, relying on _Writer's test suite for more exhaustive tests so
         # just test the basics here.
         self.buffer.filter(self.reject_filter)
-        self.buffer.dump(self.input)
-        self.assertSequenceEqual(self.output[1:], self.writer.output)
+        self.output = self.output[1:]
+        self.test_dump()
         return
 
 
