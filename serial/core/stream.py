@@ -121,8 +121,7 @@ class IStreamZlib(_IStreamAdaptor):
         """
         super(IStreamZlib, self).__init__()
         self._stream = stream
-        wbits = MAX_WBITS + 32  # <http://www.zlib.net/manual.html#Advanced>
-        self._zlib = decompressobj(wbits)
+        self._zlib = decompressobj(MAX_WBITS + 32)  # auto zlib/gzip detect
         self._buffer = []
         return
             

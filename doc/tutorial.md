@@ -408,9 +408,6 @@ and it may override the `_flush()` method to finalize processing:
         the iterator protocol.
         
         """
-        # This is an example of aggregation; a more straightforward solution 
-        # might be to use the built-in map() and itertools.groupby() functions.
-        
         def __init__(self, reader):
             """ Initialize this object. """
             
