@@ -14,7 +14,7 @@ __all__ = ("IStreamBuffer", "IStreamZlib", "IFileSequence")
 class _IStreamAdaptor(object):
     """ Abstract base class for an input stream adaptor.
 
-    An adaptor can be used to make an input source compatible with the Reader
+    An adaptor can be used to make an input stream compatible with the Reader
     stream protocol, i.e. implementing a next() method that returns a single
     line of text from the stream.
 
@@ -36,7 +36,7 @@ class _IStreamAdaptor(object):
 class _OStreamAdaptor(object):
     """ Abstract base class for an output stream adaptor.
 
-    An adaptor can be used to make an output source compatible with the Writer
+    An adaptor can be used to make an output stream compatible with the Writer
     stream protocol, i.e. implementing a write() method that writes a single
     line of text to the stream.
 
@@ -160,7 +160,7 @@ class IStreamZlib(_IStreamAdaptor):
         
         
 class IFileSequence(_IStreamAdaptor):
-    """ Combine a sequence of files into a single stream.
+    """ Combine a sequence of files into a input single stream.
     
     """    
     def __init__(self, *paths, **kwargs):

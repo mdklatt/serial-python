@@ -1,4 +1,4 @@
-# Optional requirements file for the acis library. 
+# Optional requirements file for the serial library. 
 #
 # These dependencies are not required, but some functionality will be limited 
 # without them. Dependencies can be installed using pip:
