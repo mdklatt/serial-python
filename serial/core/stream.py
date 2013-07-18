@@ -3,10 +3,12 @@
 """
 from __future__ import absolute_import
 
+from glob import iglob
+from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("IStreamBuffer", "IStreamZlib")
+__all__ = ("IStreamBuffer", "IStreamZlib", "IFileSequence")
 
 
 class _IStreamAdaptor(object):
@@ -155,3 +157,39 @@ class IStreamZlib(_IStreamAdaptor):
         data = self._zlib.decompress(self._stream.read(self.block_size))
         self._buffer.extend(list(data))
         return len(data) > 0
+        
+        
+class IFileSequence(_IStreamAdaptor):
+    """ Combine a sequence of files into a single stream.
+    
+    """    
+    def __init__(self, *paths, **kwargs):
+        """ Initialize this object.
+        
+        If keyword argument glob is True each path expression is globbed. This 
+        will have the side effect of supressing errors for nonexistent files.
+        
+        """
+        # Globbing will supress IOErrors for nonexistent files because iglob()
+        # silently returns an empty sequence for non-matching expressions.
+        super(IFileSequence, self).__init__()
+        glob = kwargs.get("glob")
+        self._paths = paths if not glob else chain(*map(iglob, paths))
+        self._lines = iter(self)
+        return;
+    
+    def next(self):
+        """ Return the next line from the input file(s).
+        
+        """
+        return self._lines.next()
+                
+    def __iter__(self):
+        """ Iterate over every line in the input file(s).
+        
+        """
+        for path in self._paths:
+            with open(path, "r") as stream:
+                for line in stream:
+                    yield line
+        return
