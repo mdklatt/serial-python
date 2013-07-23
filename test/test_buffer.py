@@ -39,13 +39,14 @@ class ReaderBuffer(_ReaderBuffer):
             self._buffer = None
         return
 
-    def _flush(self):
-        """ Complete any buffering operations. 
-        
+    def _uflow(self):
+        """ Queue remaining records for output. 
+       
         """
         if self._buffer:
             # No more input, so output the last record as-is.
             self._output.append(self._buffer)
+            self._buffer = None
         return
 
 

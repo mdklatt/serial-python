@@ -35,24 +35,23 @@ class _ReaderBuffer(_Reader):
         """ Return the next buffered input record.
         
         """
-        while not self._output and self._reader:
+        while not self._output:
             # Keep pulling input from the reader until a record is available
             # for output or the reader is exhausted.
             try:
-                record = self._reader.next()
-            except StopIteration:  # _reader is exhausted
-                # There may still be some records in the buffer so swallow the
-                # exception for now.
+                self._queue(self._reader.next())
+            except (AttributeError, StopIteration): 
+                # Reader is exhausted so call _uflow() to get additional 
+                # records.
                 self._reader = None
-                self._flush()
+                self._uflow()
                 break
-            self._queue(record)
         try:
             return self._output.pop(0)
         except IndexError:  # _output is empty
-            # The reader is empty and _flush() has already been called so it's
+            # The reader is empty and _uflow() has already been called so it's
             # time to stop.
-            raise StopIteration
+            raise StopIteration 
             
     def _queue(self, record):
         """ Process this record.
@@ -63,13 +62,12 @@ class _ReaderBuffer(_Reader):
         """
         raise NotImplementedError
         
-    def _flush(self):
-        """ Complete any buffering operations.
+    def _uflow(self):
+        """ Input is empty, feed output records from the buffer.
         
-        This is called once as soon as the input reader is exhausted, so the 
-        derived class has one last chance to do something before iteration is 
-        halted. If there are any remaining records in the buffer they should be
-        queued in _output.
+        This is called if the input reader has been exhausted. The derived
+        class can use this to queue additional records in _output. Once _output 
+        is empty iteration will stop.
         
         """
         return

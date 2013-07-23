@@ -397,7 +397,8 @@ An input Buffer is basically a Reader that reads records from another Reader
 (including another input Buffer) instead of lines of text from a stream. An 
 input Buffer should derive from the `_ReaderBuffer` base class. It must 
 implement a `_queue()` method to process records being read from its Reader, 
-and it may override the `_flush()` method to finalize processing:
+and it may override the `_uflow()` method supply records once the input reader
+has been exhausted:
 
     from serial.core.buffer import _ReaderBuffer
     
@@ -433,17 +434,18 @@ and it may override the `_flush()` method to finalize processing:
                 self._buffer["date"] = month
             return
                 
-        def _flush(self, record):
+        def _uflow(self, record):
             """ Complete any buffering operations.
     
-            This is called when input has been exhausted. The base class
+            This is called after input has been exhausted. The base class
             version does nothing, but derived classes can override it to 
-            finalize any output as necessary.
+            queue any remaining output records.
           
             """
             # No more records are coming, so finish the current month.
             if self._buffer:
                 self._output.append(self._buffer)
+                self._buffer = None
             return
             
         ...
