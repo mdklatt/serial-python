@@ -40,13 +40,15 @@ class ReaderBuffer(_ReaderBuffer):
         return
 
     def _uflow(self):
-        """ Queue remaining records for output. 
+        """ Handle an underflow condition.
        
         """
         if self._buffer:
             # No more input, so output the last record as-is.
             self._output.append(self._buffer)
             self._buffer = None
+        else:
+            raise StopIteration
         return
 
 

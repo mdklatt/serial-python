@@ -1,9 +1,8 @@
 """ Classes for buffering input and output records.
 
 Unlike filters, buffers can operate on muliple records simulataneously. Thus,
-a buffer split one record into multiple records, merge multiple records into
-one record, reorder records, or any combination thereof. Buffers can also do
-basic filtering.
+a buffer can split one record into multiple records, merge multiple records 
+into one record, reorder records, or any combination thereof. 
 
 """
 from __future__ import absolute_import
@@ -16,14 +15,14 @@ class _ReaderBuffer(_Reader):
     """ Abstract base class for all reader buffers.
     
     A _ReaderBuffer applies postprocessing to records from another _Reader. The
-    base class implements the Python iterator protocol for reading records
-    from the buffer.
+    base class implements the iterator protocol for reading records from the
+    buffer.
     
     """
     def __init__(self, reader):
         """ Initialize this object.
         
-        The input reader can be a _Reader or another _ReaderBuffer.
+        The input reader can be any _Reader, including another _ReaderBuffer.
         
         """
         super(_ReaderBuffer, self).__init__()
@@ -36,41 +35,33 @@ class _ReaderBuffer(_Reader):
         
         """
         while not self._output:
-            # Keep pulling input from the reader until a record is available
-            # for output or the reader is exhausted.
             try:
                 self._queue(self._reader.next())
-            except (AttributeError, StopIteration): 
-                # Reader is exhausted so call _uflow() to get additional 
-                # records.
+            except (AttributeError, StopIteration):
+                # Underflow condition.
                 self._reader = None
-                self._uflow()
-                break
-        try:
-            return self._output.pop(0)
-        except IndexError:  # _output is empty
-            # The reader is empty and _uflow() has already been called so it's
-            # time to stop.
-            raise StopIteration 
+                self._uflow()  # raises StopIteration on EOF
+        return self._output.pop(0)
             
     def _queue(self, record):
-        """ Process this record.
-        
-        The derived class must implement this method to add records to the 
-        output queue as records are read from _reader.
+        """ Process each incoming record.
+
+        This is called for each record that is read from the input reader and 
+        must be implemented by derived classes.
         
         """
         raise NotImplementedError
         
     def _uflow(self):
-        """ Input is empty, feed output records from the buffer.
+        """ Handle an underflow condition.
         
-        This is called if the input reader has been exhausted. The derived
-        class can use this to queue additional records in _output. Once _output 
-        is empty iteration will stop.
+        This is called to retrieve additional records if the output queue is 
+        empty and the input reader has been exhausted. Derived classes can 
+        override this as necessary. 
         
         """
-        return
+        # Derived classes must raise StopIteration to signal the end of input.
+        raise StopIteration
         
 
 class _WriterBuffer(_Writer):
@@ -109,7 +100,7 @@ class _WriterBuffer(_Writer):
         not close the destination writer itself.
         
         If multiple _WriterBuffers are being chained, their close() methods
-        should be called in correct order, outermost buffer first.
+        should be called in the correct order (outermost buffer first).
         
         """
         self._flush()
@@ -144,8 +135,8 @@ class _WriterBuffer(_Writer):
     def _queue(self, record):
         """ Process this record.
         
-        The derived class must implement this method to add records to the 
-        output queue as records are written to the buffer.
+        This is called for each record that is written to the buffer and must 
+        be implemented by derived classes.
         
         """
         raise NotImplementedError

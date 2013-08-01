@@ -435,17 +435,18 @@ has been exhausted:
             return
                 
         def _uflow(self, record):
-            """ Complete any buffering operations.
+            """ Handle an underflow condition.
     
-            This is called after input has been exhausted. The base class
-            version does nothing, but derived classes can override it to 
-            queue any remaining output records.
+            This is called if the output queue is emtpy and the input reader 
+            has been exhausted.
           
             """
             # No more records are coming, so finish the current month.
             if self._buffer:
                 self._output.append(self._buffer)
                 self._buffer = None
+            else:
+                raise StopIteration 
             return
             
         ...
