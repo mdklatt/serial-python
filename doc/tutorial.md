@@ -451,7 +451,7 @@ has been exhausted:
             
         ...
         
-        monthly_records = list(MonthlyTotal(reader)
+        monthly_records = list(MonthlyTotal(reader))
             
             
 ### Output Buffering ###
@@ -629,7 +629,7 @@ multiple fields in the data record, or vice versa:
 ### Compressed Data ###
 
 The `IStreamZlib` stream adaptor can be used to read any zlib-compressed data,
-including gzip files. Unlike the built-inin Python `gzip.GzipFile`, an 
+including gzip files. Unlike the built-in Python `gzip.GzipFile` class, an 
 `IStreamZlib` can handle streaming data such as network files:
 
     from conxtextlib import closing
