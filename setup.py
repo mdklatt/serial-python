@@ -1,4 +1,4 @@
-""" Distutils setup script for the serial library.
+""" Distutils setup script for the serial.core library package.
 
 Basic command to run the test suite and install library in the user's package
 directory if all tests pass:
@@ -14,7 +14,7 @@ from serial.core import __version__
 from test import run as run_tests
 
 SETUP_CONFIG = {
-    "name": "serial",
+    "name": "serial-core",
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
     "author_email": "mdklatt@ou.edu",
