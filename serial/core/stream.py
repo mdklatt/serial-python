@@ -188,8 +188,11 @@ class IFileSequence(_IStreamAdaptor):
         """ Iterate over every line in the input file(s).
         
         """
+        # Only need next() to implement the _IStreamAdaptor interface, but it's
+        # easier to implement this as a generator.
         for path in self._paths:
             with open(path, "r") as stream:
+                # This won't work for file files with header data.
                 for line in stream:
                     yield line
         return
