@@ -5,7 +5,7 @@ Writers convert data records to lines of text.
 """
 from __future__ import absolute_import
 
-from . _util import Field
+from ._util import Field
 
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
 

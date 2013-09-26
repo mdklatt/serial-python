@@ -9,8 +9,8 @@ from __future__ import absolute_import
 from datetime import datetime
 from itertools import product
 
-from . _util import Field
-from . _util import TimeFormat
+from ._util import Field
+from ._util import TimeFormat
 
 
 __all__ = ("ConstType", "IntType", "FloatType", "StringType", "DatetimeType",
@@ -205,8 +205,18 @@ class ArrayType(_DataType):
         the fields defined for this array.
         
         """
+        def parse():
+            """ Split token_array into array elements. """
+        
+            # If the length of the input array is not a multiple of _stride the
+            # last element will be incomplete.
+            for beg in xrange(0, len(token_array), self._stride):
+                end = beg + self._stride
+                yield token_array[beg:end]
+            return        
+        
         value_array = []
-        for elem in self._elements(token_array):
+        for elem in parse():
             # Decode the fields in each element into a dict.
             values = dict((field.name, field.dtype.decode(elem[field.pos]))
                           for field in self._fields)
@@ -227,15 +237,3 @@ class ArrayType(_DataType):
         self.width = len(value_array) * self._stride
         return [field.dtype.encode(elem.get(field.name)) for elem, field in
                 product(value_array, self._fields)]
-                                
-    def _elements(self, token_array):
-        """ Split token_array into array elements.
-        
-        If the length of the input array is not a multiple of _stride the last
-        element will be incomplete.
-        
-        """
-        for beg in xrange(0, len(token_array), self._stride):
-            end = beg + self._stride
-            yield token_array[beg:end]
-        return

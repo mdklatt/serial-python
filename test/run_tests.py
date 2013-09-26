@@ -1,12 +1,12 @@
 """ Master test script.
 
 """
-import os.path
-import sys
+from os.path import dirname
+from os.path import join
 
 import _unittest as unittest
 
-def main(argv=None):
+def main():
     """ Run all tests in this directory.
 
     The test directory is searched for all test scripts ('test_*.py'), and all
@@ -14,7 +14,7 @@ def main(argv=None):
     test suite.
     
     """
-    path = os.path.join(os.path.dirname(__file__))
+    path = join(dirname(__file__))
     suite = unittest.defaultTestLoader.discover(path, "test_*.py")
     result = unittest.TextTestRunner().run(suite)
     return 0 if result.wasSuccessful() else 1
@@ -23,4 +23,4 @@ def main(argv=None):
 # Make the script executable.
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    raise SystemExit(main())

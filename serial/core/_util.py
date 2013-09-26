@@ -50,34 +50,28 @@ class TimeFormat(object):
         "Y": ("04d", lambda time: time.year),
         "y": ("02d", lambda time: time.year%100)}
 
-    @staticmethod
-    def _scan(timefmt):
-        """ Iterate over the timefmt string while unescaping characters.
-
-        The return values are a (char, esc) pair where esc is True if char was
-        preceded by the escape character.
-
-        """
-        esc = False
-        for char in timefmt:
-            if char == TimeFormat._escape and not esc:
-                # This is an escape character that has not itself been escaped.
-                esc = True
-            else:
-                # A regular character.
-                yield char, esc
-                esc = False
-        return
-    
     def __init__(self, timefmt):
         """ Initialize this object.
         
         """
+        def scan():
+            """ Iterate over timefmt while unescaping characters. """
+            esc = False
+            for char in timefmt:
+                if char == self._escape and not esc:
+                    # An unescaped escape character.
+                    esc = True
+                else:
+                    # A regular character.
+                    yield char, esc
+                    esc = False
+            return
+
         # The presumed use case is multiple conversions using the same format
         # string, so scan the string once and build a template.
         self._template = []
         self._fields = []
-        for char, esc in self._scan(timefmt):
+        for char, esc in scan():
             if not esc:
                 # A character literal
                 self._template.append(char)

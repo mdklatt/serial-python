@@ -131,6 +131,14 @@ class IStreamZlib(_IStreamAdaptor):
         """ Return the next line of text.
         
         """
+        def read():
+            """ Retrieve decompressed data from the stream. """
+            # The block size is based on the compressed data; the returned data
+            # size may be different.
+            data = self._zlib.decompress(self._stream.read(self.block_size))
+            self._buffer.extend(list(data))
+            return len(data) > 0
+        
         while True:
             # Find the end of the next complete line.
             try:
@@ -138,7 +146,7 @@ class IStreamZlib(_IStreamAdaptor):
             except ValueError:  # index failed
                 # Keep going as long as the stream is still good, otherwise
                 # this is the last line (the newline is missing).
-                if self._read():
+                if read():
                     continue
                 pos = len(self._buffer) 
             break
@@ -147,17 +155,7 @@ class IStreamZlib(_IStreamAdaptor):
         line = "".join(self._buffer[:pos])
         self._buffer = self._buffer[pos:]
         return line
-        
-    def _read(self):
-        """ Retrieve decompressed data from the stream.
-        
-        """
-        # The block size is based on the compressed data; the returned data
-        # size may be different.
-        data = self._zlib.decompress(self._stream.read(self.block_size))
-        self._buffer.extend(list(data))
-        return len(data) > 0
-        
+                
         
 class IFileSequence(_IStreamAdaptor):
     """ Combine a sequence of files into a input single stream.
