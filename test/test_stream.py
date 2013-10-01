@@ -16,6 +16,7 @@ import _path
 import _unittest as unittest
 
 from serial.core import IStreamBuffer
+from serial.core import IStreamFilter
 from serial.core import IStreamZlib
 from serial.core import IFileSequence
 
@@ -62,6 +63,47 @@ class IStreamBufferTest(unittest.TestCase):
         self.assertSequenceEqual([], list(self.stream))  # stream is exhausted
         return
 
+
+class IStreamFilterTest(unittest.TestCase):
+    """ Unit testing for the IStreamFilter class.
+    
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        self.lines = ("abc\n", "def\n", "ghi\n")
+        self.stream = StringIO("".join(self.lines))
+        return
+    
+    def test_filter(self):
+        """ Test filtering.
+        
+        """
+        reject_filter = lambda line: line if line[0] != "d" else None
+        modify_filter = lambda line: line.upper()
+        stream = IStreamFilter(self.stream, reject_filter, modify_filter)
+        self.assertSequenceEqual(("ABC\n", "GHI\n"), list(stream))
+        return
+
+    def test_filter_stop(self):
+        """ Test a filter that stops iteration.
+        
+        """
+        def stop_filter(line):
+            """ Filter that stops iteration. """
+            if line[0] == "d":
+                raise StopIteration
+            return line
+            
+        stream = IStreamFilter(self.stream, stop_filter)
+        self.assertSequenceEqual(("abc\n",), list(stream))
+        return
+    
+    
 class IStreamZlibTest(unittest.TestCase):
     """ Unit testing for the IStreamZlib class.
 
@@ -178,7 +220,8 @@ class IFileSequenceTest(unittest.TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (IStreamBufferTest, IStreamZlibTest, IFileSequenceTest)
+_TEST_CASES = (IStreamBufferTest, IStreamFilterTest, IStreamZlibTest, 
+               IFileSequenceTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

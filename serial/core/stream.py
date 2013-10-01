@@ -8,7 +8,7 @@ from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("IStreamBuffer", "IStreamZlib", "IFileSequence")
+__all__ = ("IStreamBuffer", "IStreamFilter", "IStreamZlib", "IFileSequence")
 
 
 class _IStreamAdaptor(object):
@@ -102,6 +102,47 @@ class IStreamBuffer(_IStreamAdaptor):
         self._bufpos = 0 if count is None else max(0, self._bufpos - count)
         return
 
+
+class IStreamFilter(_IStreamAdaptor):
+    """ Apply filters to an input stream.
+    
+    Stream filters are applied before the stream input is parsed by the Reader;
+    this can be faster than using Reader filters. A filter is a callable object
+    that accepts the output from the stream's next() method (e.g. a line of
+    text) and performs one of the following actions:
+    1. Return None to reject the input (it will not be passed to the reader).
+    2. Return the input as is.
+    3. Return modified input.
+    4. Raise StopIteration to signal the end of input.
+       
+    """
+    def __init__(self, stream, *callbacks):
+        """ Initialize this object.
+        
+        """
+        self._stream = stream
+        self._filters = callbacks
+        return
+    
+    def next(self):
+        """ Return the next filtered input sequence from the stream.
+        
+        """
+        # Recursion would simplify this, but would fail for any combination of
+        # filters that rejected more than 1000 consecutive lines (the Python
+        # recursion limit).
+        line = None
+        while line is None:
+            # Repeat until a line passes all filters.
+            line = self._stream.next()
+            for callback in self._filters:
+                # Apply each filter in order. Stop as soon as the line fails
+                # a filter.
+                line = callback(line)
+                if line is None:
+                    break
+        return line
+        
 
 class IStreamZlib(_IStreamAdaptor):
     """ Add zlib decompression to an input stream.
