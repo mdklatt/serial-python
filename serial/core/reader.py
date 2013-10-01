@@ -5,7 +5,9 @@ Readers convert lines of text to data records.
 """
 from __future__ import absolute_import
 
-from . _util import Field
+from contextlib import contextmanager
+
+from ._util import Field
 
 __all__ = ("DelimitedReader", "FixedWidthReader")
 
@@ -94,6 +96,23 @@ class _TabularReader(_Reader):
     complete record.
 
     """
+    @classmethod
+    @contextmanager
+    def open(cls, stream, **kwargs):
+        """ Open a stream and initialize a reader inside a context block.
+        
+        If stream is a string it is opened as a regular file, otherwise it
+        is assumed to be an open stream. The open stream and keyword arguments
+        are passed to the reader constructor. The stream is automatically
+        closed upon exit from the context block.
+        
+        """
+        if isinstance(stream, basestring):
+            stream = open(stream, "r")
+        yield cls(stream=stream, **kwargs)
+        stream.close()
+        return
+    
     def __init__(self, stream, fields, endl="\n"):
         """ Initialize this object.
 

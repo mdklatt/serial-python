@@ -65,6 +65,15 @@ class _TabularReaderTest(unittest.TestCase):
         self.stream = StringIO(self.data)
         return
 
+    def test_open(self):
+        """ Test the open() method.
+        
+        """
+        with self.TestClass.open(self.stream, **self.kwargs) as self.reader:
+            self.test_next()
+        self.assertTrue(self.stream)
+        return
+
     def test_next(self):
         """ Test the next() method.
 
@@ -103,6 +112,8 @@ class DelimitedReaderTest(_TabularReaderTest):
     """ Unit testing for the DelimitedReader class.
 
     """
+    TestClass = DelimitedReader
+    
     def setUp(self):
         """ Set up the test fixture.
 
@@ -118,14 +129,17 @@ class DelimitedReaderTest(_TabularReaderTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
-        self.reader = DelimitedReader(self.stream, fields, ",")
+        self.kwargs = {"fields": fields, "delim": ","}
+        self.reader = self.TestClass(self.stream, **self.kwargs)
         return
-
+        
 
 class FixedWidthReaderTest(_TabularReaderTest):
     """ Unit testing for the FixedWidthReader class.
 
     """
+    TestClass = FixedWidthReader
+    
     def setUp(self):
         """ Set up the test fixture.
 
@@ -141,7 +155,8 @@ class FixedWidthReaderTest(_TabularReaderTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
-        self.reader = FixedWidthReader(self.stream, fields)
+        self.kwargs = {"fields": fields}
+        self.reader = self.TestClass(self.stream, **self.kwargs)
         return
 
 
