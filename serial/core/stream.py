@@ -151,9 +151,8 @@ class IStreamZlib(_IStreamAdaptor):
     files. Unlike the Python gzip module, this will work with network files 
     e.g. a urlopen() stream.
     
-    """  
-    # Adjust the block size to trade performance against memory usage. 
-    block_size = 32*1024  # bytes
+    """
+    read_size = 1024  # bytes; adjust to maximize performance
       
     def __init__(self, stream):
         """ Initialize this object.
@@ -165,7 +164,7 @@ class IStreamZlib(_IStreamAdaptor):
         super(IStreamZlib, self).__init__()
         self._decode = decompressobj(MAX_WBITS + 32).decompress
         self._stream = stream
-        self._buffer = []
+        self._buffer = ""
         return
             
     def next(self):
@@ -176,20 +175,20 @@ class IStreamZlib(_IStreamAdaptor):
             """ Retrieve decompressed data from the stream. """
             # The block size is based on the compressed data; the returned data
             # size may be different. 
-            data = self._stream.read(self.block_size)
+            data = self._stream.read(self.read_size)
             if not data:
                 # Check for EOF before decoding because the decoded value will
                 # be an empty string if data does not contain a complete
                 # encoded sequence.
                 return False
-            self._buffer.extend(self._decode(data))
+            self._buffer += self._decode(data)
             return True
         
         while True:
             # Find the end of the next complete line.
             try:
-                pos = self._buffer.index("\n") + 1  # include newline in line
-            except ValueError:  # index failed
+                pos = self._buffer.index("\n") + 1  # include \n
+            except ValueError:  # \n not found
                 # Keep going as long as the stream is still good, otherwise
                 # this is the last line (the newline is missing).
                 if read():
@@ -198,7 +197,7 @@ class IStreamZlib(_IStreamAdaptor):
             break
         if not self._buffer:
             raise StopIteration
-        line = "".join(self._buffer[:pos])
+        line = self._buffer[:pos]
         self._buffer = self._buffer[pos:]
         return line
 
