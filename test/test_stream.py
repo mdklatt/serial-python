@@ -115,7 +115,10 @@ class IStreamZlibTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.lines = ("abcd\n", "efgh\n", "ijkl")  # test with missing newline
+        # Test blank lines, lines that are longer and shorter than the block
+        # size, and no trailing \n.
+        IStreamZlib.block_size = 4
+        self.lines = ("\n", "abcdefgh\n", "ijkl")
         return
 
     def test_iter_gzip(self):
@@ -126,8 +129,7 @@ class IStreamZlibTest(unittest.TestCase):
         with  closing(GzipFile(fileobj=buffer, mode="w")) as stream:
             # Explicit closing() context is necessary for Python 2.6 but not
             # for 2.7.
-            for line in self.lines:
-                stream.write(line)
+            stream.write("".join(self.lines))
         buffer.seek(0)
         self.assertSequenceEqual(self.lines, list(IStreamZlib(buffer)))
         return
@@ -141,16 +143,6 @@ class IStreamZlibTest(unittest.TestCase):
         self.assertSequenceEqual(self.lines, list(stream))
         return
     
-    def test_iter_long(self):
-        """ Test the iterator protocol for lines longer than the block size.
-    
-        """
-        buffer = BytesIO(compress("".join(self.lines)))
-        stream = IStreamZlib(buffer)
-        stream.block_size = 4  # minimum block size
-        self.assertSequenceEqual(self.lines, list(stream))
-        return
-
 
 class IFileSequenceTest(unittest.TestCase):
     """ Unit testing for the IFileSequence class.

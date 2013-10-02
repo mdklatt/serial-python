@@ -153,7 +153,7 @@ class IStreamZlib(_IStreamAdaptor):
     
     """  
     # Adjust the block size to trade performance against memory usage. 
-    block_size = 32*1024  # bytes; must be at least 4 bytes.
+    block_size = 32*1024  # bytes
       
     def __init__(self, stream):
         """ Initialize this object.
@@ -163,8 +163,8 @@ class IStreamZlib(_IStreamAdaptor):
         
         """
         super(IStreamZlib, self).__init__()
+        self._decode = decompressobj(MAX_WBITS + 32).decompress
         self._stream = stream
-        self._zlib = decompressobj(MAX_WBITS + 32)  # auto zlib/gzip detect
         self._buffer = []
         return
             
@@ -175,10 +175,15 @@ class IStreamZlib(_IStreamAdaptor):
         def read():
             """ Retrieve decompressed data from the stream. """
             # The block size is based on the compressed data; the returned data
-            # size may be different.
-            data = self._zlib.decompress(self._stream.read(self.block_size))
-            self._buffer.extend(list(data))
-            return len(data) > 0
+            # size may be different. 
+            data = self._stream.read(self.block_size)
+            if not data:
+                # Check for EOF before decoding because the decoded value will
+                # be an empty string if data does not contain a complete
+                # encoded sequence.
+                return False
+            self._buffer.extend(self._decode(data))
+            return True
         
         while True:
             # Find the end of the next complete line.
@@ -196,7 +201,7 @@ class IStreamZlib(_IStreamAdaptor):
         line = "".join(self._buffer[:pos])
         self._buffer = self._buffer[pos:]
         return line
-                
+
         
 class IFileSequence(_IStreamAdaptor):
     """ Combine a sequence of files into a input single stream.
