@@ -86,17 +86,19 @@ class _TabularWriter(_Writer):
     """
     @classmethod
     @contextmanager
-    def open(cls, expr, **kwargs):
-        """ Open a stream and initialize a Writer inside a context block.
+    def open(cls, expr, *args, **kwargs):
+        """ Create a runtime context for a Writer and its stream.
         
-        If expr is a string it is opened as a regular text file for writing, 
-        otherwise it is assumed to be an open stream. The open stream and 
-        keyword arguments are passed to the Writer constructor. The stream is
-        automatically closed upon exit from the context block.
+        The arguments are passed to the Writer's constructor, except that the
+        first argument is either an open stream or a file path that is used to 
+        open a text file for writing. In both cases the stream will be closed
+        upon exit from the context block.
         
         """
+        # This assumes that first argument for all derived class constructors
+        # is the stream; if not, this will need to be overridden.
         stream = open(expr, "w") if isinstance(expr, basestring) else expr
-        yield cls(stream=stream, **kwargs)
+        yield cls(stream, *args, **kwargs)
         stream.close()
         return
         

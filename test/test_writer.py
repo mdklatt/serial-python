@@ -59,7 +59,7 @@ class _TabularWriterTest(unittest.TestCase):
         """ Test the open() method.
         
         """
-        with self.TestClass.open(self.stream, **self.kwargs) as writer:
+        with self.TestClass.open(self.stream, *self.args) as writer:
             self.test_write()
         self.assertTrue(self.stream.closed)
         return
@@ -102,9 +102,9 @@ class DelimitedWriterTest(_TabularWriterTest):
             ("int", 0, IntType()),
             ("arr", (1, None), ArrayType(array_fields))) 
         super(DelimitedWriterTest, self).setUp()
-        self.kwargs = {"fields": fields, "delim": ",", "endl": "X"}
-        self.writer = self.TestClass(self.stream, **self.kwargs)
         self.data = "123,abc,defX456,ghi,jklX"
+        self.args = (fields, ",", "X")
+        self.writer = self.TestClass(self.stream, *self.args)
         return
 
     def test_filter(self):
@@ -137,9 +137,9 @@ class FixedWidthWriterTest(_TabularWriterTest):
             ("int", (0, 3), IntType("3d")),
             ("arr", (3, None), ArrayType(array_fields))) 
         super(FixedWidthWriterTest, self).setUp()
-        self.kwargs = {"fields": fields, "endl": "X"}
-        self.writer = self.TestClass(self.stream, **self.kwargs)
         self.data = "123abcdefX456ghijklX"
+        self.args = (fields, "X")
+        self.writer = self.TestClass(self.stream, *self.args)
         return
 
     def test_filter(self):
