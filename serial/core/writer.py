@@ -5,6 +5,8 @@ Writers convert data records to lines of text.
 """
 from __future__ import absolute_import
 
+from contextlib import contextmanager
+
 from ._util import Field
 
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
@@ -82,6 +84,22 @@ class _TabularWriter(_Writer):
     record.
 
     """
+    @classmethod
+    @contextmanager
+    def open(cls, expr, **kwargs):
+        """ Open a stream and initialize a Writer inside a context block.
+        
+        If expr is a string it is opened as a regular text file for writing, 
+        otherwise it is assumed to be an open stream. The open stream and 
+        keyword arguments are passed to the Writer constructor. The stream is
+        automatically closed upon exit from the context block.
+        
+        """
+        stream = open(expr, "w") if isinstance(expr, basestring) else expr
+        yield cls(stream=stream, **kwargs)
+        stream.close()
+        return
+        
     def __init__(self, stream, fields, endl="\n"):
         """ Initialize this object.
 

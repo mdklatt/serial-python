@@ -55,6 +55,15 @@ class _TabularWriterTest(unittest.TestCase):
         self.stream = StringIO()
         return
 
+    def test_open(self):
+        """ Test the open() method.
+        
+        """
+        with self.TestClass.open(self.stream, **self.kwargs) as writer:
+            self.test_write()
+        self.assertTrue(self.stream.closed)
+        return
+        
     def test_write(self):
         """ Test the write() method.
 
@@ -77,6 +86,8 @@ class DelimitedWriterTest(_TabularWriterTest):
     """ Unit testing for the DelimitedWriter class.
 
     """
+    TestClass = DelimitedWriter
+    
     def setUp(self):
         """ Set up the test fixture.
 
@@ -91,7 +102,8 @@ class DelimitedWriterTest(_TabularWriterTest):
             ("int", 0, IntType()),
             ("arr", (1, None), ArrayType(array_fields))) 
         super(DelimitedWriterTest, self).setUp()
-        self.writer = DelimitedWriter(self.stream, fields, ",", "X")
+        self.kwargs = {"fields": fields, "delim": ",", "endl": "X"}
+        self.writer = self.TestClass(self.stream, **self.kwargs)
         self.data = "123,abc,defX456,ghi,jklX"
         return
 
@@ -109,6 +121,8 @@ class FixedWidthWriterTest(_TabularWriterTest):
     """ Unit testing for the DelimitedWriter class.
 
     """
+    TestClass = FixedWidthWriter
+    
     def setUp(self):
         """ Set up the test fixture.
 
@@ -123,7 +137,8 @@ class FixedWidthWriterTest(_TabularWriterTest):
             ("int", (0, 3), IntType("3d")),
             ("arr", (3, None), ArrayType(array_fields))) 
         super(FixedWidthWriterTest, self).setUp()
-        self.writer = FixedWidthWriter(self.stream, fields, "X")
+        self.kwargs = {"fields": fields, "endl": "X"}
+        self.writer = self.TestClass(self.stream, **self.kwargs)
         self.data = "123abcdefX456ghijklX"
         return
 
