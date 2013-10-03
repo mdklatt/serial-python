@@ -156,9 +156,9 @@ class FixedWidthWriter(DelimitedWriter):
     # must be in he correct order, and each token must be the correct width for
     # that field. The _DataType format for a fixed-width field *MUST* have a
     # field width, e.g. '6.2f'.       
-    def __init__(self, stream, field, endl="\n"):
+    def __init__(self, stream, fields, endl="\n"):
         """ Initialize this object.
         
         """
-        super(FixedWidthWriter, self).__init__(stream, field, "", endl)
+        super(FixedWidthWriter, self).__init__(stream, fields, "", endl)
         return
