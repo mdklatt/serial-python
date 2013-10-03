@@ -69,7 +69,7 @@ class _TabularReaderTest(unittest.TestCase):
         """ Test the open() method.
         
         """
-        with self.TestClass.open(self.stream, **self.kwargs) as self.reader:
+        with self.TestClass.open(self.stream, *self.args) as self.reader:
             self.test_next()
         self.assertTrue(self.stream)
         return
@@ -129,8 +129,8 @@ class DelimitedReaderTest(_TabularReaderTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
-        self.kwargs = {"fields": fields, "delim": ","}
-        self.reader = self.TestClass(self.stream, **self.kwargs)
+        self.args = (fields, ",")
+        self.reader = self.TestClass(self.stream, *self.args)
         return
         
 
@@ -155,8 +155,8 @@ class FixedWidthReaderTest(_TabularReaderTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
-        self.kwargs = {"fields": fields}
-        self.reader = self.TestClass(self.stream, **self.kwargs)
+        self.args = (fields,)
+        self.reader = self.TestClass(self.stream, *self.args)
         return
 
 

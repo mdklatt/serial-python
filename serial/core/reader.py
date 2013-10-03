@@ -98,18 +98,19 @@ class _TabularReader(_Reader):
     """
     @classmethod
     @contextmanager
-    def open(cls, stream, **kwargs):
-        """ Open a stream and initialize a reader inside a context block.
+    def open(cls, expr, *args, **kwargs):
+        """ Create a runtime context for a Reader and its stream.
         
-        If stream is a string it is opened as a regular file, otherwise it
-        is assumed to be an open stream. The open stream and keyword arguments
-        are passed to the reader constructor. The stream is automatically
-        closed upon exit from the context block.
+        The arguments are passed to the Reader's constructor, except that the
+        first argument is either an open stream or a file path that is used to 
+        open a text file for reading. In both cases the stream will be closed
+        upon exit from the context block.
         
         """
-        if isinstance(stream, basestring):
-            stream = open(stream, "r")
-        yield cls(stream=stream, **kwargs)
+        # This assumes that first argument for all derived class constructors
+        # is the stream; if not, this will need to be overridden.
+        stream = open(expr, "r") if isinstance(expr, basestring) else expr
+        yield cls(stream, *args, **kwargs)
         stream.close()
         return
     
