@@ -109,7 +109,10 @@ class _TabularReader(_Reader):
         """
         # This assumes that first argument for all derived class constructors
         # is the stream; if not, this will need to be overridden.
-        stream = open(expr, "r") if isinstance(expr, basestring) else expr
+        try:
+            stream = open(expr, "r")
+        except TypeError:  # not a string
+            stream = expr
         yield cls(stream, *args, **kwargs)
         stream.close()
         return
