@@ -8,8 +8,11 @@ from StringIO import StringIO
 import _path
 import _unittest as unittest
 
+from functools import partial
+
 from serial.core import DelimitedReader
 from serial.core import FixedWidthReader
+from serial.core import ReaderSequence
 from serial.core import IntType
 from serial.core import StringType
 from serial.core import ArrayType
@@ -160,9 +163,53 @@ class FixedWidthReaderTest(_TabularReaderTest):
         return
 
 
+class ReaderSequenceTest(unittest.TestCase):
+    
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        array_fields = (
+            ("x", 0, StringType()), 
+            ("y", 1, StringType()))
+        fields = (
+            ("int", 0, IntType()),
+            ("arr", (1, None), ArrayType(array_fields))) 
+        self.reader = partial(DelimitedReader, fields=fields, delim=",")
+        data = "123, abc, def\n456, ghi, jkl\n"
+        self.streams = (StringIO(data), StringIO(data.upper()))
+        self.records = (
+            {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
+            {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]},
+            {"int": 123, "arr": [{"x": "ABC", "y": "DEF"}]},
+            {"int": 456, "arr": [{"x": "GHI", "y": "JKL"}]})
+        return
+
+    def test_iter(self):
+        """ Test the __iter__() method.
+        
+        """
+        sequence = ReaderSequence(self.reader, *self.streams)
+        self.assertSequenceEqual(self.records, list(sequence))
+        self.assertTrue(all(stream.closed for stream in self.streams))
+        return
+        
+    def test_iter_context(self):
+        """ Test the __iter__() method inside a context block.
+        
+        """
+        with ReaderSequence(self.reader, *self.streams) as sequence:
+            self.assertSequenceEqual(self.records, list(sequence))
+        self.assertTrue(all(stream.closed for stream in self.streams))
+        return
+        
+
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest)
+_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest, ReaderSequenceTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

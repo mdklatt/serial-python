@@ -8,7 +8,7 @@ from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("IStreamBuffer", "IStreamFilter", "IStreamZlib", "IFileSequence")
+__all__ = ("IStreamBuffer", "IStreamFilter", "IStreamZlib")
 
 
 class _IStreamAdaptor(object):
@@ -200,42 +200,3 @@ class IStreamZlib(_IStreamAdaptor):
         line = self._buffer[:pos]
         self._buffer = self._buffer[pos:]
         return line
-
-        
-class IFileSequence(_IStreamAdaptor):
-    """ Combine a sequence of files into a input single stream.
-    
-    """    
-    def __init__(self, *paths, **kwargs):
-        """ Initialize this object.
-        
-        If keyword argument glob is True each path expression is globbed. This 
-        will have the side effect of supressing errors for nonexistent files.
-        
-        """
-        # Globbing will supress IOErrors for nonexistent files because iglob()
-        # silently returns an empty sequence for non-matching expressions.
-        super(IFileSequence, self).__init__()
-        glob = kwargs.get("glob")
-        self._paths = paths if not glob else chain(*map(iglob, paths))
-        self._lines = iter(self)
-        return;
-    
-    def next(self):
-        """ Return the next line from the input file(s).
-        
-        """
-        return self._lines.next()
-                
-    def __iter__(self):
-        """ Iterate over every line in the input file(s).
-        
-        """
-        # Only need next() to implement the _IStreamAdaptor interface, but it's
-        # easier to implement this as a generator.
-        for path in self._paths:
-            with open(path, "r") as stream:
-                # This won't work for file files with header data.
-                for line in stream:
-                    yield line
-        return

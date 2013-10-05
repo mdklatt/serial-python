@@ -9,7 +9,7 @@ from contextlib import contextmanager
 
 from ._util import Field
 
-__all__ = ("DelimitedReader", "FixedWidthReader")
+__all__ = ("DelimitedReader", "FixedWidthReader", "ReaderSequence")
 
 
 class _Reader(object):
@@ -187,6 +187,85 @@ class FixedWidthReader(_TabularReader):
 
         """
         return tuple(line[field.pos] for field in self._fields)
+
+
+class ReaderSequence(_Reader):
+    """ Iterate over a sequence of files/streams as a single sequence.
+    
+    """
+    def __init__(self, reader, *args):
+        """ Initialize this object.
+        
+        The reader argument is a callable object that takes a stream as its
+        only argument and returns a Reader to use on each input stream, e.g. 
+        a Reader constructor. The remaining arguments are either open streams
+        or paths to open as plain text files. Each input stream is closed once
+        it has been exhuasted.
+        
+        Filtering is applied at the ReaderSequence level, but for filters that
+        raise StopIteration this might not be the desired behavior. Halting
+        iteration at this level effects all subsequent streams. If the intent
+        is to stop iteration for each individual stream, define the reader
+        function to return a Reader that already has the appropriate filter 
+        applied.
+        
+        """
+        super(ReaderSequence, self).__init__()
+        self._input = list(args)
+        self._reader = reader
+        self._active = None
+        self._open()
+        return
+        
+    def _get(self):
+        """ Return the next parsed record from the sequence.
+        
+        """
+        while True:
+            # Repeat until a record is returned or the sequence is exhausted.
+            try:
+                return self._active.next()
+            except StopIteration:
+                # The current stream is exhausted, try the next one. 
+                self._open()
+        
+    def _open(self):
+        """ Open the next stream in the sequence.
+        
+        """
+        if self._active:
+            # Close the open stream.
+            self._input.pop(0).close()
+        try:
+            # Try to open a path as a text file.
+            self._input[0] = open(self._input[0], "r")
+        except TypeError:
+            # Not a string, assume it's an open stream.
+            pass
+        except IndexError:
+            # No more streams.
+            raise StopIteration
+        self._active = self._reader(self._input[0])
+        return 
+        
+    def __enter__(self):
+        """ Enter a context block.
+        
+        """ 
+        return self
+        
+    def __exit__(self, etype=None, value=None, trace=None):
+        """ Exit a context block.
+        
+        """
+        # The exception-handling arguments are ignored; if the context exits 
+        # due to an exception it will be passed along to the caller.
+        for stream in self._input:
+            try:
+                stream.close()
+            except AttributeError:  # no close
+                continue
+        return
 
 
 # class ContextualReader(_Reader):
