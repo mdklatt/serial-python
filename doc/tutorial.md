@@ -289,25 +289,26 @@ continue reading from the stream once the desired time period has been passed:
 ### Multiple Filters ###
             
 Filters can be chained and are called in order for each record. If a filter
-returns `None` the record is immediately dropped. For
-the best performance filters should be ordered from most restrictive (most
-likely to return `None`) to least.
+returns `None` the record is immediately dropped. For the best performance 
+filters should be ordered from most restrictive (most likely to return `None`)
+to least.
 
     reader.filter(MonthFilter(3), LocalTime(-6))  # March only, time is CST
 
 
-Two filters are defined by the library:
+The library defines the `FieldFilter` class for use with Readers and Writers:
 
-    from serial.core import BlacklistFilter
-    from serial.core import WhitelistFilter
+    from serial.core import FieldFilter
     
     ...
     
-    # Reject all records where the color field is orange or black.
-    reader.filter(BlacklistFilter("color", ("orange", "black")))
+    # Drop all records where the color field is not crimson or cream.
+    whitelist = FieldFilter("color", ("crimson", "cream"))
+    reader.filter(whitelist)
     
-    # Reject all records where the color field is not crimson or cream.
-    reader.filter(WhitelistFilter("color", ("crimson", "cream")))
+    # Drop all records where the color field is orange.
+    blacklist = FieldFilter("color", ("orange",), whitelist=False)
+    reader.filter(blacklist)
 
 
 ## Extending Core Classes ##
