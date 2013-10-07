@@ -55,7 +55,25 @@ class FieldFilterTest(_FilterTest):
         self.data = [{"test": value} for value in values]
         return
 
-                
+    def test_call_missing(self):
+        """ Test the __call__ method with a missing field.
+        
+        """ 
+        self.data = [{"not_test": "xyz"}]  # no "test" field
+        filtered = [None]
+        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
+        return
+    
+    def test_call_blacklist_missing(self):
+        """ Test the __call__ method for blacklisting with a missing field.
+        
+        """
+        self.data = [{"not_test": "xyz"}]  # no "test" field
+        filtered = self.data
+        self.assertSequenceEqual(filtered, map(self.blacklist, self.data))
+        return
+
+               
 class TextFilterTest(_FilterTest):
     """ Unit testing for the WhitelistFilter class.
 
@@ -97,4 +115,4 @@ def load_tests(loader, tests, pattern):
 # Make the module executable.
 
 if __name__ == "__main__":
-    unittest.main()  # this calls sys.exit()
+    unittest.main()  # this calls exit()

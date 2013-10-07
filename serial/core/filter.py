@@ -31,7 +31,13 @@ class FieldFilter(object):
         """ Execute the filter.
         
         """
-        valid = (record[self._field] in self._values) == self._whitelist
+        try:
+            valid = (record[self._field] in self._values) == self._whitelist
+        except KeyError:  # no such field
+            # The record is invalid for whitelisting because it doesn't have
+            # the required field value; for blacklisting it's valid because it
+            # doesn't have a prohibited field value.
+            valid = not self._whitelist
         return record if valid else None
 
 
