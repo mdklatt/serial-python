@@ -7,13 +7,15 @@ __all__ = ("BlacklistFilter", "WhitelistFilter")
 
 
 class BlacklistFilter(object):
-    """ Filter object to reject only certain records.
-    
+    """ Filter to reject specific records.
+   
+    This is intended for use with a Reader or Writer; see the filter() method.
+     
     """
     def __init__(self, field, reject):
         """ Initialize this object.
         
-        Reject all records where the value of 'field' is in 'reject'.
+        Reject all records 'field' value is in 'reject'.
         
         """
         self._field = field
@@ -24,17 +26,19 @@ class BlacklistFilter(object):
         """ Implement the filter.
         
         """
-        return record if record[self._field] not in self._reject else None
+        return None if record[self._field] in self._reject else record
         
     
 class WhitelistFilter(object):
-    """ Filter object to accept only certain records.
+    """ Filter to accept specifc records.
     
+    This is intended for use with a Reader or Writer; see the filter() method.
+ 
     """
     def __init__(self, field, accept):
         """ Initialize this object.
         
-        Reject all records where the value of 'field' is not in 'accept'.
+        Reject all records whose 'field' value is not in 'accept'.
 
         """
         self._field = field
@@ -46,3 +50,4 @@ class WhitelistFilter(object):
         
         """
         return record if record[self._field] in self._accept else None
+ 
