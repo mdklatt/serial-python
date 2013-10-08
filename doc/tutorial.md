@@ -16,7 +16,7 @@ floating point value and an optional flag string.
 This data stream can be read using a `FixedWidthReader`. The reader must be
 initialized with a set of field definitions. Each field is defined by its name,
 position, and data type. For a fixed-width field the position is given by its
-character positions, i.e. a [begin, end) pair:
+character positions, i.e. a [begin, end) pair.
 
     from serial.core import FixedWidthReader
     from serial.core import StringType
@@ -32,8 +32,8 @@ character positions, i.e. a [begin, end) pair:
         ("data2", (36, 44), FloatType()),
         ("flag2", (44, 45), StringType()))
 
-    with open("data.txt", "r") as istream:
-        for record in FixedWidthReader(istream, fields):
+    with FixedWidthReader.open("data.txt", fields) as reader:
+        for record in reader:
             print(record)
 
 
@@ -135,7 +135,7 @@ to an output field are ignored.
 With some minor modifications the field definitions for reading the sample
 data can be used for writing it. In fact, the modified fields can still be used
 for reading the data, so a Reader and a Writer can be defined for a given data
-format using one set of field definitions:
+format using one set of field definitions.
 
     from serial.core import FixedWidthWriter 
 
@@ -161,7 +161,7 @@ format using one set of field definitions:
 ## Delimited Data ##
 
 The `DelimitedReader` and `DelimitedWriter` classes can be used for reading and
-writing delimited data, e.g. a CSV file:
+writing delimited data, e.g. a CSV file.
 
     340010,2012-02-01 00:00,UTC,-999.00,M,-999.00,S
     340010,2012-03-01 00:00,UTC,72.00,,1.23,A
@@ -172,7 +172,7 @@ Delimited fields are defined in the same way as fixed-width fields except that
 the field positions are given by index number instead of character positions.
 Scalar field positions are a single number while array field positions are a
 [begin, end) pair. The format string is optional for most field types because a
-width is not required:
+width is not required.
 
     from serial.core import DelimitedReader
     from serial.core import DelimitedWriter
@@ -193,13 +193,45 @@ width is not required:
     reader = DelimitedReader(istream, sample_fields, delim)
     writer = DelimitedWriter(ostream, sample_fields, delim)
 
+
+## Creating Readers and Writers ##
+
+For most situations, calling a class's `open()` method is the most convenient 
+way to create a Reader or Writer. This creates a context manager to be used as 
+part of a `with` statement, and upon exit from the context block the stream
+associated with the Reader or Writer is closed.
+
+    with DelimitedReader.open("data.csv", fields, ",") as reader:
+        # Input file is automatically closed.
+        records = list(reader)
+
+If a string is passed to `open()` it is interpreted as a path to be opened as
+a plain text file. If another type of stream is needed, open the stream 
+explicitly and pass it to `open()`; this stream will be automatically closed.
+
+    stream = GzipFile("data.csv.gz", "r")
+    with DelimitedReader.open(stream, fields, ",") as reader:
+        # Input stream is automatically closed.
+        records = list(reader)
+
+
+Calling a Reader or Writer constructor directly provides the most control. The
+client code is responsible for opening and closing the associated stream. The
+constructor takes the same arguments as `open()`, except that the constructor
+requires an open stream instead of an optional file path.
         
+    stream = GzipFile("data.csv.gz", "r")
+    reader = DelimitedReader(stream, fields, ",")
+    records = list(reader)
+    stream.close()    
+        
+
 ## Filters ##
 
 Filters are used to manipulate data records after they have been parsed by a 
 Reader or before they are written by a Writer. A filter is simply a callable 
 object that takes a data record as its only argument and returns a record or 
-`None`, in which case the record is ignored: 
+`None`, in which case the record is ignored.
 
     def month_filter(record):
         """ Filter function to restrict data to records from March. """
@@ -219,7 +251,7 @@ object that takes a data record as its only argument and returns a record or
 ### Filter Objects ###
 
 Any callable object can be a filter, including a class that defines a
-`__call__()` method. This allows for the creation of more complex filters:
+`__call__()` method. This allows for the creation of more complex filters.
 
     class MonthFilter(object):
         """ Restrict input to the specified month. """
@@ -264,9 +296,10 @@ record altogether.
 ### Stopping Iteration ###
 
 Returning `None` from a filter will drop individual records, but input can be
-stopped altogether by raising a `StopIteration` exception. When filtering data 
-by time, if the data are in chronological order it doesn't make sense to
-continue reading from the stream once the desired time period has been passed:
+stopped altogether by raising a `StopIteration` exception. For example, when 
+filtering data by time, if the data are in chronological order it doesn't make 
+sense to continue reading from the stream once the desired time period has been 
+passed.
 
     class MonthFilter(object):
         """ Restrict input data to a single month. """
@@ -290,25 +323,27 @@ continue reading from the stream once the desired time period has been passed:
             
 Filters can be chained and are called in order for each record. If a filter
 returns `None` the record is immediately dropped. For the best performance 
-filters should be ordered from most restrictive (most likely to return `None`)
+filters should be ordered from most restrictive (most likely to return `None`) 
 to least.
 
     reader.filter(MonthFilter(3), LocalTime(-6))  # March only, time is CST
 
 
-The library defines the `FieldFilter` class for use with Readers and Writers:
+### Predefined Filters
 
-    from serial.core import FieldFilter
+The library defines the `FieldFilter` class for use with Readers and Writers.
+
+        from serial.core import FieldFilter
     
-    ...
+        ...
     
-    # Drop all records where the color field is not crimson or cream.
-    whitelist = FieldFilter("color", ("crimson", "cream"))
-    reader.filter(whitelist)
+        # Drop all records where the color field is not crimson or cream.
+        whitelist = FieldFilter("color", ("crimson", "cream"))
+        reader.filter(whitelist)
     
-    # Drop all records where the color field is orange.
-    blacklist = FieldFilter("color", ("orange",), whitelist=False)
-    reader.filter(blacklist)
+        # Drop all records where the color field is orange.
+        blacklist = FieldFilter("color", ("orange",), whitelist=False)
+        reader.filter(blacklist)
 
 
 ## Extending Core Classes ##
@@ -345,16 +380,18 @@ classes can be bundled into a module for that format.
 
         """
         def __init__(self, stream, offset=-6):
+            
+            def lst_filter(record):
+                """ Filter function for LST conversion. """
+                record["timestamp"] += self._offset  # UTC to LST
+                record["timezone"] = "LST"
+                return record
+            
             super(SampleReader, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(self._lst_filter)
+            self.filter(lst_filter)
             return
 
-        def _lst_filter(self, record):
-            """ Filter function for LST conversion. """
-            record["timestamp"] += self._offset  # UTC to LST
-            record["timezone"] = "LST"
-            return record
 
     class SampleWriter(DelimitedWriter):
         """ Sample data writer.
@@ -363,16 +400,17 @@ classes can be bundled into a module for that format.
 
         """
         def __init__(self, stream, offset=-6):
+        
+            def utc_filter(record):
+                """ Filter function for UTC conversion. """
+                record["timestamp"] -= self._offset  # LST to UTC
+                record["timezone"] = "UTC"
+                return
+                
             super(SampleWriter, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(self._utc_filter)
+            self.filter(utc_filter)
             return record
-
-        def _utc_filter(self, record):
-            """ Filter function for UTC conversion. """
-            record["timestamp"] -= self._offset  # LST to UTC
-            record["timezone"] = "UTC"
-            return
     
     
     # Test the module. 
@@ -399,7 +437,7 @@ An input Buffer is basically a Reader that reads records from another Reader
 input Buffer should derive from the `_ReaderBuffer` base class. It must 
 implement a `_queue()` method to process records being read from its Reader, 
 and it may override the `_uflow()` method supply records once the input reader
-has been exhausted:
+has been exhausted.
 
     from serial.core.buffer import _ReaderBuffer
     
@@ -438,7 +476,7 @@ has been exhausted:
         def _uflow(self, record):
             """ Handle an underflow condition.
     
-            This is called if the output queue is emtpy and the input reader 
+            This is called if the output queue is empty and the input reader 
             has been exhausted.
           
             """
@@ -461,11 +499,11 @@ An output Buffer is basically a Writer that writes records to another Writer
 (including another output Buffer) instead of lines of text to a stream. An 
 output buffer should derive from the `_WriterBuffer` base class. It must 
 implement a `_queue()` method to process records being written to it, and it 
-may override the `_flush()` method to finalize processing:
+may override the `_flush()` method to finalize processing.
             
     from serial.core.buffer import _WriterBuffer
 
-    class DataExpander(_WtierBuffer):
+    class DataExpander(_WriterBuffer):
         """ Output individual elements of an array field.
 
         The base class implements the basic writer interface including 
@@ -497,10 +535,9 @@ may override the `_flush()` method to finalize processing:
                 self._output.append(item)  # FIFO queue
             return
             
-        # Like _ReaderBuffer, _WriterBuffer has a _flush() method that can be
-        # overriden to finalize output. _WriterBuffer._flush() is called when
-        # close() is called on the buffer. For this example, _flush() does not
-        # need to do anything.
+        # _WriterBuffer has a _flush() method that can be overriden to finalize
+        # output; is called when close() is called on the buffer. For this 
+        # example, _flush() does not need to do anything.
 
     ...
     
@@ -509,42 +546,54 @@ may override the `_flush()` method to finalize processing:
     
 ## Stream Adaptors ##
 
-Readers and Writers are both initialized with stream arguments. A Reader's
-input stream is any object that implements a `next()` method that returns a
-line of text from the stream. A Writer's output stream is any object that 
-implements a `write()` method to write a line of text. A Python `file` object 
-satisfies the requirements for both types of streams. The `_IStreamAdaptor` and 
-`_OStreamAdaptor` abstract classes declare the required interfaces and can be 
-used to create adaptors for other types of streams, *e.g.* binary data: 
+A Reader's input stream is any object that implements a `next()` method that 
+returns a line of text from the stream. A Writer's output stream is any object 
+that implements a `write()` method to write a line of text. A Python `file`
+object, for example, satisfies the requirements for both types of streams. The 
+`_IStreamAdaptor` and `_OStreamAdaptor` abstract classes in the `stream` module
+declare the required interfaces and can be used to create adaptors for other 
+types of streams. The library defines several adaptors as part of the `core` 
+package. 
 
-    from serial.core.stream import _IStreamAdaptor
-    from serial.core.stream import _OStreamAdaptor
+    from contextlib import closing
+    from functools import partial
+    
+    from serial.core import IStreamBuffer
+    from serial.core import IStreamFilter
+    from serial.core import IStreamZlib
+    from serial.core import IFileSequence
 
-    class BinaryStream(_IStreamAdaptor, _OStreamAdaptor):
-        """ Interface for a binary data stream.
+    # Rewind a stream by one or more lines.
+    with open("file.dat", "r") as stream
+        stream = IStreamBuffer(stream, 100)  # buffer up to 100 records
+        data1 = list(FixedWidthReader(stream),)
+        stream.rewind()  # rewind to beginning to beginning of buffer
+        data2 = list(FixedWidthReader(stream))
+        
+    # Apply filters directly to lines of text before they are parsed by the
+    # Reader; this can signficiantly improve performance.
+    with open("file.dat", "r") as stream:
+        stream = IStreamFilter(stream, text_filter)
+        data = list(FixedWidthReader(stream))
+    
+    # Apply zlib or gzip decompression; unlike the built-in GzipFile this works
+    # with network streams.
+    with closing(urlopen("http://www.data.org/file.dat.gz")) as stream:
+        stream = IStreamZlib(stream)
+        data = list(FixedWidthReader(stream))
 
-        This can be used as the stream for a Reader or Writer.
-
-        """
-        ...
-
-        def next(self):
-            """ _IStreamAdaptor: Return a line of text from the stream. """
-            ...
-            return line
-
-        def write(self, line):
-            """ _OStreamAdaptor: Write a line of text to the stream. """
-            ...
-            return
-
-
+    # Read a sequence of files as on continuous file. This does not support
+    # files that have any header/footer data.
+    stream = IFileSequence(*paths, glob=True)
+    data = list(FixedWidthReader(stream))
+    
+    
 ## Tips and Tricks ##
 
 ### Quoted Strings ###
 
 The `StringType` data type can read and write quoted strings by initializing it
-with the quote character to use:
+with the quote character to use.
 
     StringType(quote='"')  # double-quoted string
 
@@ -556,7 +605,7 @@ Quoting for a `DatetimeType` is controlled by its format string:
 ### Nonstandard Line Endings ###
 
 By default, lines of text are assumed to end with the newline character, but 
-other line endings can be specified for both Readers and Writers:
+other line endings can be specified for both Readers and Writers.
 
     writer = DelimitedWriter(stream, fields, delim, endl="")  # no trailing \n
 
@@ -568,9 +617,8 @@ for reading or writing header data from or to the stream before `next()` or
 `write()` is called for the first time. For derived classes this is typically
 done by the `__init__()` method.
 
-The `IStreamBuffer` class is a stream adaptor that adds buffering to input
-streams. This is useful for parsing streams where the end of the header can
-only be identified by encountering the first data record:
+The `IStreamBuffer` is useful for parsing streams where the end of the header 
+can only be identified by encountering the first data record.
 
     from serial.core import DelimitedReader
     from serial.core import IStreamBuffer
@@ -614,7 +662,7 @@ on the field value.
 ### Combined Fields ###
 
 Filters can be used to map a single field in the input/output stream to/from
-multiple fields in the data record, or vice versa:
+multiple fields in the data record, or vice versa.
 
     def timestamp_filter(record):
         """ Output filter to split timestamp into separate fields. """
@@ -626,41 +674,6 @@ multiple fields in the data record, or vice versa:
         record["time"] = record["timestamp"].time()
         return record
 
-
-### Compressed Data ###
-
-The `IStreamZlib` stream adaptor can be used to read any zlib-compressed data,
-including gzip files. Unlike the built-in Python `gzip.GzipFile` class, an 
-`IStreamZlib` can handle streaming data such as network files:
-
-    from conxtextlib import closing
-    from serial.core import IStreamZlib
-
-    ...
-
-    with closing(urllib2.urlopen("http://data.org/path/data.gz")) as istream:
-        reader = DelimitedReader(IStreamZlib(istream), fields)
-    
-
-### Low Level Text Manipulation ###
-
-Stream adaptors can be used to manipulate text before it is parsed by a Reader
-or after it has been processed by a Writer:
-
-    class TextPreprocessor(_IStreamAdaptor):
-        """ Remove comments and blanks lines from an input stream. """
-        
-        def __init__(self, stream):
-            """ Initialize this object. """
-            self._stream = stream
-            return
-    
-        def next(self):
-            """ Return the next line of data from the stream. """
-            while True:  # repeat until a data line is encountered or EOF
-                line = self._stream.next()
-                if line.strip() and not line.startswith("#"):
-                    return line
  
 <!-- REFERENCES -->
 [1]: http://docs.python.org/2/library/datetime.html#strftime-strptime-behavior "datetime class"
