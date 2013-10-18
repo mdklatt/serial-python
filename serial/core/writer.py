@@ -87,9 +87,9 @@ class _TabularWriter(_Writer):
     @classmethod
     @contextmanager
     def open(cls, expr, *args, **kwargs):
-        """ Create a runtime context for a Writer and its stream.
+        """ Create a runtime context for a _TabularWriter and its stream.
         
-        The arguments are passed to the Writer's constructor, except that the
+        The arguments are passed to the writer's constructor, except that the
         first argument is either an open stream or a file path that is used to 
         open a text file for writing. In both cases the stream will be closed
         upon exit from the context block.
@@ -97,9 +97,15 @@ class _TabularWriter(_Writer):
         """
         # This assumes that first argument for all derived class constructors
         # is the stream; if not, this will need to be overridden.
-        stream = open(expr, "w") if isinstance(expr, basestring) else expr
+        try:
+            stream = open(expr, "w")
+        except TypeError:  # not a string
+            stream = expr
         yield cls(stream, *args, **kwargs)
-        stream.close()
+        try:
+            stream.close()
+        except AttributeError:  # no close() method
+            pass
         return
         
     def __init__(self, stream, fields, endl="\n"):
