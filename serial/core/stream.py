@@ -8,7 +8,8 @@ from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("BufferedIStream", "FilteredIStream", "GzippedIStream")
+__all__ = ("BufferedIStream", "FilteredIStream", "FilteredOStream",
+           "GzippedIStream")
 
 
 class _IStreamAdaptor(object):
@@ -137,6 +138,40 @@ class FilteredIStream(_IStreamAdaptor):
                 if line is None:
                     break
         return line
+
+
+class FilteredOStream(_OStreamAdaptor):
+    """ Apply filters to an output stream.
+    
+    Stream filters are applied to the text output after it has been generated 
+    by the Writer. This can be used, for example, to apply low-level text
+    formatting. A filter is a callable object that accepts a line of text and 
+    performs one of the following actions:
+    1. Return None to reject the line (it will not be written to the stream).
+    2. Return the line as is.
+    3. Return a new/modified line.
+       
+    """
+    def __init__(self, stream, *callbacks):
+        """ Initialize this object.
+        
+        """
+        super(FilteredOStream, self).__init__()
+        self._stream = stream
+        self._filters = callbacks
+        return
+    
+    def write(self, line):
+        """ Write a filtered line to the stream.
+        
+        """
+        for callback in self._filters:
+            # Apply each filter to the line.
+            line = callback(line)
+            if line is None:
+                return
+        self._stream.write(line)
+        return
         
 
 class GzippedIStream(_IStreamAdaptor):

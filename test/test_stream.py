@@ -18,6 +18,7 @@ import _unittest as unittest
 
 from serial.core import BufferedIStream
 from serial.core import FilteredIStream
+from serial.core import FilteredOStream
 from serial.core import GzippedIStream
 
 
@@ -79,8 +80,10 @@ class FilteredIStreamTest(unittest.TestCase):
         self.stream = StringIO("".join(self.lines))
         return
 
-    def test_filter(self):
-        """ Test filtering.
+    def test_iter(self):
+        """ Test the iterator protocol.
+        
+        This tests both the __iter__() and next() methods.
         
         """
         reject_filter = lambda line: line if line[0] != "d" else None
@@ -89,8 +92,8 @@ class FilteredIStreamTest(unittest.TestCase):
         self.assertSequenceEqual(("ABC\n", "GHI\n"), list(stream))
         return
 
-    def test_filter_stop(self):
-        """ Test a filter that stops iteration.
+    def test_iter_stop(self):
+        """ Test the iterator protocol with a filter that stops iteration
         
         """
         def stop_filter(line):
@@ -103,6 +106,35 @@ class FilteredIStreamTest(unittest.TestCase):
         self.assertSequenceEqual(("abc\n",), list(stream))
         return
  
+
+class FilteredOStreamTest(unittest.TestCase):
+    """ Unit testing for the FilteredIStream class.
+    
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        self.lines = ("abc\n", "def\n", "ghi\n")
+        self.data = "ABC\nGHI\n"
+        self.stream = StringIO()
+        return
+
+    def test_write(self):
+        """ Test the write() method.
+        
+        """
+        reject_filter = lambda line: line if line[0] != "d" else None
+        modify_filter = lambda line: line.upper()
+        stream = FilteredOStream(self.stream, reject_filter, modify_filter)
+        for line in self.lines:
+            stream.write(line)
+        self.assertEqual(self.data, self.stream.getvalue())
+        return
+
  
 class GzippedIStreamTest(unittest.TestCase):
     """ Unit testing for the GzippedIStream class.
@@ -145,7 +177,8 @@ class GzippedIStreamTest(unittest.TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, GzippedIStreamTest)
+_TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, FilteredOStreamTest,
+               GzippedIStreamTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
