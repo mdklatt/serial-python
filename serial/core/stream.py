@@ -8,15 +8,14 @@ from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("IStreamBuffer", "IStreamFilter", "IStreamZlib")
+__all__ = ("BufferedIStream", "IStreamFilter", "IStreamZlib")
 
 
 class _IStreamAdaptor(object):
     """ Abstract base class for an input stream adaptor.
 
     An adaptor can be used to make an input stream compatible with the Reader
-    stream protocol, i.e. implementing a next() method that returns a single
-    line of text from the stream.
+    stream protocol.
 
     """
     def next(self):
@@ -29,7 +28,6 @@ class _IStreamAdaptor(object):
         """ Return an iterator for this stream.
 
         """
-        # Any object that implements a next() method is a Python iterator.
         return self
 
 
@@ -37,8 +35,7 @@ class _OStreamAdaptor(object):
     """ Abstract base class for an output stream adaptor.
 
     An adaptor can be used to make an output stream compatible with the Writer
-    stream protocol, i.e. implementing a write() method that writes a single
-    line of text to the stream.
+    stream protocol.
 
     """
     def write(self):
@@ -48,11 +45,10 @@ class _OStreamAdaptor(object):
         raise NotImplementedError
 
 
-class IStreamBuffer(_IStreamAdaptor):
+class BufferedIStream(_IStreamAdaptor):
     """ Add buffering to an input stream.
 
-    An IStreamBuffer buffers input from another stream so that it can support
-    rewind() operations.
+    The buffered stream can be rewound to previously read lines.
 
     """
     def __init__(self, stream, bufsize=1):
@@ -62,7 +58,7 @@ class IStreamBuffer(_IStreamAdaptor):
         single line of text.
 
         """
-        super(IStreamBuffer, self).__init__()
+        super(BufferedIStream, self).__init__()
         self._stream = stream
         self._buffer = []  # newest record at end
         while len(self._buffer) < bufsize:

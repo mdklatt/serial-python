@@ -16,7 +16,7 @@ from zlib import decompress
 import _path
 import _unittest as unittest
 
-from serial.core import IStreamBuffer
+from serial.core import BufferedIStream
 from serial.core import IStreamFilter
 from serial.core import IStreamZlib
 
@@ -24,8 +24,8 @@ from serial.core import IStreamZlib
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class IStreamBufferTest(unittest.TestCase):
-    """ Unit testing for the IStreamBuffer class.
+class BufferedIStreamTest(unittest.TestCase):
+    """ Unit testing for the BufferedIStream class.
 
     """
     def setUp(self):
@@ -38,7 +38,7 @@ class IStreamBufferTest(unittest.TestCase):
         self.bufsize = 2
         self.lines = ("abc\n", "def\n", "ghi\n")
         stream = StringIO("".join(self.lines))
-        self.stream = IStreamBuffer(stream, self.bufsize)
+        self.stream = BufferedIStream(stream, self.bufsize)
         return
 
     def test_iter(self):
@@ -145,7 +145,7 @@ class IStreamZlibTest(unittest.TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (IStreamBufferTest, IStreamFilterTest, IStreamZlibTest)
+_TEST_CASES = (BufferedIStreamTest, IStreamFilterTest, IStreamZlibTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
