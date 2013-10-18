@@ -17,7 +17,7 @@ import _path
 import _unittest as unittest
 
 from serial.core import BufferedIStream
-from serial.core import IStreamFilter
+from serial.core import FilteredIStream
 from serial.core import IStreamZlib
 
 
@@ -64,8 +64,8 @@ class BufferedIStreamTest(unittest.TestCase):
         return
 
 
-class IStreamFilterTest(unittest.TestCase):
-    """ Unit testing for the IStreamFilter class.
+class FilteredIStreamTest(unittest.TestCase):
+    """ Unit testing for the FilteredIStream class.
     
     """
     def setUp(self):
@@ -85,7 +85,7 @@ class IStreamFilterTest(unittest.TestCase):
         """
         reject_filter = lambda line: line if line[0] != "d" else None
         modify_filter = lambda line: line.upper()
-        stream = IStreamFilter(self.stream, reject_filter, modify_filter)
+        stream = FilteredIStream(self.stream, reject_filter, modify_filter)
         self.assertSequenceEqual(("ABC\n", "GHI\n"), list(stream))
         return
 
@@ -99,7 +99,7 @@ class IStreamFilterTest(unittest.TestCase):
                 raise StopIteration
             return line
             
-        stream = IStreamFilter(self.stream, stop_filter)
+        stream = FilteredIStream(self.stream, stop_filter)
         self.assertSequenceEqual(("abc\n",), list(stream))
         return
  
@@ -145,7 +145,7 @@ class IStreamZlibTest(unittest.TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (BufferedIStreamTest, IStreamFilterTest, IStreamZlibTest)
+_TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, IStreamZlibTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

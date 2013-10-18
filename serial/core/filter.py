@@ -44,7 +44,7 @@ class FieldFilter(object):
 class TextFilter(object):
     """ Filter lines using a regular expression.
     
-    This is intended for use with an IStreamFilter.
+    This is intended for use with a FilteredIStream.
     
     """
     def __init__(self, regex, whitelist=True):

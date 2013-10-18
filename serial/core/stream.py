@@ -8,7 +8,7 @@ from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("BufferedIStream", "IStreamFilter", "IStreamZlib")
+__all__ = ("BufferedIStream", "FilteredIStream", "IStreamZlib")
 
 
 class _IStreamAdaptor(object):
@@ -99,7 +99,7 @@ class BufferedIStream(_IStreamAdaptor):
         return
 
 
-class IStreamFilter(_IStreamAdaptor):
+class FilteredIStream(_IStreamAdaptor):
     """ Apply filters to an input stream.
     
     Stream filters are applied before the stream input is parsed by the Reader;
@@ -116,6 +116,7 @@ class IStreamFilter(_IStreamAdaptor):
         """ Initialize this object.
         
         """
+        super(FilteredIStream, self).__init__()
         self._stream = stream
         self._filters = callbacks
         return
