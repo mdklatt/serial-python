@@ -151,27 +151,29 @@ class GzippedIStreamTest(unittest.TestCase):
         # and no trailing \n.
         GzippedIStream.block_size = 4
         self.lines = ("\n", "abcdefgh\n", "ijkl")
-        self.zlib_data = BytesIO(compress("".join(self.lines)))
-        self.gzip_data = BytesIO()
-        with  closing(GzipFile(fileobj=self.gzip_data, mode="w")) as stream:
+        self.zlib_stream = BytesIO(compress("".join(self.lines)))
+        self.gzip_stream = BytesIO()
+        with  closing(GzipFile(fileobj=self.gzip_stream, mode="w")) as stream:
             # Explicit closing() context is necessary for Python 2.6 but not
             # for 2.7. Closing stream doesn't close fileobj.
             stream.write("".join(self.lines))
-        self.gzip_data.seek(0)  # rewind for reading
+        self.gzip_stream.seek(0)  # rewind for reading
         return
 
     def test_iter_gzip(self):
         """ Test the iterator protocol for gzip data.
         
-        """    
-        self.assertSequenceEqual(self.lines, list(GzippedIStream(self.gzip_data)))
+        """
+        stream = GzippedIStream(self.gzip_stream)    
+        self.assertSequenceEqual(self.lines, list(stream))
         return
 
     def test_iter_zlib(self):
         """ Test the iterator protocol for zlib data.
     
         """
-        self.assertSequenceEqual(self.lines, list(GzippedIStream(self.zlib_data)))
+        stream = GzippedIStream(self.zlib_stream)
+        self.assertSequenceEqual(self.lines, list(stream))
         return
 
 
