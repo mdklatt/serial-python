@@ -3,8 +3,6 @@
 """
 from __future__ import absolute_import
 
-from glob import iglob
-from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
