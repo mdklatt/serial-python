@@ -11,6 +11,7 @@ from os import remove
 from tempfile import NamedTemporaryFile
 
 from zlib import compress
+from zlib import decompress
 
 import _path
 import _unittest as unittest
@@ -77,7 +78,7 @@ class IStreamFilterTest(unittest.TestCase):
         self.lines = ("abc\n", "def\n", "ghi\n")
         self.stream = StringIO("".join(self.lines))
         return
-    
+
     def test_filter(self):
         """ Test filtering.
         
@@ -101,11 +102,11 @@ class IStreamFilterTest(unittest.TestCase):
         stream = IStreamFilter(self.stream, stop_filter)
         self.assertSequenceEqual(("abc\n",), list(stream))
         return
-    
-    
+ 
+ 
 class IStreamZlibTest(unittest.TestCase):
     """ Unit testing for the IStreamZlib class.
-
+    
     """
     def setUp(self):
         """ Set up the test fixture.
@@ -114,32 +115,31 @@ class IStreamZlibTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        # Test blank lines, lines that are longer and shorter than the block
-        # size, and no trailing \n.
+        # Test blank lines, lines longer, shorter, and equal to the block size,
+        # and no trailing \n.
         IStreamZlib.block_size = 4
         self.lines = ("\n", "abcdefgh\n", "ijkl")
+        self.zlib_data = BytesIO(compress("".join(self.lines)))
+        self.gzip_data = BytesIO()
+        with  closing(GzipFile(fileobj=self.gzip_data, mode="w")) as stream:
+            # Explicit closing() context is necessary for Python 2.6 but not
+            # for 2.7. Closing stream doesn't close fileobj.
+            stream.write("".join(self.lines))
+        self.gzip_data.seek(0)  # rewind for reading
         return
 
     def test_iter_gzip(self):
         """ Test the iterator protocol for gzip data.
         
         """    
-        buffer = BytesIO()
-        with  closing(GzipFile(fileobj=buffer, mode="w")) as stream:
-            # Explicit closing() context is necessary for Python 2.6 but not
-            # for 2.7.
-            stream.write("".join(self.lines))
-        buffer.seek(0)
-        self.assertSequenceEqual(self.lines, list(IStreamZlib(buffer)))
+        self.assertSequenceEqual(self.lines, list(IStreamZlib(self.gzip_data)))
         return
 
     def test_iter_zlib(self):
         """ Test the iterator protocol for zlib data.
     
         """
-        buffer = BytesIO(compress("".join(self.lines)))
-        stream = IStreamZlib(buffer)
-        self.assertSequenceEqual(self.lines, list(stream))
+        self.assertSequenceEqual(self.lines, list(IStreamZlib(self.zlib_data)))
         return
 
 
