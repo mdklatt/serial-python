@@ -8,7 +8,7 @@ from itertools import chain
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
-__all__ = ("BufferedIStream", "FilteredIStream", "IStreamZlib")
+__all__ = ("BufferedIStream", "FilteredIStream", "GzippedIStream")
 
 
 class _IStreamAdaptor(object):
@@ -48,14 +48,12 @@ class _OStreamAdaptor(object):
 class BufferedIStream(_IStreamAdaptor):
     """ Add buffering to an input stream.
 
-    The buffered stream can be rewound to previously read lines.
+    The buffered stream can be rewound to lines previously retrieved via the
+    next() method.
 
     """
     def __init__(self, stream, bufsize=1):
         """ Initialize this object.
-
-        The input stream is any object that implements next() to retrieve a
-        single line of text.
 
         """
         super(BufferedIStream, self).__init__()
@@ -75,8 +73,8 @@ class BufferedIStream(_IStreamAdaptor):
     def next(self):
         """ Return the next line of text.
 
-        If the stream has been rewound this will return the first saved record,
-        otherwise the next record from the input stream.
+        If the stream has been rewound this will return the first buffered 
+        line, otherwise the next line from the input stream.
 
         """
         try:
@@ -104,11 +102,11 @@ class FilteredIStream(_IStreamAdaptor):
     
     Stream filters are applied before the stream input is parsed by the Reader;
     this can be faster than using Reader filters. A filter is a callable object
-    that accepts the output from the stream's next() method (e.g. a line of
-    text) and performs one of the following actions:
-    1. Return None to reject the input (it will not be passed to the reader).
-    2. Return the input as is.
-    3. Return modified input.
+    that accepts a line from the stream's next() method and performs one of the 
+    following actions:
+    1. Return None to reject the line (it will not be passed to the reader).
+    2. Return the line as is.
+    3. Return a new/modified line.
     4. Raise StopIteration to signal the end of input.
        
     """
@@ -122,7 +120,7 @@ class FilteredIStream(_IStreamAdaptor):
         return
     
     def next(self):
-        """ Return the next filtered input sequence from the stream.
+        """ Return the next filtered line from the stream.
         
         """
         # Recursion would simplify this, but would fail for any combination of
@@ -141,12 +139,11 @@ class FilteredIStream(_IStreamAdaptor):
         return line
         
 
-class IStreamZlib(_IStreamAdaptor):
-    """ Add zlib decompression to an input stream.
+class GzippedIStream(_IStreamAdaptor):
+    """ Add gzip/zlib decompression to a text input stream.
     
-    This adaptor can be used with any zlib-compressed data, including gzip
-    files. Unlike the Python gzip module, this will work with network files 
-    e.g. a urlopen() stream.
+    Unlike the Python gzip module, this will work with streaming data, e.g. a
+    urlopen() stream.
     
     """
     read_size = 1024  # bytes; adjust to maximize performance
@@ -155,10 +152,10 @@ class IStreamZlib(_IStreamAdaptor):
         """ Initialize this object.
         
         The input stream must implement a read() method that returns a user-
-        specified number of bytes, c.f. a Python file object.
+        specified number of bytes, e.g. any file-like object.
         
         """
-        super(IStreamZlib, self).__init__()
+        super(GzippedIStream, self).__init__()
         self._decode = decompressobj(MAX_WBITS + 32).decompress
         self._stream = stream
         self._buffer = ""

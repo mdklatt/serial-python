@@ -18,7 +18,7 @@ import _unittest as unittest
 
 from serial.core import BufferedIStream
 from serial.core import FilteredIStream
-from serial.core import IStreamZlib
+from serial.core import GzippedIStream
 
 
 # Define the TestCase classes for this module. Each public component of the
@@ -104,8 +104,8 @@ class FilteredIStreamTest(unittest.TestCase):
         return
  
  
-class IStreamZlibTest(unittest.TestCase):
-    """ Unit testing for the IStreamZlib class.
+class GzippedIStreamTest(unittest.TestCase):
+    """ Unit testing for the GzippedIStream class.
     
     """
     def setUp(self):
@@ -117,7 +117,7 @@ class IStreamZlibTest(unittest.TestCase):
         """
         # Test blank lines, lines longer, shorter, and equal to the block size,
         # and no trailing \n.
-        IStreamZlib.block_size = 4
+        GzippedIStream.block_size = 4
         self.lines = ("\n", "abcdefgh\n", "ijkl")
         self.zlib_data = BytesIO(compress("".join(self.lines)))
         self.gzip_data = BytesIO()
@@ -132,20 +132,20 @@ class IStreamZlibTest(unittest.TestCase):
         """ Test the iterator protocol for gzip data.
         
         """    
-        self.assertSequenceEqual(self.lines, list(IStreamZlib(self.gzip_data)))
+        self.assertSequenceEqual(self.lines, list(GzippedIStream(self.gzip_data)))
         return
 
     def test_iter_zlib(self):
         """ Test the iterator protocol for zlib data.
     
         """
-        self.assertSequenceEqual(self.lines, list(IStreamZlib(self.zlib_data)))
+        self.assertSequenceEqual(self.lines, list(GzippedIStream(self.zlib_data)))
         return
 
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, IStreamZlibTest)
+_TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, GzippedIStreamTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
