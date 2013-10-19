@@ -491,8 +491,8 @@ has been exhausted.
         ...
         
         monthly_records = list(MonthlyTotal(reader))
-            
-            
+
+ 
 ### Output Buffering ###
 
 An output Buffer is basically a Writer that writes records to another Writer
@@ -542,8 +542,8 @@ may override the `_flush()` method to finalize processing.
     ...
     
     DataExpander(writer).dump(reader)  # dump() calls close()
-    
-    
+
+  
 ## Stream Adaptors ##
 
 A Reader's input stream is any object that implements a `next()` method that 
@@ -553,41 +553,19 @@ object, for example, satisfies the requirements for both types of streams. The
 `_IStreamAdaptor` and `_OStreamAdaptor` abstract classes in the `stream` module
 declare the required interfaces and can be used to create adaptors for other 
 types of streams. The library defines several adaptors as part of the `core` 
-package. 
+package, such as `GzippedIStream`.
 
-    from contextlib import closing
-    from functools import partial
-    
-    from serial.core import IStreamBuffer
-    from serial.core import IStreamFilter
-    from serial.core import IStreamZlib
-    from serial.core import IFileSequence
+    from serial.core import GzippedIStream
 
-    # Rewind a stream by one or more lines.
-    with open("file.dat", "r") as stream
-        stream = IStreamBuffer(stream, 100)  # buffer up to 100 records
-        data1 = list(FixedWidthReader(stream),)
-        stream.rewind()  # rewind to beginning to beginning of buffer
-        data2 = list(FixedWidthReader(stream))
-        
-    # Apply filters directly to lines of text before they are parsed by the
-    # Reader; this can signficiantly improve performance.
-    with open("file.dat", "r") as stream:
-        stream = IStreamFilter(stream, text_filter)
-        data = list(FixedWidthReader(stream))
+    ...
     
-    # Apply zlib or gzip decompression; unlike the built-in GzipFile this works
-    # with network streams.
-    with closing(urlopen("http://www.data.org/file.dat.gz")) as stream:
-        stream = IStreamZlib(stream)
-        data = list(FixedWidthReader(stream))
+    # Read gzipped data; unlike the built-in GzipFile this works with streaming
+    # data.
+    with closing(urlopen("http://www.data.org/data.csv.gz")) as stream:
+        stream = GzippedIStream(stream)
+        data = list(DelimitedReader(stream, fields, ","))
 
-    # Read a sequence of files as on continuous file. This does not support
-    # files that have any header/footer data.
-    stream = IFileSequence(*paths, glob=True)
-    data = list(FixedWidthReader(stream))
-    
-    
+  
 ## Tips and Tricks ##
 
 ### Quoted Strings ###
@@ -617,11 +595,11 @@ for reading or writing header data from or to the stream before `next()` or
 `write()` is called for the first time. For derived classes this is typically
 done by the `__init__()` method.
 
-The `IStreamBuffer` is useful for parsing streams where the end of the header 
+The `BufferedIStream` is useful for parsing streams where the end of the header 
 can only be identified by encountering the first data record.
 
     from serial.core import DelimitedReader
-    from serial.core import IStreamBuffer
+    from serial.core import BufferedIStream
 
     ...
     
@@ -632,7 +610,7 @@ can only be identified by encountering the first data record.
             """ Initialize this object. """
             # Header information can be read before or after the base class is
             # initialized, but it must be done before next() is called.
-            stream = IStreamBuffer(stream)
+            stream = BufferedIStream(stream)
             for line in stream:            
                 # At the end of this loop the first data record has already
                 # been read.
