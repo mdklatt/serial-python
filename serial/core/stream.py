@@ -17,17 +17,52 @@ class _IStreamAdaptor(object):
     stream protocol.
 
     """
+    def __init__(self, stream):
+        """ Initialize this object. 
+        
+        The adaptor assumes responsibility for closing the stream when the 
+        adaptor's close() method is called or inside a context block.
+        
+        """
+        self._stream = stream
+        return
+    
     def next(self):
         """ Return the next line of text from a stream.
 
         """
         raise NotImplementedError
 
+    def close(self):
+        """ Close the adaptor and its stream.
+        
+        """
+        try:
+            self._stream.close()
+        except AttributeError:  # no close()
+            pass
+        return
+        
     def __iter__(self):
         """ Return an iterator for this stream.
 
         """
         return self
+        
+    def __enter__(self):
+        """ Enter a context block.
+        
+        """
+        return self
+        
+    def __exit__(self, extype=None, exval=None, trace=None):
+        """ Exit a context block.
+        
+        """
+        # The exception arguments are ignored here and any exception is passed
+        # along to the caller.
+        self.close()
+        return
 
 
 class _OStreamAdaptor(object):
@@ -55,8 +90,7 @@ class BufferedIStream(_IStreamAdaptor):
         """ Initialize this object.
 
         """
-        super(BufferedIStream, self).__init__()
-        self._stream = stream
+        super(BufferedIStream, self).__init__(stream)
         self._buffer = []  # newest record at end
         while len(self._buffer) < bufsize:
             # Fill the buffer one record at a time.
@@ -113,8 +147,7 @@ class FilteredIStream(_IStreamAdaptor):
         """ Initialize this object.
         
         """
-        super(FilteredIStream, self).__init__()
-        self._stream = stream
+        super(FilteredIStream, self).__init__(stream)
         self._filters = callbacks
         return
     
@@ -188,9 +221,8 @@ class GzippedIStream(_IStreamAdaptor):
         specified number of bytes, e.g. any file-like object.
         
         """
-        super(GzippedIStream, self).__init__()
+        super(GzippedIStream, self).__init__(stream)
         self._decode = decompressobj(MAX_WBITS + 32).decompress
-        self._stream = stream
         self._buffer = ""
         return
             

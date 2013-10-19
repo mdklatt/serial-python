@@ -29,6 +29,8 @@ class BufferedIStreamTest(unittest.TestCase):
     """ Unit testing for the BufferedIStream class.
 
     """
+    TestClass = BufferedIStream
+    
     def setUp(self):
         """ Set up the test fixture.
 
@@ -38,8 +40,8 @@ class BufferedIStreamTest(unittest.TestCase):
         """
         self.bufsize = 2
         self.lines = ("abc\n", "def\n", "ghi\n")
-        stream = StringIO("".join(self.lines))
-        self.stream = BufferedIStream(stream, self.bufsize)
+        self.buffer = StringIO("".join(self.lines))
+        self.stream = self.TestClass(self.buffer, self.bufsize)
         return
 
     def test_iter(self):
@@ -64,6 +66,24 @@ class BufferedIStreamTest(unittest.TestCase):
         self.assertSequenceEqual([], list(self.stream))  # stream is exhausted
         return
 
+    def test_close(self):
+        """ Test the close method.
+        
+        """
+        self.stream.close()
+        self.assertTrue(self.buffer.closed)
+        return
+
+    def test_context(self):
+        """ Test with a context block.
+        
+        """
+        self.buffer.seek(0)
+        with self.TestClass(self.stream, self.bufsize) as stream:
+            self.assertEqual(self.lines[0], stream.next())
+        self.assertTrue(self.buffer.closed)
+        return
+        
 
 class FilteredIStreamTest(unittest.TestCase):
     """ Unit testing for the FilteredIStream class.
@@ -105,7 +125,25 @@ class FilteredIStreamTest(unittest.TestCase):
         stream = FilteredIStream(self.stream, stop_filter)
         self.assertSequenceEqual(("abc\n",), list(stream))
         return
- 
+        
+    def test_close(self):
+        """ Test the close method.
+        
+        """
+        stream = FilteredIStream(self.stream)
+        stream.close()
+        self.assertTrue(self.stream.closed)
+        return
+
+    def test_context(self):
+        """ Test with a context block.
+        
+        """
+        with FilteredIStream(self.stream) as stream:
+            self.assertEqual(self.lines[0], stream.next())
+        self.assertTrue(self.stream.closed)
+        return
+        
 
 class FilteredOStreamTest(unittest.TestCase):
     """ Unit testing for the FilteredIStream class.
@@ -174,6 +212,24 @@ class GzippedIStreamTest(unittest.TestCase):
         """
         stream = GzippedIStream(self.zlib_stream)
         self.assertSequenceEqual(self.lines, list(stream))
+        return
+
+    def test_close(self):
+        """ Test the close method.
+        
+        """
+        stream = GzippedIStream(self.gzip_stream)
+        stream.close()
+        self.assertTrue(self.gzip_stream.closed)
+        return
+
+    def test_context(self):
+        """ Test with a context block.
+        
+        """
+        with GzippedIStream(self.gzip_stream) as stream:
+            self.assertEqual(self.lines[0], stream.next())
+        self.assertTrue(self.gzip_stream.closed)
         return
 
 
