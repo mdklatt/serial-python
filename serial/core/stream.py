@@ -10,29 +10,20 @@ __all__ = ("BufferedIStream", "FilteredIStream", "FilteredOStream",
            "GzippedIStream")
 
 
-class _IStreamAdaptor(object):
-    """ Abstract base class for an input stream adaptor.
-
-    An adaptor can be used to make an input stream compatible with the Reader
-    stream protocol.
-
+class _StreamAdaptor(object):
+    """ Abstract base class for a stream adaptor.
+    
     """
     def __init__(self, stream):
         """ Initialize this object. 
         
         The adaptor assumes responsibility for closing the stream when the 
-        adaptor's close() method is called or inside a context block.
+        adaptor's close() method is called or when exiting a context block.
         
         """
         self._stream = stream
         return
     
-    def next(self):
-        """ Return the next line of text from a stream.
-
-        """
-        raise NotImplementedError
-
     def close(self):
         """ Close the adaptor and its stream.
         
@@ -42,12 +33,6 @@ class _IStreamAdaptor(object):
         except AttributeError:  # no close()
             pass
         return
-        
-    def __iter__(self):
-        """ Return an iterator for this stream.
-
-        """
-        return self
         
     def __enter__(self):
         """ Enter a context block.
@@ -63,21 +48,27 @@ class _IStreamAdaptor(object):
         # along to the caller.
         self.close()
         return
+    
+    
+class _IStreamAdaptor(_StreamAdaptor):
+    """ Abstract base class for an input stream adaptor.
 
-
-class _OStreamAdaptor(object):
-    """ Abstract base class for an output stream adaptor.
-
-    An adaptor can be used to make an output stream compatible with the Writer
-    stream protocol.
+    This can be used to make an input stream compatible with the Reader stream
+    protocol.
 
     """
-    def write(self):
-        """ Write a line of text to the stream.
+    def next(self):
+        """ Return the next line of text from a stream.
 
         """
         raise NotImplementedError
 
+    def __iter__(self):
+        """ Return an iterator for this stream.
+
+        """
+        return self
+        
 
 class BufferedIStream(_IStreamAdaptor):
     """ Add buffering to an input stream.
@@ -171,40 +162,6 @@ class FilteredIStream(_IStreamAdaptor):
         return line
 
 
-class FilteredOStream(_OStreamAdaptor):
-    """ Apply filters to an output stream.
-    
-    Stream filters are applied to the text output after it has been generated 
-    by the Writer. This can be used, for example, to apply low-level text
-    formatting. A filter is a callable object that accepts a line of text and 
-    performs one of the following actions:
-    1. Return None to reject the line (it will not be written to the stream).
-    2. Return the line as is.
-    3. Return a new/modified line.
-       
-    """
-    def __init__(self, stream, *callbacks):
-        """ Initialize this object.
-        
-        """
-        super(FilteredOStream, self).__init__()
-        self._stream = stream
-        self._filters = callbacks
-        return
-    
-    def write(self, line):
-        """ Write a filtered line to the stream.
-        
-        """
-        for callback in self._filters:
-            # Apply each filter to the line.
-            line = callback(line)
-            if line is None:
-                return
-        self._stream.write(line)
-        return
-        
-
 class GzippedIStream(_IStreamAdaptor):
     """ Add gzip/zlib decompression to a text input stream.
     
@@ -259,3 +216,50 @@ class GzippedIStream(_IStreamAdaptor):
         line = self._buffer[:pos]
         self._buffer = self._buffer[pos:]
         return line
+
+
+class _OStreamAdaptor(_StreamAdaptor):
+    """ Abstract base class for an output stream adaptor.
+
+    This can be used to make an output stream compatible with the Writer stream 
+    protocol.
+
+    """
+    def write(self):
+        """ Write a line of text to the stream.
+
+        """
+        raise NotImplementedError
+
+
+class FilteredOStream(_OStreamAdaptor):
+    """ Apply filters to an output stream.
+    
+    Stream filters are applied to the text output after it has been generated 
+    by the Writer. This can be used, for example, to apply low-level text
+    formatting. A filter is a callable object that accepts a line of text and 
+    performs one of the following actions:
+    1. Return None to reject the line (it will not be written to the stream).
+    2. Return the line as is.
+    3. Return a new/modified line.
+       
+    """
+    def __init__(self, stream, *callbacks):
+        """ Initialize this object.
+        
+        """
+        super(FilteredOStream, self).__init__(stream)
+        self._filters = callbacks
+        return
+    
+    def write(self, line):
+        """ Write a filtered line to the stream.
+        
+        """
+        for callback in self._filters:
+            # Apply each filter to the line.
+            line = callback(line)
+            if line is None:
+                return
+        self._stream.write(line)
+        return

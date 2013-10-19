@@ -158,7 +158,7 @@ class FilteredOStreamTest(unittest.TestCase):
         """
         self.lines = ("abc\n", "def\n", "ghi\n")
         self.data = "ABC\nGHI\n"
-        self.stream = StringIO()
+        self.buffer = StringIO()
         return
 
     def test_write(self):
@@ -167,10 +167,28 @@ class FilteredOStreamTest(unittest.TestCase):
         """
         reject_filter = lambda line: line if line[0] != "d" else None
         modify_filter = lambda line: line.upper()
-        stream = FilteredOStream(self.stream, reject_filter, modify_filter)
+        stream = FilteredOStream(self.buffer, reject_filter, modify_filter)
         for line in self.lines:
             stream.write(line)
-        self.assertEqual(self.data, self.stream.getvalue())
+        self.assertEqual(self.data, self.buffer.getvalue())
+        return
+        
+    def test_close(self):
+        """ Test the close() method.
+        
+        """
+        stream = FilteredOStream(self.buffer)
+        stream.close()
+        self.assertTrue(self.buffer.closed)
+        return
+
+    def test_context(self):
+        """ Test with a context block.
+        
+        """
+        with FilteredOStream(self.buffer) as stream:
+            stream.write(self.lines[0])
+        self.assertTrue(self.buffer.closed)
         return
 
  
