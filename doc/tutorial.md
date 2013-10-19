@@ -559,10 +559,11 @@ package, such as `GzippedIStream`.
 
     ...
     
-    # Read gzipped data; unlike the built-in GzipFile this works with streaming
-    # data.
-    with closing(urlopen("http://www.data.org/data.csv.gz")) as stream:
-        stream = GzippedIStream(stream)
+    # Read gzipped data; unlike GzipFile this works with streaming data.
+    stream = GzippedIStream(urlopen("http://www.data.org/data.csv.gz"))
+    with DelimitedReader.open(stream, fields, ",") as reader:
+        # The HTTP connection is automatically closed on exit from the with
+        # block. 
         data = list(DelimitedReader(stream, fields, ","))
 
   
