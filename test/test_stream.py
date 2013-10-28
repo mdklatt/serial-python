@@ -6,9 +6,6 @@ The module can be executed on its own or incorporated into a larger test suite.
 from contextlib import closing
 from gzip import GzipFile
 from io import BytesIO
-from StringIO import StringIO
-from os import remove
-from tempfile import NamedTemporaryFile
 
 from zlib import compress
 from zlib import decompress
@@ -40,7 +37,7 @@ class BufferedIStreamTest(unittest.TestCase):
         """
         self.bufsize = 2
         self.lines = ("abc\n", "def\n", "ghi\n")
-        self.buffer = StringIO("".join(self.lines))
+        self.buffer = BytesIO("".join(self.lines))
         self.stream = self.TestClass(self.buffer, self.bufsize)
         return
 
@@ -97,7 +94,7 @@ class FilteredIStreamTest(unittest.TestCase):
 
         """
         self.lines = ("abc\n", "def\n", "ghi\n")
-        self.stream = StringIO("".join(self.lines))
+        self.stream = BytesIO("".join(self.lines))
         return
 
     def test_iter(self):
@@ -158,7 +155,7 @@ class FilteredOStreamTest(unittest.TestCase):
         """
         self.lines = ("abc\n", "def\n", "ghi\n")
         self.data = "ABC\nGHI\n"
-        self.buffer = StringIO()
+        self.buffer = BytesIO()
         return
 
     def test_write(self):

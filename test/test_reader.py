@@ -1,9 +1,9 @@
-""" Testing for the the dtype.py module
+""" Testing for the the reader.py module
 
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from StringIO import StringIO
+from io import BytesIO
 
 import _path
 import _unittest as unittest
@@ -65,7 +65,7 @@ class _TabularReaderTest(unittest.TestCase):
         self.records = [
             {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
             {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]}]
-        self.stream = StringIO(self.data)
+        self.stream = BytesIO(self.data)
         return
 
     def test_open(self):
@@ -180,7 +180,7 @@ class ReaderSequenceTest(unittest.TestCase):
             ("arr", (1, None), ArrayType(array_fields))) 
         self.reader = partial(DelimitedReader, fields=fields, delim=",")
         data = "123, abc, def\n456, ghi, jkl\n"
-        self.streams = (StringIO(data), StringIO(data.upper()))
+        self.streams = (BytesIO(data), BytesIO(data.upper()))
         self.records = (
             {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
             {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]},

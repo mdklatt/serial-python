@@ -3,7 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from StringIO import StringIO
+from io import BytesIO
 
 import _path
 import _unittest as unittest
@@ -52,7 +52,7 @@ class _TabularWriterTest(unittest.TestCase):
         self.records = (
             {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
             {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]})
-        self.stream = StringIO()
+        self.stream = BytesIO()
         return
 
     def test_open(self):

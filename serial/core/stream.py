@@ -43,6 +43,8 @@ class _StreamAdaptor(object):
     def __exit__(self, extype=None, exval=None, trace=None):
         """ Exit a context block.
         
+        The underlying stream will be closed.
+        
         """
         # The exception arguments are ignored here and any exception is passed
         # along to the caller.
@@ -77,13 +79,13 @@ class BufferedIStream(_IStreamAdaptor):
     next() method.
 
     """
-    def __init__(self, stream, bufsize=1):
+    def __init__(self, stream, buflen=1):
         """ Initialize this object.
 
         """
         super(BufferedIStream, self).__init__(stream)
         self._buffer = []  # newest record at end
-        while len(self._buffer) < bufsize:
+        while len(self._buffer) < buflen:
             # Fill the buffer one record at a time.
             try:
                 self._buffer.append(self._stream.next())

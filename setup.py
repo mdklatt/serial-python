@@ -1,14 +1,13 @@
 """ Distutils setup script for the serial.core library package.
 
-Basic command to run the test suite and install library in the user's package
-directory if all tests pass:
+Basic command to run the test suite and install in the user's package directory
+if all tests pass:
 
     python setup.py test install --user
 
 """
 from distutils.core import Command
 from distutils.core import setup
-from sys import exit
 
 from serial.core import __version__
 from test import run as run_tests
@@ -63,4 +62,4 @@ def main():
 # Make the script executable.
 
 if __name__ == "__main__":
-    exit(main())
+    raise SystemExit(main())
