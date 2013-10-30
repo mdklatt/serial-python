@@ -155,7 +155,7 @@ class DelimitedReader(_TabularReader):
     position of an array field is the pair [beg, end).
 
     """
-    def __init__(self, stream, fields, delim=None):
+    def __init__(self, stream, fields, delim=None, endl="\n"):
         """ Initialize this object.
 
         The default delimiter will parse lines delimited by any whitespace. At
@@ -196,27 +196,27 @@ class ReaderSequence(_Reader):
     """ Iterate over a sequence of files/streams as a single sequence.
     
     """
-    def __init__(self, reader, *args):
+    def __init__(self, callback, *input):
         """ Initialize this object.
         
-        The reader argument is a callable object that takes a stream as its
-        only argument and returns a Reader to use on each input stream, e.g. 
-        a Reader constructor. The remaining arguments are either open streams
-        or paths to open as plain text files. Each input stream is closed once
-        it has been exhuasted.
+        The callback argument is any callable object that takes a stream as its
+        only argument and returns a Reader to use on that stream, e.g. a 
+        Reader constructor. The remaining arguments are either open streams or
+        paths to open as plain text files. Each input stream is closed once it
+        has been exhausted.
         
         Filtering is applied at the ReaderSequence level, but for filters that
         raise StopIteration this might not be the desired behavior. Halting
         iteration at this level effects all subsequent streams. If the intent
-        is to stop iteration for each individual stream, define the reader
-        function to return a Reader that already has the appropriate filter 
+        is to stop iteration for each individual stream, define the callback 
+        function to return a Reader that already has the appropriate filter(s)
         applied.
         
         """
         super(ReaderSequence, self).__init__()
-        self._input = list(args)
-        self._reader = reader
-        self._active = None
+        self._input = list(input)
+        self._callback = callback 
+        self._reader = None
         self._open()
         return
         
@@ -227,7 +227,7 @@ class ReaderSequence(_Reader):
         while True:
             # Repeat until a record is returned or the sequence is exhausted.
             try:
-                return self._active.next()
+                return self._reader.next()
             except StopIteration:
                 # The current stream is exhausted, try the next one. 
                 self._open()
@@ -236,7 +236,7 @@ class ReaderSequence(_Reader):
         """ Open the next stream in the sequence.
         
         """
-        if self._active:
+        if self._reader:
             # Close the open stream.
             self._input.pop(0).close()
         try:
@@ -248,7 +248,7 @@ class ReaderSequence(_Reader):
         except IndexError:
             # No more streams.
             raise StopIteration
-        self._active = self._reader(self._input[0])
+        self._reader = self._callback(self._input[0])
         return 
         
     def __enter__(self):
