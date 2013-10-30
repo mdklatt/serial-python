@@ -231,6 +231,7 @@ class ReaderSequence(_Reader):
             except StopIteration:
                 # The current stream is exhausted, try the next one. 
                 self._open()
+        return
         
     def _open(self):
         """ Open the next stream in the sequence.
