@@ -74,7 +74,7 @@ class _TabularReaderTest(unittest.TestCase):
         """
         with self.TestClass.open(self.stream, *self.args) as self.reader:
             self.test_next()
-        self.assertTrue(self.stream)
+        self.assertTrue(self.stream.closed)
         return
 
     def test_next(self):
