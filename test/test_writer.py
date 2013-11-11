@@ -59,7 +59,7 @@ class _TabularWriterTest(unittest.TestCase):
         """ Test the open() method.
         
         """
-        with self.TestClass.open(self.stream, *self.args) as writer:
+        with self.TestClass.open(self.stream, **self.args) as writer:
             self.test_write()
         self.assertTrue(self.stream.closed)
         return
@@ -103,8 +103,8 @@ class DelimitedWriterTest(_TabularWriterTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         super(DelimitedWriterTest, self).setUp()
         self.data = "123,abc,defX456,ghi,jklX"
-        self.args = fields, ",", "X"
-        self.writer = self.TestClass(self.stream, *self.args)
+        self.args = {"fields": fields, "delim": ",", "endl": "X"}
+        self.writer = self.TestClass(self.stream, **self.args)
         return
 
     def test_write_escape(self):
@@ -112,7 +112,8 @@ class DelimitedWriterTest(_TabularWriterTest):
         
         """
         self.records[0]["arr"] = [{"x": "abc,", "y": "def"}]
-        self.writer = self.TestClass(self.stream, *self.args, esc="\\")
+        self.args["esc"] = "\\"
+        self.writer = self.TestClass(self.stream, **self.args)
         self.data = "123,abc\,,defX456,ghi,jklX"
         self.test_write()
         return
@@ -148,8 +149,8 @@ class FixedWidthWriterTest(_TabularWriterTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         super(FixedWidthWriterTest, self).setUp()
         self.data = "123abcdefX456ghijklX"
-        self.args = fields, "X"
-        self.writer = self.TestClass(self.stream, *self.args)
+        self.args = {"fields": fields, "endl": "X"}
+        self.writer = self.TestClass(self.stream, **self.args)
         return
 
     def test_filter(self):

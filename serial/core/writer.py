@@ -155,7 +155,7 @@ class DelimitedWriter(_TabularWriter):
     position of an array field is the pair [beg, end).
 
     """
-    def __init__(self, stream, fields, delim, endl="\n", esc=None):
+    def __init__(self, stream, fields, delim, esc=None, endl="\n"):
         """ Initialize this object.
 
         To make the output compatible with a DataReader, any nonsignificant
@@ -178,7 +178,7 @@ class DelimitedWriter(_TabularWriter):
         return self._delim.join(map(self._escape, tokens))
 
 
-class FixedWidthWriter(DelimitedWriter):
+class FixedWidthWriter(_TabularWriter):
     """ A writer for fields delineated by character position.
 
     The character position of each field is given as the pair [beg, end).
@@ -192,5 +192,11 @@ class FixedWidthWriter(DelimitedWriter):
         """ Initialize this object.
         
         """
-        super(FixedWidthWriter, self).__init__(stream, fields, "", endl)
+        super(FixedWidthWriter, self).__init__(stream, fields, endl)
         return
+        
+    def _join(self, tokens):
+        """ Join a sequence of tokens into a line of text.
+        
+        """
+        return "".join(tokens)

@@ -159,7 +159,7 @@ class DelimitedReader(_TabularReader):
     position of an array field is the pair [beg, end).
 
     """
-    def __init__(self, stream, fields, delim=None, endl="\n", esc=None):
+    def __init__(self, stream, fields, delim=None, esc=None, endl="\n"):
         """ Initialize this object.
 
         The default delimiter will parse lines delimited by any whitespace.

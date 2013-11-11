@@ -72,7 +72,7 @@ class _TabularReaderTest(unittest.TestCase):
         """ Test the open() method.
         
         """
-        with self.TestClass.open(self.stream, *self.args) as self.reader:
+        with self.TestClass.open(self.stream, **self.args) as self.reader:
             self.test_next()
         self.assertTrue(self.stream.closed)
         return
@@ -132,8 +132,8 @@ class DelimitedReaderTest(_TabularReaderTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
-        self.args = fields, ","
-        self.reader = self.TestClass(self.stream, *self.args)
+        self.args = {"fields": fields, "delim": ","}
+        self.reader = self.TestClass(self.stream, **self.args)
         return
         
     def test_iter_escape(self):
@@ -141,7 +141,8 @@ class DelimitedReaderTest(_TabularReaderTest):
         
         """
         self.stream = BytesIO("123, abc\,, def\n456, ghi, jkl\n")
-        self.reader = self.TestClass(self.stream, *self.args, esc="\\")
+        self.args["esc"] = "\\"
+        self.reader = self.TestClass(self.stream, **self.args)
         self.records[0]["arr"] = [{"x": "abc,", "y": "def"}]
         self.test_iter()
         return
@@ -168,8 +169,8 @@ class FixedWidthReaderTest(_TabularReaderTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
-        self.args = fields,
-        self.reader = self.TestClass(self.stream, *self.args)
+        self.args = {"fields": fields}
+        self.reader = self.TestClass(self.stream, **self.args)
         return
 
 
