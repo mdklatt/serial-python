@@ -132,8 +132,18 @@ class DelimitedReaderTest(_TabularReaderTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
-        self.args = (fields, ",")
+        self.args = fields, ","
         self.reader = self.TestClass(self.stream, *self.args)
+        return
+        
+    def test_iter_escape(self):
+        """ Test the __iter__() method with escaped an delimiter.
+        
+        """
+        self.stream = BytesIO("123, abc\,, def\n456, ghi, jkl\n")
+        self.reader = self.TestClass(self.stream, *self.args, esc="\\")
+        self.records[0]["arr"] = [{"x": "abc,", "y": "def"}]
+        self.test_iter()
         return
         
 
@@ -158,7 +168,7 @@ class FixedWidthReaderTest(_TabularReaderTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
-        self.args = (fields,)
+        self.args = fields,
         self.reader = self.TestClass(self.stream, *self.args)
         return
 

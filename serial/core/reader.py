@@ -6,6 +6,10 @@ Readers convert lines of text to data records.
 from __future__ import absolute_import
 
 from contextlib import contextmanager
+from functools import partial
+from re import compile
+from string import replace
+from string import split
 
 from ._util import Field
 
@@ -155,15 +159,27 @@ class DelimitedReader(_TabularReader):
     position of an array field is the pair [beg, end).
 
     """
-    def __init__(self, stream, fields, delim=None, endl="\n"):
+    def __init__(self, stream, fields, delim=None, endl="\n", esc=None):
         """ Initialize this object.
 
-        The default delimiter will parse lines delimited by any whitespace. At
-        this time there is no way to escape delimiters.
+        The default delimiter will parse lines delimited by any whitespace.
+        Delimiters can be escaped by defining the esc argument. Delimiters 
+        immediately following the escape value are ignored during parsing.
+        (There is currently no way to escape the escape value).
 
         """
         super(DelimitedReader, self).__init__(stream, fields)
-        self._delim = delim
+        #self._delim = delim
+        if esc:
+            # Regex patterns need to be encoded in case the escape character 
+            # has a special meaning.
+            patt = "(?<!{0:s}){1:s}".format(esc, delim).encode("string-escape")
+            self._tokenize = compile(patt).split    
+            patt = "{0:s}{1:s}".format(esc, delim).encode("string-escape")
+            self._unescape = partial(compile(patt).sub, delim)
+        else:
+            self._tokenize = partial(split, sep=delim)
+            self._unescape = None
         return
 
     def _split(self, line):
@@ -173,7 +189,7 @@ class DelimitedReader(_TabularReader):
         discarded.
 
         """
-        tokens = line.split(self._delim)
+        tokens = map(self._unescape, self._tokenize(line))
         return tuple(tokens[field.pos] for field in self._fields)
 
 
