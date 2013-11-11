@@ -581,6 +581,20 @@ Quoting for a `DatetimeType` is controlled by its format string:
     DatetimeType("'%Y-%m-%d'")  # single-quoted date string
 
 
+### Escaped Delimiters ###
+
+Nonsignificant delimiter values need to be escaped when reading data with a
+`DelimitedReader`. If the `esc` argument is defined when initializing the 
+reader, a delimiter value immediately following the escape value is ignored
+when splitting the line into fields. If output written with a `DelimitedWriter` 
+needs to be compatible with a `DelimiteReader`, use the appropriate `esc` 
+argument when initializing the writer.
+
+    # Write/read escaped delimiters, e.g. "Dallas\, TX"
+    writer = DelimitedWriter(stream, fields, delim=",", esc="\\")
+    reader = DelimitedReader(stream, fields, delim=",", esc="\\")
+
+
 ### Nonstandard Line Endings ###
 
 By default, lines of text are assumed to end with the newline character, but 
