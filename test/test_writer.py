@@ -103,10 +103,20 @@ class DelimitedWriterTest(_TabularWriterTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         super(DelimitedWriterTest, self).setUp()
         self.data = "123,abc,defX456,ghi,jklX"
-        self.args = (fields, ",", "X")
+        self.args = fields, ",", "X"
         self.writer = self.TestClass(self.stream, *self.args)
         return
 
+    def test_write_escape(self):
+        """ Test the write() method for escaped delimiters.
+        
+        """
+        self.records[0]["arr"] = [{"x": "abc,", "y": "def"}]
+        self.writer = self.TestClass(self.stream, *self.args, esc="\\")
+        self.data = "123,abc\,,defX456,ghi,jklX"
+        self.test_write()
+        return
+    
     def test_filter(self):
         """ Test the filter() method.
 
@@ -138,7 +148,7 @@ class FixedWidthWriterTest(_TabularWriterTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         super(FixedWidthWriterTest, self).setUp()
         self.data = "123abcdefX456ghijklX"
-        self.args = (fields, "X")
+        self.args = fields, "X"
         self.writer = self.TestClass(self.stream, *self.args)
         return
 

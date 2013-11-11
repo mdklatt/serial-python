@@ -6,6 +6,8 @@ Writers convert data records to lines of text.
 from __future__ import absolute_import
 
 from contextlib import contextmanager
+from functools import partial
+from string import replace
 
 from ._util import Field
 
@@ -153,23 +155,27 @@ class DelimitedWriter(_TabularWriter):
     position of an array field is the pair [beg, end).
 
     """
-    def __init__(self, stream, fields, delim, endl="\n"):
+    def __init__(self, stream, fields, delim, endl="\n", esc=None):
         """ Initialize this object.
 
-        At this time there is no escaping of characters in the input records
-        that match the delimiter; this may cause issues when trying to parse
-        the resulting output.
-
+        To make the output compatible with a DataReader, any nonsignificant
+        delimiters need to be escaped. Use the esc argument to specify an
+        escape value if necessary.
+                
         """
         super(DelimitedWriter, self).__init__(stream, fields, endl)
         self._delim = delim
+        if esc:
+            self._escape = partial(replace, old=delim, new=esc+delim)
+        else:
+            self._escape = None
         return
 
     def _join(self, tokens):
         """ Join a sequence of tokens into a line of text.
 
         """
-        return self._delim.join(tokens)
+        return self._delim.join(map(self._escape, tokens))
 
 
 class FixedWidthWriter(DelimitedWriter):
