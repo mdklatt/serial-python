@@ -8,6 +8,7 @@ import _unittest as unittest
 
 from serial.core import FieldFilter
 from serial.core import RegexFilter
+from serial.core import SliceFilter
 
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
@@ -20,15 +21,15 @@ class _FilterTest(unittest.TestCase):
     runners.
 
     """
-    def test_call(self):
-        """ Test the __call__ method.
+    def test_whitelist(self):
+        """ Test the __call__ method for whitelisting.
         
         """ 
         filtered = self.data[:2] + [None]
         self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
         return
     
-    def test_call_blacklist(self):
+    def test_blacklist(self):
         """ Test the __call__ method for blacklisting.
         
         """ 
@@ -55,7 +56,7 @@ class FieldFilterTest(_FilterTest):
         self.data = [{"test": value} for value in values]
         return
 
-    def test_call_missing(self):
+    def test_whitelist_missing(self):
         """ Test the __call__ method with a missing field.
         
         """ 
@@ -64,7 +65,7 @@ class FieldFilterTest(_FilterTest):
         self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
         return
     
-    def test_call_blacklist_missing(self):
+    def test_blacklist_missing(self):
         """ Test the __call__ method for blacklisting with a missing field.
         
         """
@@ -92,10 +93,30 @@ class RegexFilterTest(_FilterTest):
         self.data = ["abc\n", "def\n", "ghi\n"]
         return
 
+
+class SliceFilterTest(_FilterTest):
+    """ Unit testing for the SliceFilter class.
+
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        # Filters need to match the first two lines. This will test both types
+        # of slice expressions.
+        values = ("bc", "ef")
+        self.whitelist = SliceFilter((1, 3), values)
+        self.blacklist = SliceFilter(slice(1, 3), values, False)
+        self.data = ["abc\n", "def\n", "ghi\n"]
+        return
+
         
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (FieldFilterTest, RegexFilterTest)
+_TEST_CASES = (FieldFilterTest, RegexFilterTest, SliceFilterTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
