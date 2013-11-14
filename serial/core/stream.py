@@ -124,7 +124,7 @@ class BufferedIStream(_IStreamAdaptor):
 
 
 class FilteredIStream(_IStreamAdaptor):
-    """ Apply filters to an input stream.
+    """ Add filtering to an input stream.
     
     Stream filters are applied before the stream input is parsed by the Reader;
     this can be faster than using Reader filters. A filter is a callable object
@@ -136,12 +136,22 @@ class FilteredIStream(_IStreamAdaptor):
     4. Raise StopIteration to signal the end of input.
        
     """
-    def __init__(self, stream, *callbacks):
+    def __init__(self, stream):
         """ Initialize this object.
         
         """
         super(FilteredIStream, self).__init__(stream)
-        self._filters = callbacks
+        self._filters = []
+        return
+    
+    def filter(self, *callbacks):
+        """ Add filters to this stream or clear all filters (default).
+        
+        """
+        if not callbacks:
+            self._filters = []
+        else:
+            self._filters.extend(callbacks)
         return
     
     def next(self):
@@ -235,7 +245,7 @@ class _OStreamAdaptor(_StreamAdaptor):
 
 
 class FilteredOStream(_OStreamAdaptor):
-    """ Apply filters to an output stream.
+    """ Add filtering to an output stream.
     
     Stream filters are applied to the text output after it has been generated 
     by the Writer. This can be used, for example, to apply low-level text
@@ -246,14 +256,24 @@ class FilteredOStream(_OStreamAdaptor):
     3. Return a new/modified line.
        
     """
-    def __init__(self, stream, *callbacks):
+    def __init__(self, stream):
         """ Initialize this object.
         
         """
         super(FilteredOStream, self).__init__(stream)
-        self._filters = callbacks
+        self._filters = []
         return
     
+    def filter(self, *callbacks):
+        """ Add filters to this stream or clear all filters (default).
+        
+        """
+        if not callbacks:
+            self._filters = []
+        else:
+            self._filters.extend(callbacks)
+        return
+
     def write(self, line):
         """ Write a filtered line to the stream.
         

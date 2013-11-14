@@ -94,7 +94,8 @@ class FilteredIStreamTest(unittest.TestCase):
 
         """
         self.lines = ("abc\n", "def\n", "ghi\n")
-        self.stream = BytesIO("".join(self.lines))
+        self.buffer = BytesIO("".join(self.lines))
+        self.stream = FilteredIStream(self.buffer)
         return
 
     def test_iter(self):
@@ -105,8 +106,8 @@ class FilteredIStreamTest(unittest.TestCase):
         """
         reject_filter = lambda line: line if line[0] != "d" else None
         modify_filter = lambda line: line.upper()
-        stream = FilteredIStream(self.stream, reject_filter, modify_filter)
-        self.assertSequenceEqual(("ABC\n", "GHI\n"), list(stream))
+        self.stream.filter(reject_filter, modify_filter)
+        self.assertSequenceEqual(("ABC\n", "GHI\n"), list(self.stream))
         return
 
     def test_iter_stop(self):
@@ -119,26 +120,25 @@ class FilteredIStreamTest(unittest.TestCase):
                 raise StopIteration
             return line
             
-        stream = FilteredIStream(self.stream, stop_filter)
-        self.assertSequenceEqual(("abc\n",), list(stream))
+        self.stream.filter(stop_filter)
+        self.assertSequenceEqual(("abc\n",), list(self.stream))
         return
         
     def test_close(self):
         """ Test the close method.
         
         """
-        stream = FilteredIStream(self.stream)
-        stream.close()
-        self.assertTrue(self.stream.closed)
+        self.stream.close()
+        self.assertTrue(self.buffer.closed)
         return
 
     def test_context(self):
         """ Test with a context block.
         
         """
-        with FilteredIStream(self.stream) as stream:
+        with FilteredIStream(self.buffer) as stream:
             self.assertEqual(self.lines[0], stream.next())
-        self.assertTrue(self.stream.closed)
+        self.assertTrue(self.buffer.closed)
         return
         
 
@@ -156,6 +156,7 @@ class FilteredOStreamTest(unittest.TestCase):
         self.lines = ("abc\n", "def\n", "ghi\n")
         self.data = "ABC\nGHI\n"
         self.buffer = BytesIO()
+        self.stream = FilteredOStream(self.buffer)
         return
 
     def test_write(self):
@@ -164,9 +165,9 @@ class FilteredOStreamTest(unittest.TestCase):
         """
         reject_filter = lambda line: line if line[0] != "d" else None
         modify_filter = lambda line: line.upper()
-        stream = FilteredOStream(self.buffer, reject_filter, modify_filter)
+        self.stream.filter(reject_filter, modify_filter)
         for line in self.lines:
-            stream.write(line)
+            self.stream.write(line)
         self.assertEqual(self.data, self.buffer.getvalue())
         return
         
@@ -174,8 +175,7 @@ class FilteredOStreamTest(unittest.TestCase):
         """ Test the close() method.
         
         """
-        stream = FilteredOStream(self.buffer)
-        stream.close()
+        self.stream.close()
         self.assertTrue(self.buffer.closed)
         return
 
