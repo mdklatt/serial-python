@@ -5,7 +5,7 @@ from __future__ import absolute_import
 
 from re import compile
 
-__all__ = ("FieldFilter", "TextFilter")
+__all__ = ("FieldFilter", "RegexFilter")
 
 
 class FieldFilter(object):
@@ -41,7 +41,7 @@ class FieldFilter(object):
         return record if valid else None
 
 
-class TextFilter(object):
+class RegexFilter(object):
     """ Filter lines using a regular expression.
     
     This is intended for use with a FilteredIStream.

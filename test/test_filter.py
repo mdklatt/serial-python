@@ -7,7 +7,7 @@ import _path
 import _unittest as unittest
 
 from serial.core import FieldFilter
-from serial.core import TextFilter
+from serial.core import RegexFilter
 
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
@@ -74,8 +74,8 @@ class FieldFilterTest(_FilterTest):
         return
 
                
-class TextFilterTest(_FilterTest):
-    """ Unit testing for the WhitelistFilter class.
+class RegexFilterTest(_FilterTest):
+    """ Unit testing for the RegexFilter class.
 
     """
     def setUp(self):
@@ -87,15 +87,15 @@ class TextFilterTest(_FilterTest):
         """
         # Filters need to match the first two lines.
         regex = r"abc|def"
-        self.whitelist = TextFilter(regex)
-        self.blacklist = TextFilter(regex, False)
+        self.whitelist = RegexFilter(regex)
+        self.blacklist = RegexFilter(regex, False)
         self.data = ["abc\n", "def\n", "ghi\n"]
         return
 
         
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (FieldFilterTest, TextFilterTest)
+_TEST_CASES = (FieldFilterTest, RegexFilterTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
