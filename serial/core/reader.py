@@ -8,8 +8,6 @@ from __future__ import absolute_import
 from contextlib import contextmanager
 from functools import partial
 from re import compile
-from string import replace
-from string import split
 
 from ._util import Field
 
@@ -178,7 +176,7 @@ class DelimitedReader(_TabularReader):
             patt = "{0:s}{1:s}".format(esc, delim).encode("string-escape")
             self._unescape = partial(compile(patt).sub, delim)
         else:
-            self._tokenize = partial(split, sep=delim)
+            self._tokenize = lambda line: line.split(delim)
             self._unescape = None
         return
 

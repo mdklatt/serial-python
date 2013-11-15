@@ -237,7 +237,7 @@ class _OStreamAdaptor(_StreamAdaptor):
     protocol.
 
     """
-    def write(self):
+    def write(self, line):
         """ Write a line of text to the stream.
 
         """
