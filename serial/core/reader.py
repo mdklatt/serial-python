@@ -7,6 +7,7 @@ from __future__ import absolute_import
 
 from contextlib import contextmanager
 from functools import partial
+from itertools import chain
 from re import compile
 
 from ._util import Field
@@ -29,7 +30,11 @@ class _Reader(object):
         next line of text input.
 
         """
-        self._filters = []
+        # Class filters are always applied before any user filters. Derived
+        # classes can use these to do any preliminary data manipulation after
+        # the record is parsed.
+        self._class_filters = []
+        self._user_filters = []
         return
 
     def filter(self, *callbacks):
@@ -46,10 +51,11 @@ class _Reader(object):
         *Input filters can safely modify a mutable argument.
 
         """
+        # This does not effect class filters.
         if not callbacks:
-            self._filters = []
+            self._user_filters = []
         else:
-            self._filters.extend(callbacks)
+            self._user_filters.extend(callbacks)
         return
 
     def next(self):
@@ -65,7 +71,7 @@ class _Reader(object):
         while record is None:
             # Repeat until a record passes all filters.
             record = self._get()
-            for callback in self._filters:
+            for callback in chain(self._class_filters, self._user_filters):
                 # Apply each filter in order. Stop as soon as the record fails
                 # a filter and try the next record.
                 record = callback(record)

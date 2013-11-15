@@ -7,6 +7,7 @@ from __future__ import absolute_import
 
 from contextlib import contextmanager
 from functools import partial
+from itertools import chain
 from string import replace
 
 from ._util import Field
@@ -27,7 +28,11 @@ class _Writer(object):
         of text.
 
         """
-        self._filters = []
+        # Class filters are always applied after any user filters. Derived 
+        # classes can use these to do any final data manipulation before the
+        # record is written to the stream.
+        self._user_filters = []
+        self._class_filters = []
         return
 
     def filter(self, *callbacks):
@@ -44,17 +49,18 @@ class _Writer(object):
          expect write() to be free of side effects.
 
         """
+        # This does not effect class filters.
         if not callbacks:
-            self._filters = []
+            self._user_filters = []
         else:
-            self._filters.extend(callbacks)
+            self._user_filters.extend(callbacks)
         return
 
     def write(self, record):
         """ Write a record to the output stream.
         
         """
-        for callback in self._filters:
+        for callback in chain(self._user_filters, self._class_filters):
             record = callback(record)
             if record is None:
                 return
