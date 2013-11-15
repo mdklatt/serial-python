@@ -194,11 +194,11 @@ width is not required.
     writer = DelimitedWriter(ostream, sample_fields, delim)
 
 
-## Creating Readers and Writers ##
+## Initializing Readers and Writers ##
 
 For most situations, calling a class's `open()` method is the most convenient 
-way to create a Reader or Writer. This creates a context manager to be used as 
-part of a `with` statement, and upon exit from the context block the stream
+way to initialize a Reader or Writer. This creates a context manager to be used 
+as part of a `with` statement, and upon exit from the context block the stream
 associated with the Reader or Writer is closed.
 
     with DelimitedReader.open("data.csv", fields, ",") as reader:
@@ -352,6 +352,13 @@ All the field definitions and filters for a specific format can be encapsulated
 in a class that inherits from the appropriate Reader or Writer, and these
 classes can be bundled into a module for that format.
 
+Readers and Writers have two categories of filters, class filters and user
+filters. Class filters are used in the implementation of a class, while user
+filters are optionally applied by client code. Readers apply class filters 
+before any user filters, and Writers apply them after any user filters. Class 
+filters are not affected by the `filter()` method; instead, access them 
+directly using the `_class_filters` object attribute (a `list`).
+
     """ Module for reading and writing the sample data format. """
 
     from serial.core import DelimitedReader
@@ -362,14 +369,14 @@ classes can be bundled into a module for that format.
     from serial.core import StringType
 
     _ARRAY_FIELDS = (
-      ("value", 0, FloatType(".2f")),
-      ("flag", 1, StringType()))
+        ("value", 0, FloatType(".2f")),
+        ("flag", 1, StringType()))
 
     _SAMPLE_FIELDS = (
-      ("stid", 0, StringType()),
-      ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M")),
-      ("timezone", 2, ConstType("UTC")),
-      ("data", (3, None), ArrayType(_ARRAY_FIELDS)))
+        ("stid", 0, StringType()),
+        ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M")),
+        ("timezone", 2, ConstType("UTC")),
+        ("data", (3, None), ArrayType(_ARRAY_FIELDS)))
 
     _DELIM = ","
     
@@ -389,7 +396,7 @@ classes can be bundled into a module for that format.
             
             super(SampleReader, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(lst_filter)
+            self._class_filters.append(lst_filter) 
             return
 
 
@@ -409,7 +416,7 @@ classes can be bundled into a module for that format.
                 
             super(SampleWriter, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             self._offset = timedelta(hours=offset)  # offset from UTC
-            self.filter(utc_filter)
+            self._class_filters(utc_filter)
             return record
     
     
