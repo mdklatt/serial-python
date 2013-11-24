@@ -192,12 +192,13 @@ class WriterBufferTest(_BufferTest):
         return
 
     def test_write(self):
-        """ Test the write() method.
+        """ Test the write() and close() methods.
 
         """
         for record in self.input:
             self.buffer.write(record)
         self.buffer.close()
+        self.buffer.close()  # test that redundant calls are a no-op
         self.assertSequenceEqual(self.output, self.writer.output)
         return
 

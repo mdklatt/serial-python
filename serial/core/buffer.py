@@ -103,6 +103,9 @@ class _WriterBuffer(_Writer):
         should be called in the correct order (outermost buffer first).
         
         """
+        if not self._writer:
+            # Buffer is already closed.
+            return
         self._flush()
         for record in self._output:
             # Base class write() applies filters.
