@@ -237,7 +237,6 @@ class ReaderSequence(_Reader):
         self._input = list(input)
         self._callback = callback 
         self._reader = None
-        self._open()
         return
         
     def _get(self):
@@ -248,8 +247,9 @@ class ReaderSequence(_Reader):
             # Repeat until a record is returned or the sequence is exhausted.
             try:
                 return self._reader.next()
-            except StopIteration:
-                # The current stream is exhausted, try the next one. 
+            except (AttributeError, StopIteration):
+                # The current reader is None or has been exhausted so open the
+                # next stream in the sequence.
                 self._open()
         return
         

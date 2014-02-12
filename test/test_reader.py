@@ -217,6 +217,14 @@ class ReaderSequenceTest(unittest.TestCase):
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
         
+    def test_iter_empty(self):
+        """ Test the __iter__() method for an empty input sequence.
+        
+        """
+        with ReaderSequence(self.reader) as sequence:
+            self.assertSequenceEqual((), list(sequence))
+        return
+
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
