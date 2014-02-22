@@ -1,22 +1,25 @@
-# serial.core Tutorial #
+# Overview #
 
-## Reading Data ##
+The **serial-core** library can be used to read and write serial data
+consisting of sequential records of typed fields. Data is read into or written
+from dicts that are keyed by field name. The public user interface is defined
+in the `serial.core` package.
 
-Consider the following snippet of data:
 
-    340010 2012-02-01 00:00 UTC -999.00M -999.00S
-    340010 2012-03-01 00:00 UTC   72.00     1.23A
-    340010 2012-04-01 00:10 UTC   63.80Q    0.00
-
+# Reading Data #
 
 This is fixed-width data consisting of a station identifier, a date string, a
 time string, and observations from a sensor array. Each observation has a
 floating point value and an optional flag string.
 
+    340010 2012-02-01 00:00 UTC -999.00M -999.00S
+    340010 2012-03-01 00:00 UTC   72.00     1.23A
+    340010 2012-04-01 00:10 UTC   63.80Q    0.00
+
 This data stream can be read using a `FixedWidthReader`. The reader must be
 initialized with a set of field definitions. Each field is defined by its name,
-position, and data type. For a fixed-width field the position is given by its
-character positions, i.e. a [begin, end) pair.
+position, and data type. For a fixed-width field the position is a slice 
+specifier, i.e.[begin, end), inclusive of spaces between fields.
 
     from serial.core import FixedWidthReader
     from serial.core import StringType
@@ -36,8 +39,7 @@ character positions, i.e. a [begin, end) pair.
         for record in reader:
             print(record)
 
-
-###  Array Fields ###
+##  Array Fields ##
 
 If there are a large number of sensor data fields, defining and working with
 these fields individually can be tedious. For the sample data the format of 
@@ -51,7 +53,8 @@ input line, but the positions of the element fields are relative to each other.
     from serial.core import ArrayType
 
     array_fields = (
-        ("value", (0, 8), FloatType()),  # don't forget leading space
+        # Define each data array element.
+        ("value", (0, 8), FloatType()),  # leading space
         ("flag", (8, 9), StringType()))
 
     sample_fields = (
@@ -79,8 +82,7 @@ variable-length array is created by setting its end position to None.
         ("time", (17, 23), StringType()),
         ("data", (27, None), ArrayType(array_fields)))  # variable length
 
-
-### Datetime Fields ###
+## Datetime Fields ##
 
 The `DatetimeType` can be used for converting data to a `datetime.datetime`
 object. For the sample data, the date and time fields can be treated as a
@@ -97,8 +99,7 @@ single `datetime` field. A `DatetimeType` must be initialized with a
         ("timestamp", (6, 23), DatetimeType("%Y-%m-%d %H:%M")),
         ("data", (27, None), ArrayType(array_fields)))  # variable length
 
-
-### Default Values ###
+## Default Values ##
 
 During input all fields in a record are assigned a value. If a field is blank
 it is given the default value assigned to that field (`None` by default). 
@@ -108,7 +109,7 @@ it is given the default value assigned to that field (`None` by default).
         ("flag", (8, 9), StringType(default="M")))  # replace blanks with M
 
 
-## Writing Data ##
+# Writing Data #
 
 Data is written to a stream using a Writer. Writers implement a `write()` 
 method for writing individual records and a `dump()` method for writing a 
@@ -123,19 +124,19 @@ fields) **must** be specified.
 
 For the `FixedWidthReader` example the time zone field was ignored. However,
 when defining fields for a `FixedWidthWriter`, every field must be defined,
-even if it's blank. Also, fields must be listed in their correct order.
+even if it's blank. Also, fields must be listed in the correct order.
 
 A Writer will output a value for each of its fields with every data record. If
 a field is missing from a data record the Writer will use the default value for 
-that field (`None` is encoded as a blank field). For input a default field 
-value can be anything, but for output it must be type-compatible, e.g. 
-`IntType(default="M")` is an error. Fields in the record that do not correspond 
-to an output field are ignored.
+that field (`None` is encoded as a blank field). For input a default value 
+can be anything, but for output it must be type-compatible, e.g. 
+`IntType(default="M")` is an error. Fields in the record that do not have a 
+a field definition are ignored.
 
 With some minor modifications the field definitions for reading the sample
 data can be used for writing it. In fact, the modified fields can still be used
 for reading the data, so a Reader and a Writer can be defined for a given data
-format using one set of field definitions.
+format using one set of field definitions. 
 
     from serial.core import FixedWidthWriter 
 
@@ -147,18 +148,18 @@ format using one set of field definitions.
         ("stid", (0, 7), StringType("7s")),  # trailing space
         ("timestamp", (7, 23), DatetimeType("%Y-%m-%d %H:%M")),
         ("timezone", (23, 27), StringType(">4s", default="UTC")),
-        ("data", (27, None), ArrayType(array_fields)))  # no format string
+        ("data", (27, None), ArrayType(array_fields)))
 
     with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
         # Copy "data.txt" to "copy.txt".
-        reader = FixedWidthReader(istream, sample_fields)
-        writer = FixedWidthWriter(ostream, sample_fields)
+        reader = FixedWidthReader(istream, array_fields)
+        writer = FixedWidthWriter(ostream, array_fields)
         for record in reader:
-            # Write all records in one call: writer.dump(reader)
-            del record["timezone"]  # rely on default value
+            # Write each record to the stream. Or, write all records in a single
+            # call: writer.dump(reader)
             writer.write(record)
         
-## Delimited Data ##
+# Delimited Data #
 
 The `DelimitedReader` and `DelimitedWriter` classes can be used for reading and
 writing delimited data, e.g. a CSV file.
@@ -167,12 +168,10 @@ writing delimited data, e.g. a CSV file.
     340010,2012-03-01 00:00,UTC,72.00,,1.23,A
     340010,2012-04-01 00:10,UTC,63.80,Q,0.00,
 
-
 Delimited fields are defined in the same way as fixed-width fields except that
-the field positions are given by index number instead of character positions.
-Scalar field positions are a single number while array field positions are a
-[begin, end) pair. The format string is optional for most field types because a
-width is not required.
+scalar field positions are given by field number (starting at 0). Array fields
+still use a slice expression. The format string is optional for most field
+types because a width is not required.
 
     from serial.core import DelimitedReader
     from serial.core import DelimitedWriter
@@ -194,7 +193,7 @@ width is not required.
     writer = DelimitedWriter(ostream, sample_fields, delim)
 
 
-## Initializing Readers and Writers ##
+# Initializing Readers and Writers #
 
 For most situations, calling a class's `open()` method is the most convenient 
 way to initialize a Reader or Writer. This creates a context manager to be used 
@@ -214,7 +213,6 @@ explicitly and pass it to `open()`; this stream will be automatically closed.
         # Input stream is automatically closed.
         records = list(reader)
 
-
 Calling a Reader or Writer constructor directly provides the most control. The
 client code is responsible for opening and closing the associated stream. The
 constructor takes the same arguments as `open()`, except that the constructor
@@ -226,7 +224,7 @@ requires an open stream instead of an optional file path.
     stream.close()    
         
 
-## Filters ##
+# Filters #
 
 Filters are used to manipulate data records after they have been parsed by a 
 Reader or before they are written by a Writer. A filter is simply a callable 
@@ -247,14 +245,13 @@ object that takes a data record as its only argument and returns a record or
     writer.filter(month_filter)
     writer.dump(records)  # write March records only
 
-
-### Filter Objects ###
+## Filter Objects ##
 
 Any callable object can be a filter, including a class that defines a
 `__call__()` method. This allows for the creation of more complex filters.
 
     class MonthFilter(object):
-        """ Restrict input to the specified month. """
+        """ Restrict data to the specified month. """
 
         def __init__(self, month):
             self._month = month
@@ -268,8 +265,7 @@ Any callable object can be a filter, including a class that defines a
 
     reader.filter(MonthFilter(3))  # input is restricted to March
 
-
-### Altering Records ###
+## Altering Records ##
 
 A filter can return a modified version of its input record or a different
 record altogether.
@@ -279,57 +275,59 @@ record altogether.
     class LocalTime(object):
         """ Convert from UTC to local time. """
 
-        def __init__(self, offset):
-            self._offset = timedelta(hours=offset)
+        def __init__(self, timezone=0):
+            self._offset = timedelta(hours=timezone)
             return
 
         def __call__(self, record):
             """ Filter function. """
             record["timestamp"] += self._offset
-            return record  # pass the modified record
+            return record  # pass the modified record along
 
     ...
 
     reader.filter(LocalTime(-6))  # input is converted from UTC to CST
 
+## Stopping Iteration ##
 
-### Stopping Iteration ###
+Returning `None` from a filter will drop individual records, but if the filter 
+can determine that there will be no more valid input it can raise a 
+`StopIteration` exception to stop input altogether.
 
-Returning `None` from a filter will drop individual records, but input can be
-stopped altogether by raising a `StopIteration` exception. For example, when 
-filtering data by time, if the data are in chronological order it doesn't make 
-sense to continue reading from the stream once the desired time period has been 
-passed.
+    from functools import partial
 
-    class MonthFilter(object):
-        """ Restrict input data to a single month. """
-
-        def __init__(self, month):
-            """ Initialize this object. """
-            self._month = month
-            return
-
-        def __call__(self, record):
-            """ Filter function. """
-            month = record["timestamp"].month
-            if month > self._month:
-                # Data are for one year in chronological order so there are no 
-                # more records for the desired month.
-                raise StopIteration  # don't do this in an output filter
-            return record if month == self._month else None
-
-
-### Multiple Filters ###
+    def month_filter(month, record):
+      """ Restrict input data to a single month. """
+      this_month = record["timestamp"].month
+      if this_month > month:
+          # Data are known to be for one year in chronological order, so there
+          # are no more records for the desired month.
+          raise StopIteration  # don't do this in an output filter
+      return record if this_month == month else None
+      
+      ...
+      
+      march_filter = partial(month_filter, 3)  # make this a unary function
+      reader.filter(march_filter)
+      
+## Multiple Filters ##
             
 Filters can be chained and are called in order for each record. If a filter
 returns `None` the record is immediately dropped. For the best performance 
 filters should be ordered from most restrictive (most likely to return `None`) 
 to least.
 
-    reader.filter(MonthFilter(3), LocalTime(-6))  # March only, time is CST
+    march_filter = partial(month_filter, 3)
+    reader.filter(march_filter)
+    reader.filter(LocalTime(-6))
+    reader.filter()  # clear existing filters
+    reader.filters(march_filter, LocalTime(-6))  # add all filters at once
 
+    reader.filter(march_filter, LocalTime(-6))  # March only, time is CST
+    # Or, filters can be added individually. Calling filter() with no
+    # arguments clears all filters.
 
-### Predefined Filters
+## Predefined Filters
 
 The library defines the `FieldFilter` class for use with Readers and Writers.
 
@@ -346,21 +344,28 @@ The library defines the `FieldFilter` class for use with Readers and Writers.
         reader.filter(blacklist)
 
 
-## Extending Core Classes ##
+# Custom Data Formats #
 
-All the field definitions and filters for a specific format can be encapsulated
-in a class that inherits from the appropriate Reader or Writer, and these
-classes can be bundled into a module for that format.
+The intent of the `serial.core` library is to provide a framework for dealing
+with a wide variety of data formats. The data field definitions are precribed
+by the the format, but filters can be used to build any convenient data model 
+on top of that format. Philosophically, reading and writing should be inverse
+operations. A Reader and Writer should operate on the same data model such
+that the input from a Reader could be passed to a Writer to recreate the input
+file.
 
-Readers and Writers have two categories of filters, class filters and user
-filters. Class filters are used in the implementation of a class, while user
-filters are optionally applied by client code. Readers apply class filters 
-before any user filters, and Writers apply them after any user filters. Class 
-filters are not affected by the `filter()` method; instead, access them 
-directly using the `_class_filters` object attribute (a `list`).
+All the field definitions and filters for a specific format can be encapsulated 
+in classes that inherit from the appropriate Reader or Writer, and these
+classes can be bundled into a module for that format. There are two categories
+of filters, class filters and user filters. Class filters are part of the data 
+model, while user filters are optionally applied by client code. Readers apply 
+class filters before any user filters, and Writers apply them after any user 
+filters. Class filters are not affected by the `filter()` method; instead, 
+access them directly using the `_class_filters` attribute.
 
-    """ Module for reading and writing the sample data format. """
-
+    """ Module for reading and writing the sample data format. 
+        
+    """
     from serial.core import DelimitedReader
     from serial.core import DelimitedWriter
     from serial.core import ArrayType
@@ -383,43 +388,46 @@ directly using the `_class_filters` object attribute (a `list`).
     class SampleReader(DelimitedReader):
         """ Sample data reader.
 
-        Base class implements iterator protocol for reading records.
+        The base class implements the iterator protocol for reading records. All 
+        times are converted from UTC to LST during input.
 
         """
-        def __init__(self, stream, offset=-6):
+        def __init__(self, stream, timezone=-6):
             
             def lst_filter(record):
                 """ Filter function for LST conversion. """
-                record["timestamp"] += self._offset  # UTC to LST
+                # Don't need to pass in utc_offset because this is a closure.
+                record["timestamp"] += utc_offset  # UTC to LST
                 record["timezone"] = "LST"
                 return record
             
             super(SampleReader, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
-            self._offset = timedelta(hours=offset)  # offset from UTC
-            self._class_filters.append(lst_filter) 
+            utc_offset = timedelta(hours=timezone)  # fractional timezones okay
+            self._class_filters.append(lst_filter)  # always applied first 
             return
 
 
     class SampleWriter(DelimitedWriter):
         """ Sample data writer.
 
-        Base class defines write() and dump() for writing records.
+        The base class defines write() and dump() for writing records. All
+        times are converted from LST to UTC during output.
 
         """
-        def __init__(self, stream, offset=-6):
+        def __init__(self, stream, timezone=-6):
         
             def utc_filter(record):
                 """ Filter function for UTC conversion. """
-                record["timestamp"] -= self._offset  # LST to UTC
+                # Don't need to pass in utc_offset because this is a closure.
+                record["timestamp"] -= utc_offset  # LST to UTC
                 record["timezone"] = "UTC"
                 return
                 
             super(SampleWriter, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
-            self._offset = timedelta(hours=offset)  # offset from UTC
-            self._class_filters(utc_filter)
+            utc_offset = timedelta(hours=timezone)  # fractional timezones okay
+            self._class_filters(utc_filter)  # always applied last
             return record
-    
-    
+            
     # Test the module. 
 
     with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
@@ -427,7 +435,7 @@ directly using the `_class_filters` object attribute (a `list`).
         SampleWriter(ostream).dump(SampleReader(istream))
 
 
-## Buffers ##
+# Buffers #
 
 Like filters, Buffers allow for postprocessing of input records from a Reader
 or preprocessing of output records to a Writer. However, Buffers can operate 
@@ -436,39 +444,28 @@ or merge records before passing them on. Like Readers and Writers, Buffers
 support filtering; records are filtered after they have passed through the 
 Buffer.
 
-
-### Input Buffering ###
+## Input Buffering ##
 
 An input Buffer is basically a Reader that reads records from another Reader 
 (including another input Buffer) instead of lines of text from a stream. An 
 input Buffer should derive from the `_ReaderBuffer` base class. It must 
-implement a `_queue()` method to process records being read from its Reader, 
-and it may override the `_uflow()` method supply records once the input reader
-has been exhausted.
+implement a `_queue()` method to process each incoming record, and it may 
+override the `_uflow()` method to supply records once the input Reader has been
+exhausted.
 
     from serial.core.buffer import _ReaderBuffer
     
     class MonthlyTotal(_ReaderBuffer):
-        """ Combine daily input records into monthly records. 
+        """ Combine daily input into monthly records. """
         
-        The base class implements the Reader interface including filtering and
-        the iterator protocol.
-        
-        """
         def __init__(self, reader):
-            """ Initialize this object. """
-            
             super(MonthlTotal, self).__init__(writer)
             self._buffer = None
             return
         
         def _queue(self, record):
-            """ Process each incoming record.
-        
-            Convert incoming daily records to monthly records. The incoming
-            data is assumed to be sorted in chronological order.
-        
-            """
+            # Convert incoming daily recods to monthly records. The incoming
+            # data is assumed to be sorted in chronological order.
             month = record["date"].replace(day=1)
             if self._buffer and self._buffer["date"] == month:
                 # Add this record to the current month.
@@ -481,26 +478,22 @@ has been exhausted.
             return
                 
         def _uflow(self, record):
-            """ Handle an underflow condition.
-    
-            This is called if the output queue is empty and the input reader 
-            has been exhausted.
-          
-            """
-            # No more records are coming, so finish the current month.
+            # Handle an underflow condition if the output queue is empty and
+            # the input reader has been exhausted. No more records are coming,
+            # so finish the current month.
             if self._buffer:
-                self._output.append(self._buffer)
-                self._buffer = None
+                self._output.append(self._buffer)  # FIFO queue
+                self._buffer = None  # next call will trigger EOF
             else:
+                # This function *must* raise StopIteration on EOF. 
                 raise StopIteration 
             return
             
         ...
         
         monthly_records = list(MonthlyTotal(reader))
-
  
-### Output Buffering ###
+## Output Buffering ##
 
 An output Buffer is basically a Writer that writes records to another Writer
 (including another output Buffer) instead of lines of text to a stream. An 
@@ -511,31 +504,22 @@ may override the `_flush()` method to finalize processing.
     from serial.core.buffer import _WriterBuffer
 
     class DataExpander(_WriterBuffer):
-        """ Output individual elements of an array field.
+        """ Output individual elements of an array field. """
 
-        The base class implements the basic writer interface including 
-        filtering and the write() and dump() methods. An additional method, 
-        close(), should be called by the client code to signal that no more 
-        records will be written. If multiple buffers are chained together their
-        close() methods must be called in the correct order (outermost buffer 
-        first).
+        # In addition to the normal Writer interface, the base class defines
+        # the close() method to be called by the client code to signal that no 
+        # more records will be written. If multiple buffers are chained 
+        # together their close() methods must be called in the correct order 
+        # (outermost buffer first).
 
-        """
         def __init__(self, writer):
-            """ Initialize this object. """
-            
             super(DataExpander, self).__init__(writer)
             return
 
-        def _queue(self, record)
-            """ Process each outgoing record. 
-            
-            Each item the record's array field will be output as an
-            individual record.
-            
-            """
+        def _queue(self, record):
+            # Process each outging record.
             for item in record["data"]:
-                # Create an output record for this item. 
+                # Create an output record for each item in the array field.
                 item = item.copy()  # output should be free of side effects
                 item["stid"] = record["stid"]
                 item["timestamp"] = record["timestamp"]
@@ -543,7 +527,7 @@ may override the `_flush()` method to finalize processing.
             return
             
         # _WriterBuffer has a _flush() method that can be overriden to finalize
-        # output; is called when close() is called on the buffer. For this 
+        # output; is is called when close() is called on the buffer. For this 
         # example, _flush() does not need to do anything.
 
     ...
@@ -551,16 +535,17 @@ may override the `_flush()` method to finalize processing.
     DataExpander(writer).dump(reader)  # dump() calls close()
 
   
-## Stream Adaptors ##
+# Stream Adaptors #
 
 A Reader's input stream is any object that implements a `next()` method that 
 returns a line of text from the stream. A Writer's output stream is any object 
 that implements a `write()` method to write a line of text. A Python `file`
-object, for example, satisfies the requirements for both types of streams. The 
-`_IStreamAdaptor` and `_OStreamAdaptor` abstract classes in the `stream` module
-declare the required interfaces and can be used to create adaptors for other 
-types of streams. The library defines several adaptors as part of the `core` 
-package, such as `GzippedIStream`.
+object, for example, satisfies the requirements for both types of streams,
+depending on what mode it was opened with. The `_IStreamAdaptor` and 
+`_OStreamAdaptor` abstract classes in the `stream` module declare the required 
+interfaces and can be used to create adaptors for other types of streams. The 
+library defines several adaptors as part of the `core` package, such as 
+`GzippedIStream`.
 
     from serial.core import GzippedIStream
 
@@ -573,10 +558,29 @@ package, such as `GzippedIStream`.
         # block. 
         data = list(DelimitedReader(stream, fields, ","))
 
-  
-## Tips and Tricks ##
+Filters can be applied to streams to manipulate text before it is parsed by
+a Reader or after it is written by a Writer. A text filter works just like a
+a record filter except that it operates on a line of text instead of a data
+record. The library includes the `SliceFilter` and `RegexFilter` text filters.
 
-### Quoted Strings ###
+    from serial.core import FilteredIStream
+    from serial.core import SliceFilter  # like FieldFilter for text
+    
+    ...
+    
+    # Ignore comments and restrict data to PRCP records. It can be faster to
+    # filter at the text level because the amount of data that has to be parsed
+    # by the Reader is reduced.
+    stream = FilteredIStream(open("data.txt", "r")) 
+    stream.filter(lambda line: None if line.startswith("#") else line)
+    stream.filter(SliceFilter((21, 25), ("PRCP",)))
+    with DelimitedReader.open(stream, fields, ",") as reader:
+        records = list(reader)
+
+  
+# Tips and Tricks #
+
+## Quoted Strings ##
 
 The `StringType` data type can read and write quoted strings by initializing it
 with the quote character to use.
@@ -587,8 +591,7 @@ Quoting for a `DatetimeType` is controlled by its format string:
 
     DatetimeType("'%Y-%m-%d'")  # single-quoted date string
 
-
-### Escaped Delimiters ###
+## Escaped Delimiters ##
 
 Nonsignificant delimiter values need to be escaped when reading data with a
 `DelimitedReader`. If the `esc` argument is defined when initializing the 
@@ -601,16 +604,18 @@ argument when initializing the writer.
     writer = DelimitedWriter(stream, fields, delim=",", esc="\\")
     reader = DelimitedReader(stream, fields, delim=",", esc="\\")
 
+## Nonstandard Line Endings ##
 
-### Nonstandard Line Endings ###
+By default, lines of text are assumed to end with the platform-specific line
+ending, i.e. "\n". Readers expect that ending on each line of text from their
+input stream, and Writers append it to each line written to their output
+stream. If a Reader's input stream uses a different line ending, or Writer 
+output is required to have a different ending, use the `endl` argument with
+the appropriate constructor.
 
-By default, lines of text are assumed to end with the newline character, but 
-other line endings can be specified for both Readers and Writers.
+    FixedWidthWriter(stream, fields, endl="\r\n")  # force Windows format 
 
-    writer = DelimitedWriter(stream, fields, delim, endl="")  # no trailing \n
-
-
-### Header Data ###
+## Header Data ##
 
 Header data is outside the scope of `serial.core`. Client code is responsible
 for reading or writing header data from or to the stream before `next()` or
@@ -633,18 +638,18 @@ can only be identified by encountering the first data record.
             # Header information can be read before or after the base class is
             # initialized, but it must be done before next() is called.
             stream = BufferedIStream(stream)
-            for line in stream:            
-                # At the end of this loop the first data record has already
-                # been read.
+            for line in stream:
                 ...
                 if is_data:
                     break
+                # Continue reading header information.
+                ...
+                
             stream.rewind(1)  # reposition at first data record
             super(DataReader, self).__init__(stream, _FIELDS, _DELIM)
             return
-
  
-### Mixed-Type Data ###
+## Mixed-Type Data ##
 
 Mixed-type data fields must be defined as a `StringType` for stream input and
 output, but filters can be used to convert to/from multiple Python types based
@@ -655,20 +660,19 @@ on the field value.
         try:
             record["mixed"] = float(record["mixed"])
         except ValueError:  # conversion failed, value is 'M'
-            record["mixed"] = None  # a more convient value for missing data
+            record["mixed"] = None  # a more convenient value for missing data
         return record
 
-
-### Combined Fields ###
+## Combined Fields ##
 
 Filters can be used to map a single field in the input/output stream to/from
-multiple fields in the data record, or vice versa.
+multiple fields in the data record (or vice versa).
 
     def timestamp_filter(record):
         """ Output filter to split timestamp into separate fields. """
-        # The data format defines separate "date" and "time" fields instaad of
+        # The data format defines separate "date" and "time" fields instead of
         # the combined "timestamp". The superfluous timestamp field will be
-        # ignored by the Writer so deleting it is redundant.
+        # ignored by the Writer, so deleting it is not necessary.
         record = record.copy()  # write() shouldn't have any side effects
         record["date"] = record["timestamp"].date()
         record["time"] = record["timestamp"].time()
