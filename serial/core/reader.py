@@ -172,8 +172,7 @@ class DelimitedReader(_TabularReader):
         (There is currently no way to escape the escape value).
 
         """
-        super(DelimitedReader, self).__init__(stream, fields)
-        #self._delim = delim
+        super(DelimitedReader, self).__init__(stream, fields, endl)
         if esc:
             # Regex patterns need to be encoded in case the escape character 
             # has a special meaning.
@@ -244,13 +243,20 @@ class ReaderSequence(_Reader):
         
         """
         while True:
-            # Repeat until a record is returned or the sequence is exhausted.
+            # Repeat until a record is returned or there are no more streams
+            # to open. If the current reader is None or exhuasted try to open
+            # a new stream.
             try:
                 return self._reader.next()
-            except (AttributeError, StopIteration):
-                # The current reader is None or has been exhausted so open the
-                # next stream in the sequence.
-                self._open()
+            except AttributeError:
+                if self._reader is not None:
+                    # The reader has been initialized but doesn't have a next()
+                    # method.
+                    raise
+            except StopIteration:
+                # The reader is exhausted.
+                pass
+            self._open()
         return
         
     def _open(self):

@@ -13,7 +13,8 @@ from subprocess import check_call
 from serial.core import __version__
 from test import run as run_tests
 
-SETUP_CONFIG = {
+
+CONFIG = {
     "name": "serial-core",
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
@@ -69,7 +70,7 @@ class TestCommand(_CustomCommand):
 
 
 class UpdateCommand(_CustomCommand):
-    """ Custom setup command to update from the tracking branch.
+    """ Custom setup command to pull from a remote branch.
     
     """
     description = "update from the tracking branch"
@@ -99,8 +100,7 @@ def main():
     """ Execute the setup commands.
     
     """
-    SETUP_CONFIG["cmdclass"] = {"test": TestCommand, "update": UpdateCommand}
-    setup(**SETUP_CONFIG)
+    setup(cmdclass={"test": TestCommand, "update": UpdateCommand}, **CONFIG)
     return 0
 
 

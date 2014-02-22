@@ -3,12 +3,11 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from io import BytesIO
-
 import _path
 import _unittest as unittest
 
 from functools import partial
+from io import BytesIO
 
 from serial.core import DelimitedReader
 from serial.core import FixedWidthReader
@@ -81,6 +80,8 @@ class _TabularReaderTest(unittest.TestCase):
         """ Test the next() method.
 
         """
+        
+        # TODO: Test with nonstandard line endings.
         self.assertEqual(self.records[0], self.reader.next())
         return
 
@@ -132,7 +133,7 @@ class DelimitedReaderTest(_TabularReaderTest):
             ("arr", (1, None), ArrayType(array_fields))) 
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
-        self.args = {"fields": fields, "delim": ","}
+        self.args = {"fields": fields, "delim": ",", "endl": "\n"}
         self.reader = self.TestClass(self.stream, **self.args)
         return
         
@@ -169,7 +170,7 @@ class FixedWidthReaderTest(_TabularReaderTest):
             ("arr", (3, None), ArrayType(array_fields))) 
         self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
-        self.args = {"fields": fields}
+        self.args = {"fields": fields, "endl": "\n"}
         self.reader = self.TestClass(self.stream, **self.args)
         return
 
