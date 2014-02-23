@@ -12,17 +12,14 @@ from .writer import _Writer
 
 
 class _ReaderBuffer(_Reader):
-    """ Abstract base class for all reader buffers.
+    """ Abstract base class for all Reader buffers.
     
-    A _ReaderBuffer applies postprocessing to records from another _Reader. The
-    base class implements the iterator protocol for reading records from the
-    buffer.
+    A _ReaderBuffer applies postprocessing to records being read from another 
+    _Reader.
     
     """
     def __init__(self, reader):
         """ Initialize this object.
-        
-        The input reader can be any _Reader, including another _ReaderBuffer.
         
         """
         super(_ReaderBuffer, self).__init__()
@@ -31,7 +28,9 @@ class _ReaderBuffer(_Reader):
         return
         
     def _get(self):
-        """ Return the next buffered input record.
+        """ Read the next buffered record from the input reader.
+        
+        This is called before any of this buffer's filters have been applied.
         
         """
         while not self._output:
@@ -44,10 +43,11 @@ class _ReaderBuffer(_Reader):
         return self._output.pop(0)
             
     def _queue(self, record):
-        """ Process each incoming record.
+        """ Process an incoming record.
 
         This is called for each record that is read from the input reader and 
-        must be implemented by derived classes.
+        must be implemented by derived classes. A StopIteration exception can
+        be raise to signal the end of input prior to an EOF condition.
         
         """
         raise NotImplementedError
@@ -57,24 +57,22 @@ class _ReaderBuffer(_Reader):
         
         This is called to retrieve additional records if the output queue is 
         empty and the input reader has been exhausted. Derived classes can 
-        override this as necessary. 
+        override this as necessary. A StopIteration exception must be raised
+        to signal that there are no more records in the buffer. 
         
         """
-        # Derived classes must raise StopIteration to signal the end of input.
         raise StopIteration
         
 
 class _WriterBuffer(_Writer):
-    """ Abstract base class for all writer buffers.
+    """ Abstract base class for all Writer buffers.
     
-    The base class implements write() and dump() for writing records to the
-    buffer.
-    
+    A _WriterBuffer applies preprocessing to records being written to another
+    _Writer.
+
     """
     def __init__(self, writer):
         """ Initialize this object.
-        
-        The writer can be a _Writer or another _WriterBuffer.
         
         """
         super(_WriterBuffer, self).__init__()
@@ -82,24 +80,27 @@ class _WriterBuffer(_Writer):
         self._output = []  # FIFO
         return
         
-    def dump(self, records):
-        """ Write all records to the destination writer.
-        
-        This automatically calls close().
+    def write(self, record):
+        """ Write a record while applying buffering and filtering.
         
         """
-        super(_WriterBuffer, self).dump(records)
-        self.close()
+        # Process this record, then write any new records in the output queue
+        # to the destination writer.
+        self._queue(record)
+        for record in self._output:
+            # Base class write() applies filters.
+            super(_WriterBuffer, self).write(record) 
+        self._output = []
         return
 
     def close(self):
         """ Close the buffer.
         
-        All remaining records in the buffer will be written to the destination
-        writer, and no further writes should be done to the buffer. This does 
-        not close the destination writer itself.
+        This is a signal to flush any remaining records in the buffer to the
+        output writer. No further writes should be done to this buffer. This
+        does not close the destination writer itself.
         
-        If multiple _WriterBuffers are being chained, their close() methods
+        If multiple WriterBuffers are being chained, their close() methods
         should be called in the correct order (outermost buffer first).
         
         """
@@ -114,29 +115,28 @@ class _WriterBuffer(_Writer):
         self._writer = None
         return
 
-    def write(self, record):
-        """ Write this record to the buffer.
+    def dump(self, records):
+        """ Write all records while appling buffering and filtering.
+        
+        This automatically calls close().
         
         """
-        # Process this record, then write any new records in the output queue
-        # to the destination writer.
-        self._queue(record)
-        for record in self._output:
-            # Base class write() applies filters.
-            super(_WriterBuffer, self).write(record) 
-        self._output = []
+        super(_WriterBuffer, self).dump(records)
+        self.close()
         return
         
     def _put(self, record):
-        """ Write this record to the destination writer.
+        """ Send a buffered record to the destination writer.
+        
+        This is called after the record has passed through all this buffer's
+        filters.
         
         """
-        # At this point the record has already been buffered and filtered.
         self._writer.write(record)
         return
 
     def _queue(self, record):
-        """ Process this record.
+        """ Process an incoming record.
         
         This is called for each record that is written to the buffer and must 
         be implemented by derived classes.
@@ -149,8 +149,8 @@ class _WriterBuffer(_Writer):
         
         This is called as soon as close() is called, so the derived class has
         one last chance to do something. There will be no more records to
-        process, so any remaining records in the buffer should be queued in
-        _output.
+        process, so any remaining records in the buffer should be queued for
+        output.
         
         """
         return

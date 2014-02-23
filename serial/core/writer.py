@@ -18,7 +18,9 @@ __all__ = ("DelimitedWriter", "FixedWidthWriter")
 class _Writer(object):
     """ Abstract base class for all serial data writers.
 
-    Serial data consists of individual records stored as lines of text.
+    Serial data consists of sequential records. A _Writer provides an interface
+    interface for writing serial data and allows for postprocessing of the data
+    using filters.
 
     """
     def __init__(self):
@@ -36,7 +38,7 @@ class _Writer(object):
         return
 
     def filter(self, *callbacks):
-        """ Add a filter to this writer or clear all filters.
+        """ Add filters to this writer or clear all filters (default).
 
         A filter is a callable object that accepts a data record as its only
         argument. Based on this record the filter can perform the following
@@ -49,7 +51,7 @@ class _Writer(object):
          expect write() to be free of side effects.
 
         """
-        # This does not effect class filters.
+        # This does not affect class filters.
         if not callbacks:
             self._user_filters = []
         else:
@@ -57,7 +59,7 @@ class _Writer(object):
         return
 
     def write(self, record):
-        """ Write a record to the output stream.
+        """ Write a record while applying filters.
         
         """
         for callback in chain(self._user_filters, self._class_filters):
@@ -68,7 +70,7 @@ class _Writer(object):
         return
 
     def dump(self, records):
-        """ Write all records to the output stream.
+        """ Write all records while applying filters.
         
         """
         for record in records:
@@ -76,7 +78,7 @@ class _Writer(object):
         return
 
     def _put(self, record):
-        """ Write a record to the output stream.
+        """ Put a formatted record into the output stream.
         
         This is called after the record has been passed through all filters.
         
@@ -127,11 +129,14 @@ class _TabularWriter(_Writer):
         return
 
     def _put(self, record):
-        """ Write a filtered record to the output stream.
-
+        """ Put a formatted record into the output stream.
+        
+        This is called after the record has been passed through all filters.
+        
         """
         tokens = []
         for index, field in enumerate(self._fields):
+            # Convert each field into a string token.
             token = field.dtype.encode(record.get(field.name))
             if isinstance(token, basestring):
                 tokens.append(token)
@@ -155,10 +160,11 @@ class _TabularWriter(_Writer):
 
 
 class DelimitedWriter(_TabularWriter):
-    """ A writer for fields delineated by a delimiter.
+    """ A writer for tabular data consisting of character-delimited fields.
 
     The position of each scalar field is be given as an integer index, and the
-    position of an array field is the pair [beg, end).
+    position of an array field is a [beg, end) slice expression where the end
+    is None for a variable-length array.
 
     """
     def __init__(self, stream, fields, delim, esc=None, endl="\n"):
@@ -178,7 +184,10 @@ class DelimitedWriter(_TabularWriter):
         return
 
     def _join(self, tokens):
-        """ Join a sequence of tokens into a line of text.
+        """ A writer for tabular data consisting of fixed-width fields.
+
+        The position of each field is given as [beg, end) slice expression 
+        where the end is None for a variable-length array.
 
         """
         return self._delim.join(map(self._escape, tokens))
@@ -187,22 +196,16 @@ class DelimitedWriter(_TabularWriter):
 class FixedWidthWriter(_TabularWriter):
     """ A writer for fields delineated by character position.
 
-    The character position of each field is given as the pair [beg, end).
+    The position of each field is given as [beg, end) slice expression where
+    the end is None for a variable-length array.
 
     """
-    # In this implementation the positions in self.fields don't matter; tokens
-    # must be in he correct order, and each token must be the correct width for
-    # that field. The _DataType format for a fixed-width field *MUST* have a
-    # field width, e.g. '6.2f'.       
-    def __init__(self, stream, fields, endl="\n"):
-        """ Initialize this object.
-        
-        """
-        super(FixedWidthWriter, self).__init__(stream, fields, endl)
-        return
-        
     def _join(self, tokens):
         """ Join a sequence of tokens into a line of text.
         
         """
+        # In this implementation the positions in self.fields don't matter;
+        # tokens must be in he correct order, and each token must be the
+        # correct width for that field. The _DataType format for a fixed-width
+        # field *MUST* have a field width, e.g. '6.2f'.               
         return "".join(tokens)

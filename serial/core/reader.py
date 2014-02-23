@@ -10,7 +10,7 @@ from functools import partial
 from itertools import chain
 from re import compile
 
-from ._util import Field
+from . _util import Field
 
 __all__ = ("DelimitedReader", "FixedWidthReader", "ReaderSequence")
 
@@ -51,7 +51,7 @@ class _Reader(object):
         *Input filters can safely modify a mutable argument.
 
         """
-        # This does not effect class filters.
+        # This does not affect class filters.
         if not callbacks:
             self._user_filters = []
         else:
@@ -59,9 +59,7 @@ class _Reader(object):
         return
 
     def next(self):
-        """ Return the next filtered record.
-
-        This implements the Python iterator protocol.
+        """ Read the next record while applying filtering o.
 
         """
         # Recursion would simplify this, but would fail for any combination of
@@ -80,17 +78,17 @@ class _Reader(object):
         return record
 
     def __iter__(self):
-        """ Iterate over all filtered input records.
+        """ Iterate over all records while applying filtering.
 
         """
         return self
 
     def _get(self):
-        """ Get the next parsed record from the input source.
+        """ Get the next parsed record from the input stream.
 
-        This is the last step before any filters get applied to the record and
-        it's returned to the client. The implementation must raise a
-        StopIteration exception to signal that input has been exhausted.
+        This is called before any filters have been applied. The implementation 
+        must raise a StopIteration exception to signal when input has been 
+        exhausted.
 
         """
         raise NotImplementedError
@@ -139,10 +137,10 @@ class _TabularReader(_Reader):
         return
 
     def _get(self):
-        """ Return the next parsed record from the stream.
+        """ Get the next parsed record from the input stream.
 
-        This function implements the Pyhthon iterator idiom and raises a
-        StopIterator exception when the input stream is exhausted.
+        This is called before any filters have been applied. A StopIteration 
+        exception is raised on EOF.
 
         """
         tokens = self._split(self._stream.next().rstrip(self._endl))
@@ -150,17 +148,18 @@ class _TabularReader(_Reader):
                      in zip(self._fields, tokens))
 
     def _split(self, line):
-        """ Split a line of text into a sequence of tokens.
+        """ Split a line of text into a sequence of string tokens.
 
         """
         raise NotImplementedError
 
 
 class DelimitedReader(_TabularReader):
-    """ A reader for delimited lines of text.
+    """ A reader for tabular data consisting of character-delimited fields.
 
     The position of each scalar field is be given as an integer index, and the
-    position of an array field is the pair [beg, end).
+    position of an array field is a [beg, end) slice expression where the end
+    is None for a variable-length array.
 
     """
     def __init__(self, stream, fields, delim=None, esc=None, endl="\n"):
@@ -186,7 +185,7 @@ class DelimitedReader(_TabularReader):
         return
 
     def _split(self, line):
-        """ Split a line of text into a sequence of tokens.
+        """ Split a line of text into a sequence of string tokens.
 
         Lines are split at each occurrence of the delimiter; the delimiter is
         discarded.
@@ -197,39 +196,40 @@ class DelimitedReader(_TabularReader):
 
 
 class FixedWidthReader(_TabularReader):
-    """ A reader for lines of text delineated by character position.
+    """ A writer for tabular data consisting of fixed-width fields.
 
-    The character position of each field is given as the pair [beg, end).
+    The position of each field is given as [beg, end) slice expression where 
+    the end is None for a variable-length array.
 
     """
     def _split(self, line):
-        """ Split a line of text into a sequence of tokens.
+        """ Split a line of text into a sequence of string tokens.
 
-        Lines are split based on the specified position of each field.
+        Lines are split based on the string position of each field.
 
         """
         return tuple(line[field.pos] for field in self._fields)
 
 
 class ReaderSequence(_Reader):
-    """ Iterate over a sequence of files/streams as a single sequence.
+    """ Iterate over multiple input sources as a single sequence of records.
     
     """
     def __init__(self, callback, *input):
         """ Initialize this object.
         
-        The callback argument is any callable object that takes a stream as its
-        only argument and returns a Reader to use on that stream, e.g. a 
+        The callback argument is any callable object that takes a stream or
+        as its only argument and returns a Reader to use on that stream, e.g. a 
         Reader constructor. The remaining arguments are either open streams or
-        paths to open as plain text files. Each input stream is closed once it
-        has been exhausted.
+        paths to open as plain text files. Each stream is closed once it has
+        been exhausted.
         
         Filtering is applied at the ReaderSequence level, but for filters that
-        raise StopIteration this might not be the desired behavior. Halting
-        iteration at this level effects all subsequent streams. If the intent
-        is to stop iteration for each individual stream, define the callback 
-        function to return a Reader that already has the appropriate filter(s)
-        applied.
+        raise StopIteration this might not be the desired behavior. Raising
+        StopIteration from a ReaderSequence filter will halt input from all 
+        remaining streams in the sequence. If the intent is to stop input on
+        an individual stream, define the callback function to return a Reader 
+        that already has the desired filter(s) applied.
         
         """
         super(ReaderSequence, self).__init__()
@@ -239,7 +239,11 @@ class ReaderSequence(_Reader):
         return
         
     def _get(self):
-        """ Return the next parsed record from the sequence.
+        """ Get the next parsed record from the sequence.
+        
+        This is called before any filters have been applied. A StopIteration 
+        exception is raised when all streams in the sequence have been 
+        exhausted.
         
         """
         while True:
@@ -260,7 +264,7 @@ class ReaderSequence(_Reader):
         return
         
     def _open(self):
-        """ Open the next stream in the sequence.
+        """ Create a reader for the next stream in the sequence.
         
         """
         if self._reader:
