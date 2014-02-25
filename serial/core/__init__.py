@@ -5,6 +5,7 @@ from __future__ import absolute_import
 
 from .__version__ import __version__
 from .dtype import *
+from .field import *
 from .reader import *
 from .writer import *
 from .stream import *

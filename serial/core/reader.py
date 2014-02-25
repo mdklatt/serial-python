@@ -132,7 +132,7 @@ class _TabularReader(_Reader):
         """
         super(_TabularReader, self).__init__()
         self._stream = stream
-        self._fields = [Field(*args) for args in fields]
+        self._fields = fields
         self._endl = endl
         return
 
@@ -144,8 +144,8 @@ class _TabularReader(_Reader):
 
         """
         tokens = self._split(self._stream.next().rstrip(self._endl))
-        return dict((field.name, field.dtype.decode(token)) for (field, token)
-                     in zip(self._fields, tokens))
+        return dict((field.name, field.decode(token)) for (field, token) in
+                     zip(self._fields, tokens))
 
     def _split(self, line):
         """ Split a line of text into a sequence of string tokens.

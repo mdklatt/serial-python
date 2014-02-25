@@ -33,6 +33,8 @@ class _Field(object):
             self.pos = slice(*pos)
             if self.pos.stop is not None:
                 self.width = self.pos.stop - self.pos.start
+            else:
+                self.width = None
         except TypeError:  # pos is an int
             self.pos = pos
             self.width = 1

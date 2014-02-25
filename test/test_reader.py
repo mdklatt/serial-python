@@ -12,9 +12,9 @@ from io import BytesIO
 from serial.core import DelimitedReader
 from serial.core import FixedWidthReader
 from serial.core import ReaderSequence
-from serial.core import IntType
-from serial.core import StringType
-from serial.core import ArrayType
+from serial.core import IntField
+from serial.core import StringField
+from serial.core import ArrayField
 
 
 # Utility functions.
@@ -126,11 +126,11 @@ class DelimitedReaderTest(_TabularReaderTest):
 
         """
         array_fields = (
-            ("x", 0, StringType()), 
-            ("y", 1, StringType()))
+            StringField("x", 0), 
+            StringField("y", 1))
         fields = (
-            ("int", 0, IntType()),
-            ("arr", (1, None), ArrayType(array_fields))) 
+            IntField("int", 0),
+            ArrayField("arr", (1, None), array_fields)) 
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
         self.args = {"fields": fields, "delim": ",", "endl": "\n"}
@@ -138,8 +138,8 @@ class DelimitedReaderTest(_TabularReaderTest):
         return
         
     def test_iter_escape(self):
-        """ Test the __iter__() method with escaped an delimiter.
-        
+        """ Test the __iter__() method with an escaped delimiter.
+    
         """
         self.stream = BytesIO("123, abc\,, def\n456, ghi, jkl\n")
         self.args["esc"] = "\\"
@@ -163,11 +163,11 @@ class FixedWidthReaderTest(_TabularReaderTest):
 
         """
         array_fields = (
-            ("x", (0, 3), StringType("3s")), 
-            ("y", (3, 6), StringType("3s")))
+            StringField("x", (0, 3), "3s"), 
+            StringField("y", (3, 6), "3s"))
         fields = (
-            ("int", (0, 3), IntType("3d")),
-            ("arr", (3, None), ArrayType(array_fields))) 
+            IntField("int", (0, 3), "3d"),
+            ArrayField("arr", (3, None), array_fields)) 
         self.data = "123abcdef\n456ghijkl\n"
         super(FixedWidthReaderTest, self).setUp()
         self.args = {"fields": fields, "endl": "\n"}
@@ -185,11 +185,11 @@ class ReaderSequenceTest(unittest.TestCase):
 
         """
         array_fields = (
-            ("x", 0, StringType()), 
-            ("y", 1, StringType()))
+            StringField("x", 0, ), 
+            StringField("y", 1, ))
         fields = (
-            ("int", 0, IntType()),
-            ("arr", (1, None), ArrayType(array_fields))) 
+            IntField("int", 0, ),
+            ArrayField("arr", (1, None), array_fields)) 
         self.reader = partial(DelimitedReader, fields=fields, delim=",")
         data = "123, abc, def\n456, ghi, jkl\n"
         self.streams = (BytesIO(data), BytesIO(data.upper()))
