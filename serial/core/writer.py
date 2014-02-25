@@ -124,7 +124,7 @@ class _TabularWriter(_Writer):
         """
         super(_TabularWriter, self).__init__()
         self._stream = stream
-        self._fields = [Field(*args) for args in fields]
+        self._fields = list(fields)
         self._endl = endl
         return
 
@@ -137,7 +137,7 @@ class _TabularWriter(_Writer):
         tokens = []
         for index, field in enumerate(self._fields):
             # Convert each field into a string token.
-            token = field.dtype.encode(record.get(field.name))
+            token = field.encode(record.get(field.name))
             if isinstance(token, basestring):
                 tokens.append(token)
             else:
@@ -145,9 +145,8 @@ class _TabularWriter(_Writer):
                 # update the field width and position based on the actual size
                 # of the field.
                 tokens.extend(token)
-                end = field.pos.start + field.dtype.width
+                end = field.pos.start + field.width
                 field.pos = slice(field.pos.start, end)
-                field.width = field.dtype.width
                 self._fields[index] = field
         self._stream.write(self._join(tokens) + self._endl)
         return

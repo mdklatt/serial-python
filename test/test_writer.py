@@ -10,9 +10,9 @@ import _unittest as unittest
 
 from serial.core import DelimitedWriter
 from serial.core import FixedWidthWriter
-from serial.core import ArrayType
-from serial.core import IntType
-from serial.core import StringType
+from serial.core import ArrayField
+from serial.core import IntField
+from serial.core import StringField
 
 
 # Utility functions.
@@ -96,11 +96,11 @@ class DelimitedWriterTest(_TabularWriterTest):
 
         """
         array_fields = (
-            ("x", 0, StringType()), 
-            ("y", 1, StringType()))
+            StringField("x", 0), 
+            StringField("y", 1))
         fields = (
-            ("int", 0, IntType()),
-            ("arr", (1, None), ArrayType(array_fields))) 
+            IntField("int", 0),
+            ArrayField("arr", (1, None), array_fields)) 
         super(DelimitedWriterTest, self).setUp()
         self.data = "123,abc,defX456,ghi,jklX"
         self.args = {"fields": fields, "delim": ",", "endl": "X"}
@@ -142,11 +142,11 @@ class FixedWidthWriterTest(_TabularWriterTest):
 
         """
         array_fields = (
-            ("x", (0, 3), StringType("3s")), 
-            ("y", (3, 6), StringType("3s")))
+            StringField("x", (0, 3), "3s"), 
+            StringField("y", (3, 6), "3s"))
         fields = (
-            ("int", (0, 3), IntType("3d")),
-            ("arr", (3, None), ArrayType(array_fields))) 
+            IntField("int", (0, 3), "3d"),
+            ArrayField("arr", (3, None), array_fields)) 
         super(FixedWidthWriterTest, self).setUp()
         self.data = "123abcdefX456ghijklX"
         self.args = {"fields": fields, "endl": "X"}
