@@ -132,7 +132,7 @@ class _TabularReader(_Reader):
         """
         super(_TabularReader, self).__init__()
         self._stream = stream
-        self._fields = fields
+        self._fields = tuple(fields)
         self._endl = endl
         return
 
