@@ -22,18 +22,18 @@ position, and data type. For a fixed-width field the position is a slice
 specifier, i.e.[begin, end), inclusive of spaces between fields.
 
     from serial.core import FixedWidthReader
-    from serial.core import StringType
-    from serial.core import FloatType
+    from serial.core import StringField
+    from serial.core import FloatField
 
     fields = (
         # Ignoring time zone field.
-        ("stid", (0, 7), StringType()),
-        ("date", (7, 17), StringType()),
-        ("time", (17, 23), StringType()),
-        ("data1", (27, 35), FloatType()),
-        ("flag1", (35, 36), StringType()),
-        ("data2", (36, 44), FloatType()),
-        ("flag2", (44, 45), StringType()))
+        StringField("stid", (0, 7)),
+        StringField("date", (7, 17)),
+        StringField("time", (17, 23)),
+        FloatField("data1", (27, 35)),
+        StringField("flag1", (35, 36)),
+        FloatField("data2", (36, 44)),
+        StringField("flag2", (44, 45)))
 
     with FixedWidthReader.open("data.txt", fields) as reader:
         for record in reader:
@@ -46,23 +46,23 @@ these fields individually can be tedious. For the sample data the format of
 each sensor field is the same, so they can all be treated as a single array. 
 Each array element will have a value and a flag.
 
-An `ArrayType` field must be initalized with the field definitions to use for
-an array element. The position of the array itself is relative to the entire
-input line, but the positions of the element fields are relative to each other.
+An `ArrayField` must be initalized with the field definitions to use for an
+array element. The position of the array itself is relative to the entire input
+line, but the positions of the element fields are relative to each other.
 
-    from serial.core import ArrayType
+    from serial.core import ArrayField
 
     array_fields = (
         # Define each data array element.
-        ("value", (0, 8), FloatType()),  # leading space
-        ("flag", (8, 9), StringType()))
+        FloatField("value", (0, 8)),  # leading space
+        StringField("flag", (8, 9)))
 
     sample_fields = (
         # Ignoring time zone field.
-        ("stid", (0, 7), StringType()),
-        ("date", (7, 17), StringType()),
-        ("time", (17, 23), StringType()),
-        ("data", (27, 45), ArrayType(array_fields)))
+        StringField("stid", (0, 7)),
+        StringField("date", (7, 17)),
+        StringField("time", (17, 23)),
+        ArrayField("data", (27, 45), array_fields))
 
     ...
 
@@ -77,27 +77,27 @@ variable-length array is created by setting its end position to None.
 *Variable-length arrays must be at the end of the record*.
 
     sample_fields = (
-        ("stid", (0, 7), StringType()),
-        ("date", (7, 17), StringType()),
-        ("time", (17, 23), StringType()),
-        ("data", (27, None), ArrayType(array_fields)))  # variable length
+        StringField("stid", (0, 7)),
+        StringField("date", (7, 17)),
+        StringField("time", (17, 23)),
+        ArrayField("data", (27, None), array_fields))  # variable length
 
 ## Datetime Fields ##
 
-The `DatetimeType` can be used for converting data to a `datetime.datetime`
+A `DatetimeField` can be used for converting data to a `datetime.datetime`
 object. For the sample data, the date and time fields can be treated as a
-single `datetime` field. A `DatetimeType` must be initialized with a 
+single `datetime` field. A `DatetimeField` must be initialized with a 
 [`datetime` format string][1].
 
-    from serial.core import DatetimeType
+    from serial.core import DatetimeField
 
     ...
 
     sample_fields = (
         # Ignoring time zone field.
-        ("stid", (0, 6), StringType()),
-        ("timestamp", (6, 23), DatetimeType("%Y-%m-%d %H:%M")),
-        ("data", (27, None), ArrayType(array_fields)))  # variable length
+        StringField("stid", (0, 6)),
+        DatetimeField("timestamp", (6, 23), "%Y-%m-%d %H:%M"),
+        ArrayField("data", (27, None), array_fields))  # variable length
 
 ## Default Values ##
 
@@ -105,8 +105,8 @@ During input all fields in a record are assigned a value. If a field is blank
 it is given the default value assigned to that field (`None` by default). 
 
     array_fields = (
-        ("value", (0, 8), FloatType()),
-        ("flag", (8, 9), StringType(default="M")))  # replace blanks with M
+        FloatField("value", (0, 8)),
+        StringField("flag", (8, 9), default="M"))  # replace blanks with M
 
 
 # Writing Data #
@@ -129,8 +129,8 @@ even if it's blank. Also, fields must be listed in the correct order.
 A Writer will output a value for each of its fields with every data record. If
 a field is missing from a data record the Writer will use the default value for 
 that field (`None` is encoded as a blank field). For input a default value 
-can be anything, but for output it must be type-compatible, e.g. 
-`IntType(default="M")` is an error. Fields in the record that do not have a 
+can be anything, but for output it must be type-compatible, e.g. an `IntField`
+cannot have a default value of "M". Fields in the record that do not have a 
 a field definition are ignored.
 
 With some minor modifications the field definitions for reading the sample
@@ -141,14 +141,14 @@ format using one set of field definitions.
     from serial.core import FixedWidthWriter 
 
     array_fields = (
-        ("value", (0, 8), FloatType("8.2f")),  # don't forget leading space
-        ("flag", (8, 9), StringType("1s")))
+        FloatField("value", (0, 8), "8.2f"),  # don't forget leading space
+        StringField("flag", (8, 9), "1s"))
 
     sample_fields = (
-        ("stid", (0, 7), StringType("7s")),  # trailing space
-        ("timestamp", (7, 23), DatetimeType("%Y-%m-%d %H:%M")),
-        ("timezone", (23, 27), StringType(">4s", default="UTC")),
-        ("data", (27, None), ArrayType(array_fields)))
+        StringField("stid", (0, 7), "7s"),  # trailing space
+        DatetimeField("timestamp", (7, 23), "%Y-%m-%d %H:%M"),
+        StringField("timezone", (23, 27), ">4s", default="UTC"),
+        ArrayField("data", (27, None), array_fields))
 
     with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
         # Copy "data.txt" to "copy.txt".
@@ -177,14 +177,14 @@ types because a width is not required.
     from serial.core import DelimitedWriter
 
     array_fields = (
-        ("value", 0, FloatType(".2f")),  # don't need width
-        ("flag", 1, StringType()))  # default format
+        FloatField("value", 0, ".2f"),  # don't need width
+        StringField("flag", 1))  # default format
 
     sample_fields = (
-        ("stid", 0, StringType()),  # default format
-        ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M")),  # format required
-        ("timezone", 2, StringType(default="UTC")),  # default format
-        ("data", (3, None), ArrayType(array_fields)))  # variable length
+        StringField("stid", 0),  # default format
+        DatetimeField("timestamp", 1, "%Y-%m-%d %H:%M"),  # format required
+        StringField("timezone", 2, default="UTC"),  # default format
+        ArrayField("data", (3, None), array_fields))  # variable length
 
     ...
 
@@ -368,20 +368,20 @@ access them directly using the `_class_filters` attribute.
     """
     from serial.core import DelimitedReader
     from serial.core import DelimitedWriter
-    from serial.core import ArrayType
-    from serial.core import ConstType
-    from serial.core import FloatType  
-    from serial.core import StringType
+    from serial.core import ArrayField
+    from serial.core import ConstField
+    from serial.core import FloatField  
+    from serial.core import StringField
 
     _ARRAY_FIELDS = (
-        ("value", 0, FloatType(".2f")),
-        ("flag", 1, StringType()))
+        FloatField("value", 0, ".2f"),
+        StringField("flag", 1))
 
     _SAMPLE_FIELDS = (
-        ("stid", 0, StringType()),
-        ("timestamp", 1, DatetimeType("%Y-%m-%d %H:%M")),
-        ("timezone", 2, ConstType("UTC")),
-        ("data", (3, None), ArrayType(_ARRAY_FIELDS)))
+        StringField("stid", 0),
+        DatetimeField("timestamp", 1, "%Y-%m-%d %H:%M"),
+        ConstField("timezone", 2, "UTC"),
+        ArrayField("data", (3, None), _ARRAY_FIELDS))
 
     _DELIM = ","
     
@@ -582,14 +582,14 @@ record. The library includes the `SliceFilter` and `RegexFilter` text filters.
 
 ## Quoted Strings ##
 
-The `StringType` data type can read and write quoted strings by initializing it
+The `StringField` data type can read and write quoted strings by initializing it
 with the quote character to use.
 
-    StringType(quote='"')  # double-quoted string
+    StringField(quote='"')  # double-quoted string
 
-Quoting for a `DatetimeType` is controlled by its format string:
+Quoting for a `DatetimeField` is controlled by its format string:
 
-    DatetimeType("'%Y-%m-%d'")  # single-quoted date string
+    DatetimeField("'%Y-%m-%d'")  # single-quoted date string
 
 ## Escaped Delimiters ##
 
@@ -651,7 +651,7 @@ can only be identified by encountering the first data record.
  
 ## Mixed-Type Data ##
 
-Mixed-type data fields must be defined as a `StringType` for stream input and
+Mixed-type data fields must be defined as a `StringField` for stream input and
 output, but filters can be used to convert to/from multiple Python types based
 on the field value.
 
