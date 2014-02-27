@@ -7,8 +7,8 @@ into one record, reorder records, or any combination thereof.
 """
 from __future__ import absolute_import
 
-from .reader import _Reader
-from .writer import _Writer
+from . reader import _Reader
+from . writer import _Writer
 
 
 class _ReaderBuffer(_Reader):

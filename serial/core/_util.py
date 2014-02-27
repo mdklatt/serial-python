@@ -4,32 +4,6 @@
 from __future__ import absolute_import
 
 
-class Field(object):
-    """ A serial data field.
-    
-    """
-    def __init__(self, name, pos, dtype):
-        """ Initialize this object.
-        
-        """
-        try:
-            pos = slice(*pos)
-        except TypeError:  # pos is an int
-            width = 1
-        else:
-            try:
-                width = pos.stop - pos.start
-            except TypeError:  # stop is None
-                # Variable-length field; acutual width must be determined
-                # during encoding or decoding.
-                width = None
-        self.pos = pos
-        self.name = name
-        self.dtype = dtype
-        self.width = width
-        return
-
-
 class TimeFormat(object):
     """ Convert datetime-like objects to formatted strings. 
     

@@ -6,7 +6,6 @@ The module can be executed on its own or incorporated into a larger test suite.
 from contextlib import closing
 from gzip import GzipFile
 from io import BytesIO
-
 from zlib import compress
 from zlib import decompress
 

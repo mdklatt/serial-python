@@ -10,8 +10,6 @@ from functools import partial
 from itertools import chain
 from string import replace
 
-from ._util import Field
-
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
 
 

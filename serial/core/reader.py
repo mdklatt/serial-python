@@ -10,8 +10,6 @@ from functools import partial
 from itertools import chain
 from re import compile
 
-from . _util import Field
-
 __all__ = ("DelimitedReader", "FixedWidthReader", "ReaderSequence")
 
 
