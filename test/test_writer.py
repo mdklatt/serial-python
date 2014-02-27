@@ -142,13 +142,13 @@ class FixedWidthWriterTest(_TabularWriterTest):
 
         """
         array_fields = (
-            StringField("x", (0, 3), "3s"), 
-            StringField("y", (3, 6), "3s"))
+            StringField("x", (0, 4), "4s"), 
+            StringField("y", (4, 8), "4s"))
         fields = (
-            IntField("int", (0, 3), "3d"),
-            ArrayField("arr", (3, None), array_fields)) 
+            IntField("int", (0, 4), "4d"),
+            ArrayField("arr", (4, None), array_fields)) 
         super(FixedWidthWriterTest, self).setUp()
-        self.data = "123abcdefX456ghijklX"
+        self.data = " 123abc def X 456ghi jkl X"
         self.args = {"fields": fields, "endl": "X"}
         self.writer = self.TestClass(self.stream, **self.args)
         return
@@ -158,7 +158,7 @@ class FixedWidthWriterTest(_TabularWriterTest):
 
         """
         self.writer.filter(reject_filter, modify_filter)
-        self.data = "912ghijklX"
+        self.data = " 912ghi jkl X"
         self.test_dump()
         return
 
