@@ -69,16 +69,6 @@ class BufferedIStreamTest(unittest.TestCase):
         self.stream.close()
         self.assertTrue(self.buffer.closed)
         return
-
-    def test_context(self):
-        """ Test with a context block.
-        
-        """
-        self.buffer.seek(0)
-        with self.TestClass(self.stream, self.bufsize) as stream:
-            self.assertEqual(self.lines[0], stream.next())
-        self.assertTrue(self.buffer.closed)
-        return
         
 
 class FilteredIStreamTest(unittest.TestCase):
@@ -130,15 +120,6 @@ class FilteredIStreamTest(unittest.TestCase):
         self.stream.close()
         self.assertTrue(self.buffer.closed)
         return
-
-    def test_context(self):
-        """ Test with a context block.
-        
-        """
-        with FilteredIStream(self.buffer) as stream:
-            self.assertEqual(self.lines[0], stream.next())
-        self.assertTrue(self.buffer.closed)
-        return
         
 
 class FilteredOStreamTest(unittest.TestCase):
@@ -175,15 +156,6 @@ class FilteredOStreamTest(unittest.TestCase):
         
         """
         self.stream.close()
-        self.assertTrue(self.buffer.closed)
-        return
-
-    def test_context(self):
-        """ Test with a context block.
-        
-        """
-        with FilteredOStream(self.buffer) as stream:
-            stream.write(self.lines[0])
         self.assertTrue(self.buffer.closed)
         return
 
@@ -234,15 +206,6 @@ class GzippedIStreamTest(unittest.TestCase):
         """
         stream = GzippedIStream(self.gzip_stream)
         stream.close()
-        self.assertTrue(self.gzip_stream.closed)
-        return
-
-    def test_context(self):
-        """ Test with a context block.
-        
-        """
-        with GzippedIStream(self.gzip_stream) as stream:
-            self.assertEqual(self.lines[0], stream.next())
         self.assertTrue(self.gzip_stream.closed)
         return
 

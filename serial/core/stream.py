@@ -33,23 +33,6 @@ class _StreamAdaptor(object):
         except AttributeError:  # no close()
             pass
         return
-        
-    def __enter__(self):
-        """ Enter a context block.
-        
-        """
-        return self
-        
-    def __exit__(self, extype=None, exval=None, trace=None):
-        """ Exit a context block.
-        
-        The underlying stream will be closed.
-        
-        """
-        # The exception arguments are ignored here and any exception is passed
-        # along to the caller.
-        self.close()
-        return
     
     
 class _IStreamAdaptor(_StreamAdaptor):
