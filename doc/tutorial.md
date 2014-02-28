@@ -17,9 +17,9 @@ floating point value and an optional flag string.
     340010 2012-04-01 00:10 UTC   63.80Q    0.00
 
 This data stream can be read using a `FixedWidthReader`. The reader must be
-initialized with a set of field definitions. Each field is defined by its name,
-position, and data type. For a fixed-width field the position is a slice 
-specifier, i.e.[begin, end), inclusive of spaces between fields.
+initialized with a set of field definitions. Each field is associated with a
+type and defined by its name and position. For a fixed-width field the position
+is a slice specifier, i.e. [begin, end), inclusive of spaces between fields.
 
     from serial.core import FixedWidthReader
     from serial.core import StringField
@@ -373,15 +373,13 @@ access them directly using the `_class_filters` attribute.
     from serial.core import FloatField  
     from serial.core import StringField
 
-    _ARRAY_FIELDS = (
-        FloatField("value", 0, ".2f"),
-        StringField("flag", 1))
-
     _SAMPLE_FIELDS = (
         StringField("stid", 0),
         DatetimeField("timestamp", 1, "%Y-%m-%d %H:%M"),
         ConstField("timezone", 2, "UTC"),
-        ArrayField("data", (3, None), _ARRAY_FIELDS))
+        ArrayField("data", (3, None), (
+            FloatField("value", 0, ".2f"),
+            StringField("flag", 1))))
 
     _DELIM = ","
     
