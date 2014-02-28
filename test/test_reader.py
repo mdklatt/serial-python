@@ -163,12 +163,12 @@ class FixedWidthReaderTest(_TabularReaderTest):
 
         """
         array_fields = (
-            StringField("x", (0, 3), "3s"), 
-            StringField("y", (3, 6), "3s"))
+            StringField("x", (0, 4)), 
+            StringField("y", (4, 8)))
         fields = (
-            IntField("int", (0, 3), "3d"),
-            ArrayField("arr", (3, None), array_fields)) 
-        self.data = "123abcdef\n456ghijkl\n"
+            IntField("int", (0, 4), "3d"),
+            ArrayField("arr", (4, None), array_fields)) 
+        self.data = " 123 abc def\n 456 ghi jkl\n"
         super(FixedWidthReaderTest, self).setUp()
         self.args = {"fields": fields, "endl": "\n"}
         self.reader = self.TestClass(self.stream, **self.args)
