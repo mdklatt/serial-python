@@ -217,8 +217,8 @@ class DatetimeFieldTest(_FieldTest):
         self.value = datetime(2012, 12, 31, 0, 0, 0, 456000)
         self.token = "2012-12-31T00:00:00.456"
         self.field = DatetimeField(self.name, self.pos, fmt, 3)
-        self.default_value = datetime(1901, 1, 1)
-        self.default_token = "1901-01-01T00:00:00.000"
+        self.default_value = datetime(1801, 1, 1)  # test "old" date
+        self.default_token = "1801-01-01T00:00:00.000"
         self.default_field = DatetimeField(self.name, self.pos, fmt, 3, 
                                            self.default_value)
         return
