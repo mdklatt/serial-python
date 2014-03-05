@@ -1,7 +1,8 @@
-# Optional requirements file for the serial library. 
+# Optional requirements file for the serial.ncdc library. 
 #
 # These dependencies are not required, but some functionality will be limited 
-# without them. Dependencies can be installed using pip:
+# without them.
+#
 #     pip install -r optional-requirements.txt 
-
-unittest2>=0.5  # required for running tests (Python 2.6 only)
+#
+unittest2>=0.5  # required for running test suite with Python 2.6
