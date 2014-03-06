@@ -1,6 +1,6 @@
 """ Data fields convert text tokens to/from Python types. 
 
-Client code defines the _Field for each input/ouput field, but the _Reader
+Client code defines the field type for each input/ouput field, but the _Reader
 and _Writer classes are responsible for using them.
 
 """
@@ -9,15 +9,15 @@ from __future__ import absolute_import
 from datetime import datetime
 from itertools import product
 
-from . _util import TimeFormat
+from ._util import TimeFormat
 
 
 __all__ = ("ConstField", "IntField", "FloatField", "StringField", 
            "DatetimeField", "ArrayField")
 
 
-class _Field(object):
-    """ Base class for field types.
+class _ScalarField(object):
+    """ Base class for scalar field types.
 
     """
     def __init__(self, name, pos):
@@ -28,19 +28,14 @@ class _Field(object):
         # characters for fixed-width data or fields for delimited data.    
         self.name = name
         try:
-            # If stop is None this is a variable-width field; width needs to be
-            # determined during decoding/encoding.
             self.pos = slice(*pos)
-            if self.pos.stop is not None:
-                self.width = self.pos.stop - self.pos.start
-            else:
-                self.width = None
+            self.width = self.pos.stop - self.pos.start
         except TypeError:  # pos is an int
             self.pos = pos
             self.width = 1
         return
 
-    def decode(self, input):
+    def decode(self, token):
         """ Convert input to a Python value.
 
         This is called by a Reader while parsing an input record.
@@ -57,7 +52,7 @@ class _Field(object):
         raise NotImplementedError
 
 
-class ConstField(_Field):
+class ConstField(_ScalarField):
     """ A constant value field.
 
     """
@@ -70,7 +65,7 @@ class ConstField(_Field):
         self._token = format(self._value, fmt)
         return
 
-    def decode(self, input):
+    def decode(self, token):
         """ Return a const value (input is ignored).
 
         """
@@ -83,7 +78,7 @@ class ConstField(_Field):
         return self._token
 
 
-class IntField(_Field):
+class IntField(_ScalarField):
     """ An integer field.
 
     """
@@ -96,14 +91,14 @@ class IntField(_Field):
         self._default = default
         return
         
-    def decode(self, input):
+    def decode(self, token):
         """ Convert a string token to a Python value.
         
-        If the input is an empty string the default field value is used.
+        If the token is an empty string the default field value is used.
         
         """
         try:
-            value = int(input)
+            value = int(token)
         except ValueError:  # type conversion failed
             value = self._default
         return value
@@ -120,7 +115,7 @@ class IntField(_Field):
         return format(value, self._fmt) if value is not None else ""
 
 
-class FloatField(_Field):
+class FloatField(_ScalarField):
     """ A floating point field.
 
     """
@@ -133,14 +128,14 @@ class FloatField(_Field):
         self._default = default
         return
         
-    def decode(self, input):
+    def decode(self, token):
         """ Convert a string token to a Python value.
         
-        If the input is an empty string the default field value is used.
+        If the token is an empty string the default field value is used.
 
         """
         try:
-            value = float(input)
+            value = float(token)
         except ValueError:  # type conversion failed
             value = self._default
         return value
@@ -157,7 +152,7 @@ class FloatField(_Field):
         return format(value, self._fmt) if value is not None else ""
 
 
-class StringField(_Field):
+class StringField(_ScalarField):
     """ A string field.
 
     """
@@ -171,14 +166,14 @@ class StringField(_Field):
         self._default = default
         return
 
-    def decode(self, input):
+    def decode(self, token):
         """ Convert a string token to a Python value.
 
         Surrounding whitespace and quotes are removed, and if the resulting
         string is null the default field value is used.
 
         """
-        return input.strip().strip(self._quote) or self._default
+        return token.strip().strip(self._quote) or self._default
 
     def encode(self, value):
         """ Convert a Python value to a string token.
@@ -191,7 +186,7 @@ class StringField(_Field):
         return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
 
 
-class DatetimeField(_Field):
+class DatetimeField(_ScalarField):
     """ A datetime field.
 
     """
@@ -210,14 +205,14 @@ class DatetimeField(_Field):
         self._default = default
         return
 
-    def decode(self, value):
+    def decode(self, token):
         """ Convert a string token to a Python value.
 
         """
-        value = value.strip()
-        if not value:
+        token = token.strip()
+        if not token:
             return self._default
-        return datetime.strptime(value, self._fmtstr)
+        return datetime.strptime(token, self._fmtstr)
 
     def encode(self, value):
         """ Convert a Python value to a string token.
@@ -236,7 +231,7 @@ class DatetimeField(_Field):
         return token
 
 
-class ArrayField(_Field):
+class ArrayField(object):
     """ An array of composite field elements.
 
     """
@@ -244,13 +239,20 @@ class ArrayField(_Field):
         """ Initialize this object.
 
         """
-        super(ArrayField, self).__init__(name, pos)
+        self.name = name
+        self.pos = slice(*pos)
+        try:
+            self.width = self.pos.stop - self.pos.start
+        except TypeError:  # pos.stop is None
+            # This is a variable-width field; width needs to be determined
+            # during decoding or encoding.
+            self.width = None
         self._fields = fields
         self._stride = sum(field.width for field in self._fields)
         self._default = default
         return
 
-    def decode(self, input):
+    def decode(self, tokens):
         """ Convert a sequence of string tokens to a list of Python values.
 
         This works for sequences of strings (e.g. from DelimitedReader) or a 
@@ -263,24 +265,24 @@ class ArrayField(_Field):
             """ Split input into array elements. """
             # If the length of the input array is not a multiple of _stride the
             # last element will be incomplete.
-            for beg in xrange(0, len(input), self._stride):
+            for beg in xrange(0, len(tokens), self._stride):
                 end = beg + self._stride
-                yield input[beg:end]
+                yield tokens[beg:end]
             return        
         
-        value = []
+        values = []
         for elem in parse():
             # Decode the fields in each element into a dict.
             elem = dict((field.name, field.decode(elem[field.pos])) for field 
                         in self._fields)
-            value.append(elem)
-        value = value or self._default or []
+            values.append(elem)
+        values = values or self._default or []
         if self.width is None:
             # Update the width of a variable-length array with each record.
-            self.width = len(value) * self._stride
-        return value
+            self.width = len(values) * self._stride
+        return values
 
-    def encode(self, value):
+    def encode(self, values):
         """ Convert a sequence of Python values to a list of string tokens.
 
         If the value is None or an empty sequence the default field value is
@@ -289,9 +291,9 @@ class ArrayField(_Field):
         for this array.
 
         """
-        value = value or self._default or []
+        values = values or self._default or []
         if self.width is None:
             # Update the width of a variable-length array with each record.
-            self.width = len(value) * self._stride
+            self.width = len(values) * self._stride
         return [field.encode(elem.get(field.name)) for elem, field in
-                product(value, self._fields)]
+                product(values, self._fields)]
