@@ -27,8 +27,8 @@ is a slice specifier, i.e. [begin, end), inclusive of spaces between fields.
 
     fields = (
         # Ignoring time zone field.
-        StringField("stid", (0, 7)),
-        StringField("date", (7, 17)),
+        StringField("stid", (0, 6)),
+        StringField("date", (6, 17)),
         StringField("time", (17, 23)),
         FloatField("data1", (27, 35)),
         StringField("flag1", (35, 36)),
@@ -59,9 +59,9 @@ line, but the positions of the element fields are relative to each other.
 
     sample_fields = (
         # Ignoring time zone field.
-        StringField("stid", (0, 7)),
-        StringField("date", (7, 17)),
-        StringField("time", (17, 23)),
+        StringField("stid", (0, 6)),
+        StringField("date", (6, 16)),
+        StringField("time", (16, 23)),
         ArrayField("data", (27, 45), array_fields))
 
     ...
@@ -101,8 +101,9 @@ single `datetime` field. A `DatetimeField` must be initialized with a
 
 ## Default Values ##
 
-During input all fields in a record are assigned a value. If a field is blank
-it is given the default value assigned to that field (`None` by default). 
+For every input record a Reader will assign a value to each defined field. If 
+a field value is blank it is assigned the default value for that field (`None` 
+by default). 
 
     array_fields = (
         FloatField("value", (0, 8)),
@@ -113,25 +114,8 @@ it is given the default value assigned to that field (`None` by default).
 
 Data is written to a stream using a Writer. Writers implement a `write()` 
 method for writing individual records and a `dump()` method for writing a 
-sequence of records. 
-
-Writers use the same field definitions as Readers with some additional 
-requirements. A data type can be initialized with a [format string][2]; this is 
-ignored by Readers, but it is used by Writers to convert a Python value to 
-text. Each data type has a default format, but for `FixedWidthWriter` fields a 
-format string with the appropriate field width (inclusive of spaces between
-fields) **must** be specified.
-
-For the `FixedWidthReader` example the time zone field was ignored. However,
-when defining fields for a `FixedWidthWriter`, every field must be defined,
-even if it's blank. Also, fields must be listed in the correct order.
-
-A Writer will output a value for each of its fields with every data record. If
-a field is missing from a data record the Writer will use the default value for 
-that field (`None` is encoded as a blank field). For input a default value 
-can be anything, but for output it must be type-compatible, e.g. an `IntField`
-cannot have a default value of "M". Fields in the record that do not have a 
-a field definition are ignored.
+sequence of records. Writers use the same field definitions as Readers with 
+some additional requirements. 
 
 With some minor modifications the field definitions for reading the sample
 data can be used for writing it. In fact, the modified fields can still be used
@@ -145,9 +129,10 @@ format using one set of field definitions.
         StringField("flag", (8, 9), "1s"))
 
     sample_fields = (
-        StringField("stid", (0, 7), "7s"),  # trailing space
-        DatetimeField("timestamp", (7, 23), "%Y-%m-%d %H:%M"),
-        StringField("timezone", (23, 27), ">4s", default="UTC"),
+        # Output fields must be listed in sequential order. 
+        StringField("stid", (0, 6), "6s"),
+        DatetimeField("timestamp", (6, 23), "%Y-%m-%d %H:%M"),
+        StringField("timezone", (23, 27), "3s", default="UTC"),
         ArrayField("data", (27, None), array_fields))
 
     with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
@@ -155,9 +140,30 @@ format using one set of field definitions.
         reader = FixedWidthReader(istream, array_fields)
         writer = FixedWidthWriter(ostream, array_fields)
         for record in reader:
-            # Write each record to the stream. Or, write all records in a single
-            # call: writer.dump(reader)
+            # Write each record to the stream.
             writer.write(record)
+        # Or, write all records in a single call: writer.dump(reader) 
+
+## Output Formatting ##
+
+Each field is formatted for output according to its [format string][2]. For
+fixed-width output, values are fit to the alloted field widths by padding on 
+the left or truncating on the right. By using a format width, values can be
+positioned within the field. For a left-justified field, the format width
+*must* match the field with. Use a format width smaller than the field width to
+specify a left margin and control spacing between field values.
+
+    ...
+    StringField("stid", (0, 6), "6s"),  # left-justified
+    FloatField("value", (6, 14), "7.2f"),  # one character left margin
+
+## Default Values ##
+
+For every output record a Writer will write a value for each defined field. If 
+a field is missing from a record the Writer will use the default value for that 
+field (`None` is encoded as a blank field). Default output values must be type-
+compatible, e.g. an `IntField` cannot have a default value of "M". 
+
         
 # Delimited Data #
 

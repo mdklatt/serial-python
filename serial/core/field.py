@@ -29,10 +29,13 @@ class _ScalarField(object):
         self.name = name
         try:
             self.pos = slice(*pos)
-            self.width = self.pos.stop - self.pos.start
         except TypeError:  # pos is an int
             self.pos = pos
             self.width = 1
+            self._fixed = False
+        else:
+            self.width = self.pos.stop - self.pos.start
+            self._fixed = True            
         return
 
     def decode(self, token):
@@ -63,6 +66,8 @@ class ConstField(_ScalarField):
         super(ConstField, self).__init__(name, pos)
         self._value = value
         self._token = format(self._value, fmt)
+	if self._fixed:
+	    self._token[:self.width].rjust(self.width)
         return
 
     def decode(self, token):
@@ -112,7 +117,8 @@ class IntField(_ScalarField):
         """
         if value is None:
             value = self._default  # may still be None
-        return format(value, self._fmt) if value is not None else ""
+        token = format(value, self._fmt) if value is not None else ""
+        return token[:self.width].rjust(self.width) if self._fixed else token
 
 
 class FloatField(_ScalarField):
@@ -149,7 +155,8 @@ class FloatField(_ScalarField):
         """
         if value is None:
             value = self._default  # may still be None
-        return format(value, self._fmt) if value is not None else ""
+        token = format(value, self._fmt) if value is not None else ""
+        return token[:self.width].rjust(self.width) if self._fixed else token
 
 
 class StringField(_ScalarField):
@@ -183,7 +190,8 @@ class StringField(_ScalarField):
 
         """
         value = value or self._default or ""
-        return "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
+        token = "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
+        return token[:self.width].rjust(self.width) if self._fixed else token
 
 
 class DatetimeField(_ScalarField):
@@ -228,7 +236,7 @@ class DatetimeField(_ScalarField):
         if (self._prec > 0):
             time, usecs = token.split(".")
             token = "{0:s}.{1:s}".format(time, usecs[0:self._prec])
-        return token
+        return token[:self.width].rjust(self.width) if self._fixed else token
 
 
 class ArrayField(object):

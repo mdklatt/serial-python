@@ -62,7 +62,7 @@ class _FieldTest(unittest.TestCase):
         """ Test the encode() method for null output.
 
         """
-        self.assertEqual("", self.field.encode(None))
+        self.assertEqual("", self.field.encode(None).strip())
         return
 
     def test_encode_default(self):
@@ -161,15 +161,15 @@ class StringFieldTest(_FieldTest):
         any side effects. This is part of the unittest API.
 
         """
-        fmt = "4s"
+        fmt = "5s"
         self.name = "string"
-        self.pos = 1, 5
-        self.width = 4
+        self.pos = 1, 6
+        self.width = 5
         self.value = "abc"
-        self.token = "abc "
+        self.token = "abc  "
         self.field = StringField(self.name, self.pos, fmt)
         self.default_value = "xyz"
-        self.default_token = "xyz "
+        self.default_token = "xyz  "
         self.default_field = StringField(self.name, self.pos, fmt, 
                                          default=self.default_value)
         self.quote_token = "'abc'"
@@ -195,7 +195,7 @@ class StringFieldTest(_FieldTest):
 
         """
         # Override the base class to test for a fixed-width blank field.
-        self.assertEqual(format("", "4s"), self.field.encode(None))
+        self.assertEqual("     ", self.field.encode(None))
         return
 
 
