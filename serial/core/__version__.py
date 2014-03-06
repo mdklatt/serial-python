@@ -4,4 +4,4 @@ This package uses the Semantic Versioning scheme:
     <http://semver.org/>
 
 """
-__version__ = "0.3.0"
+__version__ = "0.3.1dev"
