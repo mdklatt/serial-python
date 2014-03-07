@@ -147,8 +147,8 @@ format using one set of field definitions.
 ## Output Formatting ##
 
 Each field is formatted for output according to its [format string][2]. For
-fixed-width output, values are fit to the alloted field widths by padding on 
-the left or truncating on the right. By using a format width, values can be
+fixed-width output, values are fit to the allotted field widths by padding on 
+the left or trimming on the right. By using a format width, values can be
 positioned within the field. For a left-justified field, the format width
 *must* match the field with. Use a format width smaller than the field width to
 specify a left margin and control spacing between field values.

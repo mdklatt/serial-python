@@ -24,8 +24,6 @@ class _ScalarField(object):
         """ Initialize this object.
 
         """
-        # The field width is in units appropriate to the file type, e.g. 
-        # characters for fixed-width data or fields for delimited data.    
         self.name = name
         try:
             self.pos = slice(*pos)
@@ -34,6 +32,7 @@ class _ScalarField(object):
             self.width = 1
             self._fixed = False
         else:
+            # This is a fixed-width field; the width is in characters.
             self.width = self.pos.stop - self.pos.start
             self._fixed = True            
         return
@@ -49,7 +48,7 @@ class _ScalarField(object):
     def encode(self, value):
         """ Convert a Python value to output
         
-        This is called by a Wrier while formatting an output record.
+        This is called by a Writer while formatting an output record.
         
         """
         raise NotImplementedError
@@ -71,13 +70,13 @@ class ConstField(_ScalarField):
         return
 
     def decode(self, token):
-        """ Return a const value (input is ignored).
+        """ Return a constant value (token is ignored).
 
         """
         return self._value
 
     def encode(self, value):
-        """ Return a const token (value is ignored).
+        """ Return a constant token (value is ignored).
 
         """
         return self._token
@@ -97,7 +96,7 @@ class IntField(_ScalarField):
         return
         
     def decode(self, token):
-        """ Convert a string token to a Python value.
+        """ Convert a string token to an int.
         
         If the token is an empty string the default field value is used.
         
@@ -112,8 +111,9 @@ class IntField(_ScalarField):
         """ Convert a Python value to a string token.
         
         If the value is None the default field value is used (None is encoded 
-        as a null string).
-        
+        as a null string). For fixed-width fields the token is padded on the 
+        left or trimmed on the right to fit the allotted width.
+
         """
         if value is None:
             value = self._default  # may still be None
@@ -135,7 +135,7 @@ class FloatField(_ScalarField):
         return
         
     def decode(self, token):
-        """ Convert a string token to a Python value.
+        """ Convert a string token to a float.
         
         If the token is an empty string the default field value is used.
 
@@ -150,7 +150,8 @@ class FloatField(_ScalarField):
         """ Convert a Python value to a string token.
         
         If the value is None the default field value is used (None is encoded 
-        as a null string).
+        as a null string). For fixed-width fields the token is padded on the 
+        left or trimmed on the right to fit the allotted width.
         
         """
         if value is None:
@@ -174,7 +175,7 @@ class StringField(_ScalarField):
         return
 
     def decode(self, token):
-        """ Convert a string token to a Python value.
+        """ Convert a string token to a string.
 
         Surrounding whitespace and quotes are removed, and if the resulting
         string is null the default field value is used.
@@ -183,10 +184,11 @@ class StringField(_ScalarField):
         return token.strip().strip(self._quote) or self._default
 
     def encode(self, value):
-        """ Convert a Python value to a string token.
+        """ Convert a string to a string token.
 
-        If the value is None the default field value is used (None is encoded
-        as a null string).
+        If the value is None the default field value is used (None is encoded 
+        as a null string). For fixed-width fields the token is padded on the
+        left or trimmed on the right to fit the allotted width.
 
         """
         value = value or self._default or ""
@@ -214,7 +216,9 @@ class DatetimeField(_ScalarField):
         return
 
     def decode(self, token):
-        """ Convert a string token to a Python value.
+        """ Convert a string token to a datetime.
+
+	If the token is an empty string the default field value is used.        
 
         """
         token = token.strip()
@@ -223,10 +227,11 @@ class DatetimeField(_ScalarField):
         return datetime.strptime(token, self._fmtstr)
 
     def encode(self, value):
-        """ Convert a Python value to a string token.
+        """ Convert a datetime to a string token.
 
         If the value is None the default field value is used (None is encoded 
-        as a null string).
+        as a null string). For fixed-width fields the token is padded on the
+        left or trimmed on the right to fit the allotted width.
 
         """
         value = value or self._default
