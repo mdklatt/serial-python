@@ -54,7 +54,7 @@ class TimeFormat(object):
             try:
                 field = self._field_defs[char]
             except:
-                raise ValueError("uknown field specifier: {0:s}".format(char))
+                raise ValueError("unknown field specifier: {0:s}".format(char))
             self._template.append("{{{0:d}:s}}".format(len(self._fields)))
             self._fields.append(field)
         self._template = "".join(self._template)
