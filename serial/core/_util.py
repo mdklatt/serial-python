@@ -12,7 +12,7 @@ class TimeFormat(object):
     
     """
     _escape = "%"
-    _field_defs = {
+    _formats = {
         "d": ("02d", lambda time: time.day),
         "f": ("06d", lambda time: time.microsecond),
         "H": ("02d", lambda time: time.hour),
@@ -52,7 +52,7 @@ class TimeFormat(object):
                 continue
             # Add a new field.
             try:
-                field = self._field_defs[char]
+                field = self._formats[char]
             except:
                 raise ValueError("unknown field specifier: {0:s}".format(char))
             self._template.append("{{{0:d}:s}}".format(len(self._fields)))
