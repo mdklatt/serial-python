@@ -122,7 +122,7 @@ class _TabularWriter(_Writer):
         """
         super(_TabularWriter, self).__init__()
         self._stream = stream
-        self._fields = list(fields)
+        self._fields = tuple(fields)
         self._endl = endl
         return
 
@@ -139,13 +139,8 @@ class _TabularWriter(_Writer):
             if isinstance(token, basestring):
                 tokens.append(token)
             else:
-                # A sequence of tokens (e.g. an ArrayType); expand inline and
-                # update the field width and position based on the actual size
-                # of the field.
+                # A sequence of tokens (e.g. an ArrayType); expand inline.
                 tokens.extend(token)
-                end = field.pos.start + field.width
-                field.pos = slice(field.pos.start, end)
-                self._fields[index] = field
         self._stream.write(self._join(tokens) + self._endl)
         return
 

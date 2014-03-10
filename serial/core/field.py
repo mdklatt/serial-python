@@ -257,9 +257,7 @@ class ArrayField(object):
         try:
             self.width = self.pos.stop - self.pos.start
         except TypeError:  # pos.stop is None
-            # This is a variable-width field; width needs to be determined
-            # during decoding or encoding.
-            self.width = None
+            self.width = None  # variable-width field
         self._fields = fields
         self._stride = sum(field.width for field in self._fields)
         self._default = default
@@ -290,9 +288,6 @@ class ArrayField(object):
                         in self._fields)
             values.append(elem)
         values = values or self._default or []
-        if self.width is None:
-            # Update the width of a variable-length array with each record.
-            self.width = len(values) * self._stride
         return values
 
     def encode(self, values):
@@ -305,8 +300,5 @@ class ArrayField(object):
 
         """
         values = values or self._default or []
-        if self.width is None:
-            # Update the width of a variable-length array with each record.
-            self.width = len(values) * self._stride
         return [field.encode(elem.get(field.name)) for elem, field in
                 product(values, self._fields)]
