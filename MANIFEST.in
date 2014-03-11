@@ -1,6 +1,7 @@
-# Manifest file for a distutils source distribution. This overrides the default
-# manifest options.
-
-global-exclude *.py
-graft serial/
-global-exclude *.pyc
+# Manifest file for a distutils source distribution.
+#
+# This overrides the default manifest options and creates a bare-bones
+# distribution for inclusion in self-contained projects.
+#
+exclude setup.py
+prune test
