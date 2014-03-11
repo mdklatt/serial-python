@@ -62,7 +62,8 @@ class _FieldTest(unittest.TestCase):
         """ Test the encode() method for null output.
 
         """
-        self.assertEqual("", self.field.encode(None).strip())
+        # This only works for fixed-width fields.
+        self.assertEqual(" ".rjust(self.field.width), self.field.encode(None))
         return
 
     def test_encode_default(self):
@@ -188,14 +189,6 @@ class StringFieldTest(_FieldTest):
 
         """
         self.assertEqual(self.quote_token, self.quote_field.encode(self.value))
-        return
-
-    def test_encode_null(self):
-        """ Test the decode() method for null input.
-
-        """
-        # Override the base class to test for a fixed-width blank field.
-        self.assertEqual("     ", self.field.encode(None))
         return
 
 

@@ -235,10 +235,8 @@ class DatetimeField(_ScalarField):
 
         """
         value = value or self._default
-        if value is None:
-            return ""
-        token = self._fmtobj(value)
-        if (self._prec > 0):
+        token = "" if value is None else self._fmtobj(value)
+        if token and self._prec > 0:
             time, usecs = token.split(".")
             token = "{0:s}.{1:s}".format(time, usecs[0:self._prec])
         return token[:self.width].rjust(self.width) if self._fixed else token
