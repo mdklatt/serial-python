@@ -9,15 +9,14 @@ import _unittest as unittest
 from functools import partial
 from io import BytesIO
 
-from serial.core import DelimitedReader
-from serial.core import FixedWidthReader
-from serial.core import ReaderSequence
+from serial.core import ArrayField
 from serial.core import IntField
 from serial.core import StringField
-from serial.core import ArrayField
+
+from serial.core.reader import *  # tests __all__
 
 
-# Utility functions.
+# Utility functions and classes.
 
 def reject_filter(record):
     """ A filter function to reject records.
@@ -175,6 +174,59 @@ class FixedWidthReaderTest(_TabularReaderTest):
         return
 
 
+class SequenceReaderTest(unittest.TestCase):
+    """ Unit testing for the SequenceReader class.
+    
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        fields = (
+            IntField("int", 0, ),
+            ArrayField("arr", (1, None), (
+                StringField("x", 0), 
+                StringField("y", 1))))
+        self.callback = partial(DelimitedReader, fields=fields, delim=",")
+        data = "123, abc, def\n456, ghi, jkl\n"
+        self.streams = (BytesIO(data), BytesIO(data.upper()))
+        self.records = (
+            {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
+            {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]},
+            {"int": 123, "arr": [{"x": "ABC", "y": "DEF"}]},
+            {"int": 456, "arr": [{"x": "GHI", "y": "JKL"}]})
+        return
+
+    def test_iter(self):
+        """ Test the __iter__() method.
+        
+        """
+        reader = SequenceReader(self.streams, self.callback)
+        self.assertSequenceEqual(self.records, list(reader))
+        self.assertTrue(all(stream.closed for stream in self.streams))
+        return
+        
+    def test_iter_context(self):
+        """ Test the __iter__() method inside a context block.
+        
+        """
+        with SequenceReader.open(self.streams, self.callback) as reader:
+            self.assertSequenceEqual(self.records, list(reader))
+        self.assertTrue(all(stream.closed for stream in self.streams))
+        return
+        
+    def test_iter_empty(self):
+        """ Test the __iter__() method for an empty input sequence.
+        
+        """
+        reader = SequenceReader((), self.callback)
+        self.assertSequenceEqual((), list(reader))
+        return
+
+
 class ReaderSequenceTest(unittest.TestCase):
     
     def setUp(self):
@@ -229,7 +281,8 @@ class ReaderSequenceTest(unittest.TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest, ReaderSequenceTest)
+_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest, SequenceReaderTest,
+               ReaderSequenceTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

@@ -10,7 +10,8 @@ from functools import partial
 from itertools import chain
 from re import compile
 
-__all__ = ("DelimitedReader", "FixedWidthReader", "ReaderSequence")
+__all__ = ("DelimitedReader", "FixedWidthReader", "SequenceReader",
+           "ReaderSequence")
 
 
 class _Reader(object):
@@ -209,6 +210,93 @@ class FixedWidthReader(_TabularReader):
         return tuple(line[field.pos] for field in self._fields)
 
 
+class SequenceReader(_Reader):
+    """ Read a sequence of streams as a single series of records.
+    
+    The SequenceReader opens streams as necessary and closes them once they
+    have been reader.
+    
+    """
+    @classmethod
+    @contextmanager
+    def open(cls, streams, callback, *args, **kwargs):
+        """ Create a runtime context for a SequenceReader and its streams.
+        
+        The arguments are passed to the class constructor. Each stream is
+        closed once it has been exhausted, and any open streams remaining in
+        the sequence will be closed upon exit from the context block.
+        
+        """
+        reader = cls(streams, callback, *args, **kwargs)
+        yield reader
+        reader.close()
+        return
+
+    def __init__(self, streams, callback):
+        """ Initialize this object.
+        
+        The callback argument is any callable object that takes a stream as its
+        only argument and returns a reader to use on that stream, e.g. a reader
+        class constructor.
+    
+        Filtering is applied at the SequenceReader level, but for filters that
+        raise StopIteration this might not be the desired behavior. Raising
+        StopIteration from a ReaderSequence filter will halt input from all 
+        remaining streams in the sequence. If the intent is to stop input on
+        an individual stream, define the callback function to return a Reader 
+        that already has the desired filter(s) applied.
+    
+        """
+        def readers():
+            """ Yield a reader for each stream. """
+            for expr in self._streams:
+                stream = self._stream(expr)
+                if not stream:
+                    continue
+                yield callback(stream)
+                stream.close()
+            return
+                   
+        super(SequenceReader, self).__init__()
+        self._streams = iter(streams) 
+        self._records = chain.from_iterable(readers())
+        return
+        
+    def close(self):
+        """ Close any remaning streams in the sequence.
+        
+        """
+        for stream in self._streams:
+            try:
+                stream.close()
+            except AttributeError:  # no close()
+                pass
+        self._streams = None
+        return
+        
+    def _get(self):
+        """ Return he next parsed record from the sequence.
+        
+        """
+        return self._records.next()
+    
+    def _stream(self, expr):
+        """ Return an open stream using the given expression.
+        
+        The expression is either a path to open as a text file or an already 
+        open stream. Derived classes can override this to support other types
+        of streams, e.g. network streams.
+        
+        """
+        try:
+            # Try to open a path as a text file.
+            stream = open(expr, "r")
+        except TypeError:
+            # Not a string, assume it's an open stream.
+            stream = expr
+        return stream
+
+
 class ReaderSequence(_Reader):
     """ Iterate over multiple input sources as a single sequence of records.
     
@@ -259,7 +347,6 @@ class ReaderSequence(_Reader):
                 # The reader is exhausted.
                 pass
             self._open()
-        return
         
     def _open(self):
         """ Create a reader for the next stream in the sequence.
