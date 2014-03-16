@@ -174,13 +174,13 @@ class DelimitedReader(_TabularReader):
         if esc:
             # Regex patterns need to be encoded in case the escape character 
             # has a special meaning.
-            patt = "(?<!{0:s}){1:s}".format(esc, delim).encode("string-escape")
-            self._tokenize = compile(patt).split    
             patt = "{0:s}{1:s}".format(esc, delim).encode("string-escape")
-            self._unescape = partial(compile(patt).sub, delim)
+            unescape = partial(compile(patt).sub, delim)
+            patt = "(?<!{0:s}){1:s}".format(esc, delim).encode("string-escape")
+            split = compile(patt).split
+            self._tokenize = lambda line: [unescape(s) for s in split(line)]
         else:
             self._tokenize = lambda line: line.split(delim)
-            self._unescape = None
         return
 
     def _split(self, line):
@@ -190,7 +190,7 @@ class DelimitedReader(_TabularReader):
         discarded.
 
         """
-        tokens = map(self._unescape, self._tokenize(line))
+        tokens = self._tokenize(line)
         return tuple(tokens[field.pos] for field in self._fields)
 
 
