@@ -124,12 +124,11 @@ class DelimitedReaderTest(_TabularReaderTest):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields = (
-            StringField("x", 0), 
-            StringField("y", 1))
         fields = (
-            IntField("int", 0),
-            ArrayField("arr", (1, None), array_fields)) 
+            IntField("int", 0, ),
+            ArrayField("arr", (1, None), (
+                StringField("x", 0), 
+                StringField("y", 1))))
         self.data = "123, abc, def\n456, ghi, jkl\n"
         super(DelimitedReaderTest, self).setUp()
         self.args = {"fields": fields, "delim": ",", "endl": "\n"}
@@ -161,12 +160,11 @@ class FixedWidthReaderTest(_TabularReaderTest):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields = (
-            StringField("x", (0, 4)), 
-            StringField("y", (4, 8)))
         fields = (
             IntField("int", (0, 4), "3d"),
-            ArrayField("arr", (4, None), array_fields)) 
+            ArrayField("arr", (4, None), ( 
+                StringField("x", (0, 4)), 
+                StringField("y", (4, 8)))))
         self.data = " 123 abc def\n 456 ghi jkl\n"
         super(FixedWidthReaderTest, self).setUp()
         self.args = {"fields": fields, "endl": "\n"}
@@ -236,12 +234,11 @@ class ReaderSequenceTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields = (
-            StringField("x", 0, ), 
-            StringField("y", 1, ))
         fields = (
             IntField("int", 0, ),
-            ArrayField("arr", (1, None), array_fields)) 
+            ArrayField("arr", (1, None), (
+                StringField("x", 0), 
+                StringField("y", 1))))
         self.reader = partial(DelimitedReader, fields=fields, delim=",")
         data = "123, abc, def\n456, ghi, jkl\n"
         self.streams = (BytesIO(data), BytesIO(data.upper()))

@@ -95,12 +95,11 @@ class DelimitedWriterTest(_TabularWriterTest):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields = (
-            StringField("x", 0), 
-            StringField("y", 1))
         fields = (
             IntField("int", 0),
-            ArrayField("arr", (1, None), array_fields)) 
+            ArrayField("arr", (1, None), ( 
+                StringField("x", 0), 
+                StringField("y", 1))))
         super(DelimitedWriterTest, self).setUp()
         self.data = "123,abc,defX456,ghi,jklX"
         self.args = {"fields": fields, "delim": ",", "endl": "X"}
@@ -141,12 +140,11 @@ class FixedWidthWriterTest(_TabularWriterTest):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields = (
-            StringField("x", (0, 4), "4s"), 
-            StringField("y", (4, 8), "4s"))
         fields = (
             IntField("int", (0, 4), "4d"),
-            ArrayField("arr", (4, None), array_fields)) 
+            ArrayField("arr", (4, None), (
+                StringField("x", (0, 4), "4s"), 
+                StringField("y", (4, 8), "4s")))) 
         super(FixedWidthWriterTest, self).setUp()
         self.data = " 123abc def X 456ghi jkl X"
         self.args = {"fields": fields, "endl": "X"}
