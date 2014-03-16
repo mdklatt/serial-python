@@ -318,6 +318,10 @@ class ReaderSequence(_Reader):
         that already has the desired filter(s) applied.
         
         """
+        from warnings import warn
+        message = "ReaderSequence is deprecated; use SequenceReader instead"
+        warn(message, DeprecationWarning)
+        
         super(ReaderSequence, self).__init__()
         self._input = list(input)
         self._callback = callback 
