@@ -8,7 +8,7 @@ from __future__ import absolute_import
 from contextlib import contextmanager
 from functools import partial
 from itertools import chain
-from string import replace
+
 
 __all__ = ("DelimitedWriter", "FixedWidthWriter")
 
@@ -170,9 +170,10 @@ class DelimitedWriter(_TabularWriter):
         super(DelimitedWriter, self).__init__(stream, fields, endl)
         self._delim = delim
         if esc:
-            self._escape = partial(replace, old=delim, new=esc+delim)
+            self._escape = lambda tokens: (tok.replace(delim, esc+delim) for 
+                                           tok in tokens)
         else:
-            self._escape = None
+            self._escape = lambda tokens: tokens
         return
 
     def _join(self, tokens):
@@ -182,7 +183,7 @@ class DelimitedWriter(_TabularWriter):
         where the end is None for a variable-length array.
 
         """
-        return self._delim.join(map(self._escape, tokens))
+        return self._delim.join(self._escape(tokens))
 
 
 class FixedWidthWriter(_TabularWriter):
