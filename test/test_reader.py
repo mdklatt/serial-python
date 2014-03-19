@@ -183,12 +183,12 @@ class SequenceReaderTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        fields = (
+        self.delim = ","
+        self.fields = (
             IntField("int", 0, ),
             ArrayField("arr", (1, None), (
                 StringField("x", 0), 
                 StringField("y", 1))))
-        self.callback = partial(DelimitedReader, fields=fields, delim=",")
         data = "123, abc, def\n456, ghi, jkl\n"
         self.streams = (BytesIO(data), BytesIO(data.upper()))
         self.records = (
@@ -202,7 +202,8 @@ class SequenceReaderTest(unittest.TestCase):
         """ Test the __iter__() method.
         
         """
-        reader = SequenceReader(self.streams, self.callback)
+        reader = SequenceReader(self.streams, DelimitedReader, self.fields,
+                                self.delim)
         self.assertSequenceEqual(self.records, list(reader))
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
@@ -211,7 +212,8 @@ class SequenceReaderTest(unittest.TestCase):
         """ Test the __iter__() method inside a context block.
         
         """
-        with SequenceReader.open(self.streams, self.callback) as reader:
+        with SequenceReader.open(self.streams, DelimitedReader, self.fields,
+                                 self.delim) as reader:
             self.assertSequenceEqual(self.records, list(reader))
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
@@ -220,7 +222,7 @@ class SequenceReaderTest(unittest.TestCase):
         """ Test the __iter__() method for an empty input sequence.
         
         """
-        reader = SequenceReader((), self.callback)
+        reader = SequenceReader((), DelimitedReader, self.fields, self.delim)
         self.assertSequenceEqual((), list(reader))
         return
 

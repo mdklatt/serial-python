@@ -219,7 +219,7 @@ class SequenceReader(_Reader):
     """
     @classmethod
     @contextmanager
-    def open(cls, streams, callback, *args, **kwargs):
+    def open(cls, streams, reader, *args, **kwargs):
         """ Create a runtime context for a SequenceReader and its streams.
         
         The arguments are passed to the class constructor. Each stream is
@@ -227,17 +227,18 @@ class SequenceReader(_Reader):
         the sequence will be closed upon exit from the context block.
         
         """
-        reader = cls(streams, callback, *args, **kwargs)
+        reader = cls(streams, reader, *args, **kwargs)
         yield reader
         reader.close()
         return
 
-    def __init__(self, streams, callback):
+    def __init__(self, streams, reader, *args, **kwargs):
         """ Initialize this object.
         
-        The callback argument is any callable object that takes a stream as its
+        The reader argument is any callable object that takes a stream as its
         only argument and returns a reader to use on that stream, e.g. a reader
-        class constructor.
+        class constructor. The args and kwargs values are passed to the reader 
+        function.
     
         Filtering is applied at the SequenceReader level, but for filters that
         raise StopIteration this might not be the desired behavior. Raising
@@ -253,7 +254,7 @@ class SequenceReader(_Reader):
                 stream = self._stream(expr)
                 if not stream:
                     continue
-                yield callback(stream)
+                yield reader(stream, *args, **kwargs)
                 stream.close()
             return
                    
