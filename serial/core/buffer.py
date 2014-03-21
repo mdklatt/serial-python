@@ -1,6 +1,6 @@
 """ Classes for buffering input and output records.
 
-Unlike filters, buffers can operate on muliple records simulataneously. Thus,
+Unlike filters, buffers can operate on multiple records simultaneously. Thus,
 a buffer can split one record into multiple records, merge multiple records 
 into one record, reorder records, or any combination thereof. 
 
@@ -116,7 +116,7 @@ class _WriterBuffer(_Writer):
         return
 
     def dump(self, records):
-        """ Write all records while appling buffering and filtering.
+        """ Write all records while applying buffering and filtering.
         
         This automatically calls close().
         

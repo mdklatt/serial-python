@@ -1,6 +1,6 @@
 """ Data fields convert text tokens to/from Python types. 
 
-Client code defines the field type for each input/ouput field, but the _Reader
+Client code defines the field type for each input/output field, but the _Reader
 and _Writer classes are responsible for using them.
 
 """

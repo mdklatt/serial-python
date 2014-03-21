@@ -46,7 +46,7 @@ these fields individually can be tedious. For the sample data the format of
 each sensor field is the same, so they can all be treated as a single array. 
 Each array element will have a value and a flag.
 
-An `ArrayField` must be initalized with the field definitions to use for an
+An `ArrayField` must be initialized with the field definitions to use for an
 array element. The position of the array itself is relative to the entire input
 line, but the positions of the element fields are relative to each other.
 
@@ -354,7 +354,7 @@ The library defines the `FieldFilter` class for use with Readers and Writers.
 # Custom Data Formats #
 
 The intent of the `serial.core` library is to provide a framework for dealing
-with a wide variety of data formats. The data field definitions are precribed
+with a wide variety of data formats. The data field definitions are prescribed
 by the the format, but filters can be used to build any convenient data model 
 on top of that format. Philosophically, reading and writing should be inverse
 operations. A Reader and Writer should operate on the same data model such
@@ -469,7 +469,7 @@ exhausted.
             return
         
         def _queue(self, record):
-            # Convert incoming daily recods to monthly records. The incoming
+            # Convert incoming daily records to monthly records. The incoming
             # data is assumed to be sorted in chronological order.
             month = record["date"].replace(day=1)
             if self._buffer and self._buffer["date"] == month:
@@ -531,9 +531,9 @@ may override the `_flush()` method to finalize processing.
                 self._output.append(item)  # FIFO queue
             return
             
-        # _WriterBuffer has a _flush() method that can be overriden to finalize
-        # output; is is called when close() is called on the buffer. For this 
-        # example, _flush() does not need to do anything.
+        # _WriterBuffer has a _flush() method that can be overridden to 
+        # finalize output; is is called when close() is called on the buffer. 
+        # For this example, _flush() does not need to do anything.
 
     ...
     

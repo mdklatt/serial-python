@@ -18,7 +18,7 @@ class _Reader(object):
     """ Abstract base class for all serial data readers.
 
     Serial data consists of sequential records. A _Reader provides an iterator
-    interface for reading serial data and allows for precprocessing of the data
+    interface for reading serial data and allows for preprocessing of the data
     using filters.
 
     """
@@ -58,7 +58,7 @@ class _Reader(object):
         return
 
     def next(self):
-        """ Read the next record while applying filtering o.
+        """ Read the next record while applying filtering.
 
         """
         # Recursion would simplify this, but would fail for any combination of
@@ -214,7 +214,7 @@ class SequenceReader(_Reader):
     """ Read a sequence of streams as a single series of records.
     
     The SequenceReader opens streams as necessary and closes them once they
-    have been reader.
+    have been read.
     
     """
     @classmethod
@@ -264,7 +264,7 @@ class SequenceReader(_Reader):
         return
         
     def close(self):
-        """ Close any remaning streams in the sequence.
+        """ Close any remaining streams in the sequence.
         
         """
         for stream in self._streams:
@@ -339,7 +339,7 @@ class ReaderSequence(_Reader):
         """
         while True:
             # Repeat until a record is returned or there are no more streams
-            # to open. If the current reader is None or exhuasted try to open
+            # to open. If the current reader is None or exhausted try to open
             # a new stream.
             try:
                 return self._reader.next()

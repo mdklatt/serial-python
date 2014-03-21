@@ -1,4 +1,4 @@
-""" Internal utility clases for the serial.core package.
+""" Internal utility classes for the serial.core package.
 
 """
 from __future__ import absolute_import

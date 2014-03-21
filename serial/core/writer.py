@@ -199,6 +199,5 @@ class FixedWidthWriter(_TabularWriter):
         """
         # In this implementation the positions in self.fields don't matter;
         # tokens must be in he correct order, and each token must be the
-        # correct width for that field. The _DataType format for a fixed-width
-        # field *MUST* have a field width, e.g. '6.2f'.               
+        # correct width for that field.             
         return "".join(tokens)
