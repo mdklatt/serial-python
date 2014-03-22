@@ -184,48 +184,51 @@ class SequenceReaderTest(unittest.TestCase):
 
         """
         self.delim = ","
-        self.fields = (
-            IntField("int", 0, ),
-            ArrayField("arr", (1, None), (
-                StringField("x", 0), 
-                StringField("y", 1))))
-        data = "123, abc, def\n456, ghi, jkl\n"
+        self.fields = (IntField("int", (0, 4)), StringField("str", (4, 8)))
+        data = " 123 abc\n 456 def\n"
         self.streams = (BytesIO(data), BytesIO(data.upper()))
         self.records = (
-            {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
-            {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]},
-            {"int": 123, "arr": [{"x": "ABC", "y": "DEF"}]},
-            {"int": 456, "arr": [{"x": "GHI", "y": "JKL"}]})
+            {"int": 123, "str": "abc"}, {"int": 456, "str": "def"},
+            {"int": 123, "str": "ABC"}, {"int": 456, "str": "DEF"})
         return
 
-    def test_iter(self):
-        """ Test the __iter__() method.
+    def test_open(self):
+        """ Test the open() method.
         
         """
-        reader = SequenceReader(self.streams, DelimitedReader, self.fields,
-                                self.delim)
+        with SequenceReader.open(self.streams, FixedWidthReader, 
+                                 self.fields) as reader: 
+            self.assertSequenceEqual(self.records[0], reader.next())
+        self.assertTrue(all(stream.closed for stream in self.streams))
+        return
+    
+    def test_iter(self):
+        """ Test the iterator protocol.
+        
+        """
+        reader = SequenceReader(self.streams, FixedWidthReader, self.fields) 
         self.assertSequenceEqual(self.records, list(reader))
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
-        
-    def test_iter_context(self):
-        """ Test the __iter__() method inside a context block.
+    
+    def test_iter_empty(self):
+        """ Test the iterator protocol for an empty input sequence.
         
         """
-        with SequenceReader.open(self.streams, DelimitedReader, self.fields,
-                                 self.delim) as reader:
-            self.assertSequenceEqual(self.records, list(reader))
+        reader = SequenceReader((), FixedWidthReader, self.fields)
+        self.assertSequenceEqual((), list(reader))
+        return
+        
+    def test_close(self):
+        """ Test the close() method.
+        
+        """
+        reader = SequenceReader(self.streams, FixedWidthReader, self.fields)
+        reader.next()
+        reader.close()
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
         
-    def test_iter_empty(self):
-        """ Test the __iter__() method for an empty input sequence.
-        
-        """
-        reader = SequenceReader((), DelimitedReader, self.fields, self.delim)
-        self.assertSequenceEqual((), list(reader))
-        return
-
 
 class ReaderSequenceTest(unittest.TestCase):
     

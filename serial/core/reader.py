@@ -5,6 +5,7 @@ Readers convert lines of text to data records.
 """
 from __future__ import absolute_import
 
+from collections import deque
 from contextlib import contextmanager
 from functools import partial
 from itertools import chain
@@ -250,16 +251,16 @@ class SequenceReader(_Reader):
         """
         def readers():
             """ Yield a reader for each stream. """
-            for expr in self._streams:
-                stream = self._stream(expr)
-                if not stream:
-                    continue
-                yield reader(stream, *args, **kwargs)
-                stream.close()
+            while self._streams:
+                stream = self._stream(self._streams[0])
+                if stream:
+                    yield reader(stream, *args, **kwargs)
+                    stream.close()
+                self._streams.popleft()
             return
                    
         super(SequenceReader, self).__init__()
-        self._streams = iter(streams) 
+        self._streams = deque(streams)
         self._records = chain.from_iterable(readers())
         return
         
@@ -286,7 +287,8 @@ class SequenceReader(_Reader):
         
         The expression is either a path to open as a text file or an already 
         open stream. Derived classes can override this to support other types
-        of streams, e.g. network streams.
+        of streams, e.g. network streams. Return None to a skip a given item in
+        the sequence.
         
         """
         try:
