@@ -3,6 +3,7 @@
 """
 from __future__ import absolute_import
 
+from collections import deque
 from zlib import decompressobj
 from zlib import MAX_WBITS
 
@@ -67,7 +68,7 @@ class BufferedIStream(_IStreamAdaptor):
 
         """
         super(BufferedIStream, self).__init__(stream)
-        self._buffer = []  # newest record at end
+        self._buffer = deque(maxlen=buflen) 
         while len(self._buffer) < buflen:
             # Fill the buffer one record at a time.
             try:
@@ -91,9 +92,8 @@ class BufferedIStream(_IStreamAdaptor):
             self._bufpos += 1
         except IndexError:
             # At the end of the buffer so get a new line.
-            line = self._stream.next() 
-            del self._buffer[0]
-            self._buffer.append(line)
+            line = self._stream.next()
+            self._buffer.append(line)  # pops _buffer[0]
         return line
 
     def rewind(self, count=None):
