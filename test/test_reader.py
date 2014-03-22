@@ -227,6 +227,7 @@ class SequenceReaderTest(unittest.TestCase):
         reader.next()
         reader.close()
         self.assertTrue(all(stream.closed for stream in self.streams))
+        reader.close()  # should be safe to call again
         return
         
 

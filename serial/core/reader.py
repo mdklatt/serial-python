@@ -273,7 +273,7 @@ class SequenceReader(_Reader):
                 stream.close()
             except AttributeError:  # no close()
                 pass
-        self._streams = None
+        self._streams = ()
         return
         
     def _get(self):
