@@ -254,6 +254,8 @@ class SequenceReader(_Reader):
             while self._streams:
                 stream = self._stream(self._streams[0])
                 if stream:
+                    # Beware of late binding if the values of args or kwargs
+                    # change during iteration.
                     yield reader(stream, *args, **kwargs)
                     stream.close()
                 self._streams.popleft()
@@ -277,7 +279,7 @@ class SequenceReader(_Reader):
         return
         
     def _get(self):
-        """ Return he next parsed record from the sequence.
+        """ Return the next parsed record from the sequence.
         
         """
         return self._records.next()
@@ -307,11 +309,11 @@ class ReaderSequence(_Reader):
     def __init__(self, callback, *input):
         """ Initialize this object.
         
-        The callback argument is any callable object that takes a stream or
-        as its only argument and returns a Reader to use on that stream, e.g. a 
-        Reader constructor. The remaining arguments are either open streams or
-        paths to open as plain text files. Each stream is closed once it has
-        been exhausted.
+        The callback argument is any callable object that takes a stream as its
+        first argument and returns a reader to use on that stream, e.g. a class
+        constructor. The remaining arguments are either open streams or paths 
+        to open as plain text files. Each stream is closed once it has been 
+        exhausted.
         
         Filtering is applied at the ReaderSequence level, but for filters that
         raise StopIteration this might not be the desired behavior. Raising
