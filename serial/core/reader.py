@@ -230,7 +230,12 @@ class SequenceReader(_Reader):
         """
         reader = cls(streams, reader, *args, **kwargs)
         yield reader
-        reader.close()
+        for stream in reader._streams:
+            # Close each remaining stream in the sequence.
+            try:
+                stream.close()
+            except AttributeError:  # no close()
+                pass
         return
 
     def __init__(self, streams, reader, *args, **kwargs):
@@ -264,18 +269,6 @@ class SequenceReader(_Reader):
         super(SequenceReader, self).__init__()
         self._streams = deque(streams)
         self._records = chain.from_iterable(readers())
-        return
-        
-    def close(self):
-        """ Close any remaining streams in the sequence.
-        
-        """
-        for stream in self._streams:
-            try:
-                stream.close()
-            except AttributeError:  # no close()
-                pass
-        self._streams = ()
         return
         
     def _get(self):

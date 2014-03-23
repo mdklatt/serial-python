@@ -219,17 +219,6 @@ class SequenceReaderTest(unittest.TestCase):
         self.assertSequenceEqual((), list(reader))
         return
         
-    def test_close(self):
-        """ Test the close() method.
-        
-        """
-        reader = SequenceReader(self.streams, FixedWidthReader, self.fields)
-        reader.next()
-        reader.close()
-        self.assertTrue(all(stream.closed for stream in self.streams))
-        reader.close()  # should be safe to call again
-        return
-        
 
 class ReaderSequenceTest(unittest.TestCase):
     
