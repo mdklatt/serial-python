@@ -15,11 +15,30 @@ from serial.core import StringField
 from serial.core.aggregate import *  # tests __all__
 
 
+# Mock objects to use for testing.
+
+class _MockWriter(object):
+    """ Simulate a _Writer for testing purposes.
+    
+    """
+    def __init__(self):
+        """ Initialize this object.
+        
+        """
+        self.output = []
+        self.write = self.output.append
+        return
+
+
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class AggregateReaderTest(unittest.TestCase):
+
+class _AggregateTest(unittest.TestCase):
     """ Unit testing for tabular reader classes.
+
+    This is an abstract class and should not be called directly by any test
+    runners.
 
     """
     def setUp(self):
@@ -35,7 +54,12 @@ class AggregateReaderTest(unittest.TestCase):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         return
+    
 
+class AggregateReaderTest(_AggregateTest):
+    """ Unit testing for tabular reader classes.
+
+    """
     def test_iter(self):
         """ Test the iterator protocol.
 
@@ -54,19 +78,68 @@ class AggregateReaderTest(unittest.TestCase):
         
         """
         aggregate = (
-            {"str": "abc", "int": 1, "float": 3.},
+            {"str": "abc", "int": 1, "float": 2.},
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), ("str", "int"))        
-        reader.apply("float", sum)        
+        reader.apply("float", max)        
         self.assertSequenceEqual(aggregate, list(reader))
         return
-        
+
+
+class AggregateWriterTest(_AggregateTest):
+    """ Unit testing for tabular writer classes.
+
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        super(AggregateWriterTest, self).setUp()
+        self.buffer = _MockWriter()  
+        return
+
+    def test_write(self):
+        """ Test the write() and close() methods.
+
+        """
+        aggregate = (
+            {"str": "abc", "int": 5, "float": 3.},
+            {"str": "def", "int": 3, "float": 4.})
+        writer = AggregateWriter(self.buffer, "str")
+        writer.apply("int", sum)
+        writer.apply("float", max)        
+        for record in self.records:
+            writer.write(record)
+        writer.close()
+        writer.close()  # test that redundant calls are a no-op
+        self.assertSequenceEqual(aggregate, self.buffer.output)
+        return
+
+    def test_write_multi_key(self):
+        """ Test the write() and close() methods with multi-key grouping.
+
+        """
+        aggregate = (
+            {"str": "abc", "int": 1, "float": 2.},
+            {"str": "abc", "int": 3, "float": 3.},
+            {"str": "def", "int": 3, "float": 4.})
+        writer = AggregateWriter(self.buffer, ("str", "int"))
+        writer.apply("float", max)        
+        for record in self.records:
+            writer.write(record)
+        writer.close()
+        writer.close()  # test that redundant calls are a no-op
+        self.assertSequenceEqual(aggregate, self.buffer.output)
+        return
 
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (AggregateReaderTest,)
+_TEST_CASES = (AggregateReaderTest, AggregateWriterTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

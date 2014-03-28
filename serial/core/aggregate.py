@@ -4,9 +4,13 @@
 from __future__ import absolute_import
 
 from .buffer import _ReaderBuffer
+from .buffer import _WriterBuffer
 
 
-class _Aggregator(object):
+__all__ = ("AggregateReader", "AggregateWriter")
+
+
+class _AggregateBuffer(object):
     """ Base class for AggregateReader and AggregateWriter
     
     """
@@ -71,7 +75,7 @@ class _Aggregator(object):
         return
 
 
-class AggregateReader(_Aggregator, _ReaderBuffer):
+class AggregateReader(_AggregateBuffer, _ReaderBuffer):
     """ Apply aggregate functions to input from another reader.
     
     """
@@ -79,7 +83,7 @@ class AggregateReader(_Aggregator, _ReaderBuffer):
         """ Initilize this object.
         
         """
-        _Aggregator.__init__(self, keyname, keyfunc)
+        _AggregateBuffer.__init__(self, keyname, keyfunc)
         _ReaderBuffer.__init__(self, reader)
         return
 
@@ -91,4 +95,17 @@ class AggregateReader(_Aggregator, _ReaderBuffer):
         if not self._buffer:
             raise StopIteration
         self._flush()
+        return
+
+
+class AggregateWriter(_AggregateBuffer, _WriterBuffer):
+    """ Apply aggregate functions to output for another writer.
+    
+    """
+    def __init__(self, writer, keyname, keyfunc=None):
+        """ Initilize this object.
+        
+        """
+        _AggregateBuffer.__init__(self, keyname, keyfunc)
+        _WriterBuffer.__init__(self, writer)
         return
