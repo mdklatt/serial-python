@@ -1,4 +1,4 @@
-""" Testing for the the aggregate.py module
+""" Testing for the the reduced.py module
 
 The module can be executed on its own or incorporated into a larger test suite.
 
@@ -82,40 +82,38 @@ class AggregateReaderTest(_AggregateTest):
         """ Test the iterator protocol.
 
         """
-        aggregate = (
+        reduced = (
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), "str")
-        reader.reduce("int", sum)
-        reader.reduce("float", max)        
-        self.assertSequenceEqual(aggregate, list(reader))
+        reader.reduce(reduction("int", sum), reduction("float", max))
+        self.assertSequenceEqual(reduced, list(reader))
         return
         
     def test_iter_multikey(self):
         """ Test the iterator protocol with multi-key grouping.
         
         """
-        aggregate = (
+        reduced = (
             {"str": "abc", "int": 1, "float": 2.},
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), ("str", "int"))        
-        reader.reduce("float", max)        
-        self.assertSequenceEqual(aggregate, list(reader))
+        reader.reduce(reduction("float", max))        
+        self.assertSequenceEqual(reduced, list(reader))
         return
 
     def test_iter_keyfunc(self):
         """ Test the iterator protocol with keyfunc grouping.
         
         """
-        aggregate = (
+        reduced = (
             {"KEY": "ABC", "int": 5, "float": 3.},
             {"KEY": "DEF", "int": 3, "float": 4.})
         keyfunc = lambda record: (record["str"].upper(),)  # must be tuple
         reader = AggregateReader(iter(self.records), "KEY", keyfunc)
-        reader.reduce("int", sum)
-        reader.reduce("float", max)        
-        self.assertSequenceEqual(aggregate, list(reader))
+        reader.reduce(reduction("int", sum), reduction("float", max))
+        self.assertSequenceEqual(reduced, list(reader))
         return
 
 
@@ -138,52 +136,50 @@ class AggregateWriterTest(_AggregateTest):
         """ Test the write() and close() methods.
 
         """
-        aggregate = (
+        reduced = (
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, "str")
-        writer.reduce("int", sum)
-        writer.reduce("float", max)        
+        writer.reduce(reduction("int", sum), reduction("float", max))
         for record in self.records:
             writer.write(record)
         writer.close()
         writer.close()  # test that redundant calls are a no-op
-        self.assertSequenceEqual(aggregate, self.buffer.output)
+        self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
     def test_write_multikey(self):
         """ Test the write() and close() methods with multi-key grouping.
 
         """
-        aggregate = (
+        reduced = (
             {"str": "abc", "int": 1, "float": 2.},
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, ("str", "int"))
-        writer.reduce("float", max)        
+        writer.reduce(reduction("float", max))        
         for record in self.records:
             writer.write(record)
         writer.close()
         writer.close()  # test that redundant calls are a no-op
-        self.assertSequenceEqual(aggregate, self.buffer.output)
+        self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
     def test_write_keyfunc(self):
         """ Test the write() and close() with keyfunc grouping.
 
         """
-        aggregate = (
+        reduced = (
             {"KEY": "ABC", "int": 5, "float": 3.},
             {"KEY": "DEF", "int": 3, "float": 4.})
         keyfunc = lambda record: (record["str"].upper(),)  # must be tuple
         writer = AggregateWriter(self.buffer, "KEY", keyfunc)
-        writer.reduce("int", sum)
-        writer.reduce("float", max)        
+        writer.reduce(reduction("int", sum), reduction("float", max))
         for record in self.records:
             writer.write(record)
         writer.close()
         writer.close()  # test that redundant calls are a no-op
-        self.assertSequenceEqual(aggregate, self.buffer.output)
+        self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
 

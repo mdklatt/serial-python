@@ -51,27 +51,28 @@ class _Aggregator(object):
         self._keyname = tuple(keyname)
         self._keyfunc = keyfunc
         self._keyval = None
-        self._buffer = {}
-        self._aggregates = []        
+        self._buffer = []
+        self._reductions = []        
         return
 
-    def reduce(self, keyname, callback):
-        """ Add an aggregate function for the given field(s)
+    def reduce(self, *callbacks):
+        """ Add reductions to this object or clear all reductions (default).
         
-        The keyname argument is either a single name or sequence of names that
-        the callback will be applied to. The callback must accept one argument
-        per name in keyname, in that same order. It must als return on result
-        per name in keyname that order. The value(s) passed in to the callback 
-        will a sequence of all the current values in the aggregate group for 
-        the given field name. 
+        A reduction is an callable object that takes a sequence of records and
+        aggregates them into a single dict-like result. Reductions are applied
+        in order to each sequence of grouped records and merged into a single
+        record for each group. This record will also contain the key fields.
+        Using reductions, it's possible to remove existing fields in the 
+        incoming data and create new fields.
         
-        Any fields that do not have reductions defined for them will not exist
-        in the aggregated data.
+        The reduction() function can be used to generate reductions from
+        primitive functions like the sum() built-in.
         
         """
-        if isinstance(keyname, basestring):
-            keyname = (keyname,)
-        self._aggregates.append((keyname, callback))
+        if not callbacks:
+            self._reductions = []
+        else:
+            self._reductions.extend(callbacks)
         return
         
     def _queue(self, record):
@@ -82,10 +83,7 @@ class _Aggregator(object):
         if keyval != self._keyval:
             # This is a new group, finalize the buffered group.
             self._flush()
-        for key in record:
-            # The buffer will contain a sequence of the group values for each
-            # field, keyed by the field name.
-            self._buffer.setdefault(key, []).append(record[key])
+        self._buffer.append(record)
         self._keyval = keyval
         return
 
@@ -96,14 +94,12 @@ class _Aggregator(object):
         if not self._buffer:
             return
         record = dict(zip(self._keyname, self._keyval))
-        for keyname, callback in self._aggregates:
-            result = callback(*[self._buffer[key] for key in keyname])
-            if len(keyname) == 1:
-                record[keyname[0]] = result
-            else:
-                record.update(dict(zip(keyname, result)))
+        for callback in self._reductions:
+            # If multiple callbacks return the same field values, the latter
+            # value will overwrite the existing value.
+            record.update(callback(self._buffer))
         self._output.append(record)
-        self._buffer = {}
+        self._buffer = []
         return
 
 
