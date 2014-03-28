@@ -1,4 +1,4 @@
-""" Testing for the the reduced.py module
+""" Testing for the the reduce.py module
 
 The module can be executed on its own or incorporated into a larger test suite.
 
@@ -12,7 +12,7 @@ from serial.core import IntField
 from serial.core import FloatField
 from serial.core import StringField
 
-from serial.core.aggregate import *  # tests __all__
+from serial.core.reduce import *  # tests __all__
 
 
 # Mock objects to use for testing.
