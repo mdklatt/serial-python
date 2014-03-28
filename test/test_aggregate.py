@@ -68,8 +68,8 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), "str")
-        reader.apply("int", sum)
-        reader.apply("float", max)        
+        reader.reduce("int", sum)
+        reader.reduce("float", max)        
         self.assertSequenceEqual(aggregate, list(reader))
         return
         
@@ -82,7 +82,7 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), ("str", "int"))        
-        reader.apply("float", max)        
+        reader.reduce("float", max)        
         self.assertSequenceEqual(aggregate, list(reader))
         return
 
@@ -110,8 +110,8 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, "str")
-        writer.apply("int", sum)
-        writer.apply("float", max)        
+        writer.reduce("int", sum)
+        writer.reduce("float", max)        
         for record in self.records:
             writer.write(record)
         writer.close()
@@ -128,7 +128,7 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, ("str", "int"))
-        writer.apply("float", max)        
+        writer.reduce("float", max)        
         for record in self.records:
             writer.write(record)
         writer.close()

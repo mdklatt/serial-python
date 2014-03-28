@@ -29,7 +29,7 @@ class _AggregateBuffer(object):
         self._aggregates = []        
         return
 
-    def apply(self, keyname, callback):
+    def reduce(self, keyname, callback):
         """ Add an aggregate function for the given field(s)
         
         The keyname argument is either a single name or sequence of names that
