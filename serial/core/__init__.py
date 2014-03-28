@@ -10,3 +10,4 @@ from .writer import *
 from .stream import *
 from .filter import *
 from .buffer import *
+from .aggregate import *

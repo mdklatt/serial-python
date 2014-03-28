@@ -34,8 +34,26 @@ class _MockWriter(object):
 # module being tested has its own TestCase.
 
 
+class ReductionFunctionTest(unittest.TestCase):
+    """ Unit testing for the reduction() function.
+    
+    """
+    def test_call(self):
+        """ Test a function call.
+        
+        """
+        records = (
+            {"str": "abc", "int": 1, "float": 1.},
+            {"str": "abc", "int": 1, "float": 2.},
+            {"str": "abc", "int": 3, "float": 3.},
+            {"str": "def", "int": 3, "float": 4.})
+        function = reduction("float", sum)
+        self.assertEqual({"float": 10}, function(records))
+        return
+        
+
 class _AggregateTest(unittest.TestCase):
-    """ Unit testing for tabular reader classes.
+    """ Base class for AggregateReader/Writer unit tests.
 
     This is an abstract class and should not be called directly by any test
     runners.
@@ -171,7 +189,7 @@ class AggregateWriterTest(_AggregateTest):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (AggregateReaderTest, AggregateWriterTest)
+_TEST_CASES = (ReductionFunctionTest, AggregateReaderTest, AggregateWriterTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
