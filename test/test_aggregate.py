@@ -73,7 +73,7 @@ class AggregateReaderTest(_AggregateTest):
         self.assertSequenceEqual(aggregate, list(reader))
         return
         
-    def test_iter_multi(self):
+    def test_iter_multikey(self):
         """ Test the iterator protocol with multi-key grouping.
         
         """
@@ -82,6 +82,20 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), ("str", "int"))        
+        reader.reduce("float", max)        
+        self.assertSequenceEqual(aggregate, list(reader))
+        return
+
+    def test_iter_keyfunc(self):
+        """ Test the iterator protocol with keyfunc grouping.
+        
+        """
+        aggregate = (
+            {"KEY": "ABC", "int": 5, "float": 3.},
+            {"KEY": "DEF", "int": 3, "float": 4.})
+        keyfunc = lambda record: (record["str"].upper(),)  # must be tuple
+        reader = AggregateReader(iter(self.records), "KEY", keyfunc)
+        reader.reduce("int", sum)
         reader.reduce("float", max)        
         self.assertSequenceEqual(aggregate, list(reader))
         return
@@ -119,7 +133,7 @@ class AggregateWriterTest(_AggregateTest):
         self.assertSequenceEqual(aggregate, self.buffer.output)
         return
 
-    def test_write_multi_key(self):
+    def test_write_multikey(self):
         """ Test the write() and close() methods with multi-key grouping.
 
         """
@@ -128,6 +142,24 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, ("str", "int"))
+        writer.reduce("float", max)        
+        for record in self.records:
+            writer.write(record)
+        writer.close()
+        writer.close()  # test that redundant calls are a no-op
+        self.assertSequenceEqual(aggregate, self.buffer.output)
+        return
+
+    def test_write_keyfunc(self):
+        """ Test the write() and close() with keyfunc grouping.
+
+        """
+        aggregate = (
+            {"KEY": "ABC", "int": 5, "float": 3.},
+            {"KEY": "DEF", "int": 3, "float": 4.})
+        keyfunc = lambda record: (record["str"].upper(),)  # must be tuple
+        writer = AggregateWriter(self.buffer, "KEY", keyfunc)
+        writer.reduce("int", sum)
         writer.reduce("float", max)        
         for record in self.records:
             writer.write(record)
