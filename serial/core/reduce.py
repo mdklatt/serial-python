@@ -9,18 +9,7 @@ from .buffer import _ReaderBuffer
 from .buffer import _WriterBuffer
 
 
-__all__ = ("reduction", "AggregateReader", "AggregateWriter")
-
-
-def reduction(key, func):
-    """ Decorate a function for use with an aggregator.
-    
-    The function should take a sequence of values and return a single result,
-    e.g. the sum() built-in. The decorated function will operate on a single 
-    field in a sequence of data records. 
-    
-    """
-    return lambda records: {key: func(map(itemgetter(key), records))}
+__all__ = ("AggregateReader", "AggregateWriter")
 
 
 class _Aggregator(object):
