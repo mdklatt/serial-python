@@ -72,7 +72,7 @@ class AggregateReaderTest(_AggregateTest):
         self.assertSequenceEqual(reduced, list(reader))
         return
         
-    def test_iter_multikey(self):
+    def test_iter_multi_key(self):
         """ Test the iterator protocol with multi-key grouping.
         
         """
@@ -85,8 +85,8 @@ class AggregateReaderTest(_AggregateTest):
         self.assertSequenceEqual(reduced, list(reader))
         return
 
-    def test_iter_keyfunc(self):
-        """ Test the iterator protocol with keyfunc grouping.
+    def test_iter_custom_key(self):
+        """ Test the iterator protocol with a custom key function.
         
         """
         reduced = (
@@ -95,6 +95,22 @@ class AggregateReaderTest(_AggregateTest):
         key = lambda record: {"KEY": record["str"].upper()}
         reader = AggregateReader(iter(self.records), key)
         reader.reduce(("int", sum), ("float", max))
+        self.assertSequenceEqual(reduced, list(reader))
+        return
+
+    def test_iter_custom_reduce(self):
+        """ Test the iterator protocol with a custom reduction function.
+        
+        """
+        def custom_reduce(records):
+            """ Custom reduction function. """
+            return {"max": max(record["float"] for record in records)}
+        
+        reduced = (
+            {"str": "abc", "int": 5, "max": 3.},
+            {"str": "def", "int": 3, "max": 4.})
+        reader = AggregateReader(iter(self.records), "str")
+        reader.reduce(("int", sum), custom_reduce)
         self.assertSequenceEqual(reduced, list(reader))
         return
 
@@ -130,7 +146,7 @@ class AggregateWriterTest(_AggregateTest):
         self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
-    def test_write_multikey(self):
+    def test_write_multi_key(self):
         """ Test the write() and close() methods with a multi-field key.
 
         """
@@ -140,15 +156,12 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, ("str", "int"))
         writer.reduce(("float", max))        
-        for record in self.records:
-            writer.write(record)
-        writer.close()
-        writer.close()  # test that redundant calls are a no-op
+        writer.dump(self.records)
         self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
-    def test_write_keyfunc(self):
-        """ Test the write() and close() with a key function.
+    def test_write_custom_key(self):
+        """ Test the write() and close() with a custom key function.
 
         """
         reduced = (
@@ -157,10 +170,24 @@ class AggregateWriterTest(_AggregateTest):
         key = lambda record: {"KEY": record["str"].upper()}
         writer = AggregateWriter(self.buffer, key)
         writer.reduce(("int", sum), ("float", max))
-        for record in self.records:
-            writer.write(record)
-        writer.close()
-        writer.close()  # test that redundant calls are a no-op
+        writer.dump(self.records)
+        self.assertSequenceEqual(reduced, self.buffer.output)
+        return
+
+    def test_iter_custom_reduce(self):
+        """ Test the iterator protocol with a custom reduction function.
+        
+        """
+        def custom_reduce(records):
+            """ Custom reduction function. """
+            return {"max": max(record["float"] for record in records)}
+        
+        reduced = (
+            {"str": "abc", "int": 5, "max": 3.},
+            {"str": "def", "int": 3, "max": 4.})
+        writer = AggregateWriter(self.buffer, "str")
+        writer.reduce(("int", sum), custom_reduce)
+        writer.dump(self.records)
         self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
