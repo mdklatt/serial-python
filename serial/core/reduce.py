@@ -3,6 +3,7 @@
 """
 from __future__ import absolute_import
 
+from itertools import izip
 from operator import itemgetter
 
 from .buffer import _ReaderBuffer
@@ -20,25 +21,33 @@ class _Aggregator(object):
     presumed to be sorted such that all records in a group are contiguous.
     
     """
-    def __init__(self, keyname, keyfunc=None):
-        """ Initilize this object.
+    def __init__(self, key):
+        """ Initialize this object.
         
-        The keyname is the field name or sequence of names that define the
-        key fields for the grouped data. The keyfunc is used to calculate a key
-        value for each record. It must return a tuple of values corresponding
-        to each key field. Key fields do not have to be existing fields in the
-        data; define keyname and keyfunc to give the desired key field values.
+        The key argument is either a single field name, a sequence of names,
+        or a key function. A key function must return a dict-like object
+        specifying the name and value for each key field. Key functions are 
+        free to create key fields that are not in the incoming data. 
         
-        The default keyfunc is an identity function for the given keyname
-        fields. In this case, these fields must be in the incoming data.
-        
+        Because the key function is called for every record, optimization is 
+        (probably) worthwile. For multiple key fields, passing in a hard-coded 
+        key function instead of relying on the automatically-generated function 
+        may be give better performance, e.g. 
+            
+            lambda record: {"key1": record["key1"], ...}
+                
         """
-        if isinstance(keyname, basestring):
-            keyname = (keyname,)
-        if not keyfunc:
-            keyfunc = lambda record: tuple(record[key] for key in keyname)
-        self._keyname = tuple(keyname)
-        self._keyfunc = keyfunc
+        if not callable(key):
+            if isinstance(key, basestring):
+                # Define a single-value key function. The key=key trick is to
+                # force static binding.
+                key = lambda record, key=key: {key: record[key]}
+            else:
+                # Define a key function for multiple fields. The key=key trick
+                # is to force static binding.
+                key = lambda record, key=key: dict((name, record[name]) 
+                                                   for name in key)
+        self._keyfunc = key
         self._keyval = None
         self._buffer = []
         self._reductions = []        
@@ -98,7 +107,7 @@ class _Aggregator(object):
         """
         if not self._buffer:
             return
-        record = dict(zip(self._keyname, self._keyval))
+        record = self._keyval
         for callback in self._reductions:
             # If multiple callbacks return the same field values, the latter
             # value will overwrite the existing value.
@@ -123,17 +132,17 @@ class _Aggregator(object):
             return {name: func(map(itemgetter(name), records))}
             
         return wrapper
-        
+                
 
 class AggregateReader(_Aggregator, _ReaderBuffer):
     """ Apply aggregate functions to input from another reader.
     
     """
-    def __init__(self, reader, keyname, keyfunc=None):
-        """ Initilize this object.
+    def __init__(self, reader, key):
+        """ Initialize this object.
         
         """
-        _Aggregator.__init__(self, keyname, keyfunc)
+        _Aggregator.__init__(self, key)
         _ReaderBuffer.__init__(self, reader)
         return
 
@@ -156,10 +165,10 @@ class AggregateWriter(_Aggregator, _WriterBuffer):
     """ Apply aggregate functions to output for another writer.
     
     """
-    def __init__(self, writer, keyname, keyfunc=None):
-        """ Initilize this object.
+    def __init__(self, writer, key):
+        """ Initialize this object.
         
         """
-        _Aggregator.__init__(self, keyname, keyfunc)
+        _Aggregator.__init__(self, key)
         _WriterBuffer.__init__(self, writer)
         return
