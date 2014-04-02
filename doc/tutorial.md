@@ -334,7 +334,7 @@ to least.
     # Or, filters can be added individually. Calling filter() with no
     # arguments clears all filters.
 
-## Predefined Filters
+## Predefined Filters ##
 
 The library defines the `FieldFilter` class for use with Readers and Writers.
 
@@ -443,101 +443,83 @@ access them directly using the `_class_filters` attribute.
 # Buffers #
 
 Like filters, Buffers allow for postprocessing of input records from a Reader
-or preprocessing of output records to a Writer. However, Buffers can operate 
+or preprocessing of output records for a Writer. However, Buffers can operate 
 on more than one record at a time. Buffers can be used, for example, to split
-or merge records before passing them on. Like Readers and Writers, Buffers
-support filtering; records are filtered after they have passed through the 
-Buffer.
+or merge records before passing them on. Because Buffers are Readers or 
+Writers themselves they can be chained, and they implement the filter
+interface. 
 
-## Input Buffering ##
+## Aggregate Input ##
 
-An input Buffer is basically a Reader that reads records from another Reader 
-(including another input Buffer) instead of lines of text from a stream. An 
-input Buffer should derive from the `_ReaderBuffer` base class. It must 
-implement a `_queue()` method to process each incoming record, and it may 
-override the `_uflow()` method to supply records once the input Reader has been
-exhausted.
+Data aggregation refers to grouping data records and then applying reductions 
+(e.g. sum or mean) to the grouped data. An `AggregateReader` is a Buffer that
+can be used to aggregate data from another Reader. Aggregation relies on a key 
+function. Incoming records with the same key value are grouped together 
+(records are assumed to be sorted such that all records in the same group are
+contiguous), then one or more reduction functions are applied to each 
+group of records to yield a single aggregate record consisting of the key
+values and the reduced values.
 
-    from serial.core.buffer import _ReaderBuffer
-    
-    class MonthlyTotal(_ReaderBuffer):
-        """ Combine daily input into monthly records. """
-        
-        def __init__(self, reader):
-            super(MonthlTotal, self).__init__(writer)
-            self._buffer = None
-            return
-        
-        def _queue(self, record):
-            # Convert incoming daily records to monthly records. The incoming
-            # data is assumed to be sorted in chronological order.
-            month = record["date"].replace(day=1)
-            if self._buffer and self._buffer["date"] == month:
-                # Add this record to the current month.
-                self._buffer["value"] += record["value"]
-            else:
-                # Output the previous month and start a new month.
-                self._output.append(self._buffer)  # FIFO queue
-                self._buffer = record
-                self._buffer["date"] = month
-            return
-                
-        def _uflow(self, record):
-            # Handle an underflow condition if the output queue is empty and
-            # the input reader has been exhausted. No more records are coming,
-            # so finish the current month.
-            if self._buffer:
-                self._output.append(self._buffer)  # FIFO queue
-                self._buffer = None  # next call will trigger EOF
-            else:
-                # This function *must* raise StopIteration on EOF. 
-                raise StopIteration 
-            return
-            
-        ...
-        
-        monthly_records = list(MonthlyTotal(reader))
- 
-## Output Buffering ##
+A key can be a single field name, a sequence of names, or a function. In the
+first two cases a key function will be automatically generated. A key function
+takes a single record as its argument and returns the values of one or more key
+fields as a dict-like object. A custom key function is free to create key 
+fields that are not in the incoming data. 
 
-An output Buffer is basically a Writer that writes records to another Writer
-(including another output Buffer) instead of lines of text to a stream. An 
-output buffer should derive from the `_WriterBuffer` base class. It must 
-implement a `_queue()` method to process records being written to it, and it 
-may override the `_flush()` method to finalize processing.
-            
-    from serial.core.buffer import _WriterBuffer
+A reduction function takes a sequence of records as an argument and returns
+a dict-like object of reduced values. Use a (name, func) pair to automatically 
+generate a reduction that will apply the given function to a single field. The
+input function should take a sequence of values as an argument and return a 
+single value, e.g. the built-in function `sum()`. Custom reduction functions
+are free to create reduction fields that are not in the incoming data.
 
-    class DataExpander(_WriterBuffer):
-        """ Output individual elements of an array field. """
+Reductions are chained in the order they are added to the Reader, and the 
+results are merged with the key fields to create a single aggregate record. If
+more than one reduction returns the same field name the latter value will 
+overwrite the existing value. Fields in the input data that do not have a 
+reduction defined for them will not be in the aggregate record. 
 
-        # In addition to the normal Writer interface, the base class defines
-        # the close() method to be called by the client code to signal that no 
-        # more records will be written. If multiple buffers are chained 
-        # together their close() methods must be called in the correct order 
-        # (outermost buffer first).
-
-        def __init__(self, writer):
-            super(DataExpander, self).__init__(writer)
-            return
-
-        def _queue(self, record):
-            # Process each outging record.
-            for item in record["data"]:
-                # Create an output record for each item in the array field.
-                item = item.copy()  # output should be free of side effects
-                item["stid"] = record["stid"]
-                item["timestamp"] = record["timestamp"]
-                self._output.append(item)  # FIFO queue
-            return
-            
-        # _WriterBuffer has a _flush() method that can be overridden to 
-        # finalize output; is is called when close() is called on the buffer. 
-        # For this example, _flush() does not need to do anything.
-
+    from serial.core import AggregateReader
+  
     ...
     
-    DataExpander(writer).dump(reader)  # dump() calls close()
+    # Aggregate input by site. Data should be sorted by site identifer. Each
+    # aggregate record will have the sum of all "data" values for a given site.
+    aggregator = AggregateReader(reader, "stid")  # auto-generated key function
+    aggregator.reduce(("data", sum))  # auto-generated reduction
+    aggregated = list(aggregator)
+
+## Aggregate Output ##
+
+An `AggregateWriter` writes data to another Writer, but otherwise functions
+like an `AggregateReader`. The `close()` method must be called to ensure that
+all records get written to the destination writer.
+
+    from serial.core import AggregateWriter
+    
+    ...
+    
+    # Write monthly records by site. The records being written should be sorted
+    # by date and site identifier. Each aggregate record will have the mean of
+    # all "data" values for a given site and month.
+ 
+    def key(record):
+        """ Group by site and month. """
+        month = record["timestamp"].date().replace(days=1)
+        return {"month": month, stid: record["stid"]}
+    
+    def mean(records):
+        """ Calculate the mean value of the 'data' field. """
+        data = map(itemgetter("data"), records)
+        try:
+            value = sum(data) / len(data)
+        except ZeroDivisionError:
+            value = None
+        return {"mean": value}
+    
+    aggregator = AggregateWriter(writer, key)
+    aggregator.reduce(mean)
+    aggregator.dump(records)  # dump() calls close()
 
   
 # Stream Adaptors #
@@ -587,8 +569,8 @@ record. The library includes the `SliceFilter` and `RegexFilter` text filters.
 
 ## Quoted Strings ##
 
-The `StringField` data type can read and write quoted strings by initializing it
-with the quote character to use.
+A `StringField` can read and write quoted strings by initializing it with the
+quote character to use.
 
     StringField(quote='"')  # double-quoted string
 
