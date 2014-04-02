@@ -86,7 +86,7 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), "str")
-        reader.reduce(reduction("int", sum), reduction("float", max))
+        reader.reduce(("int", sum), ("float", max))
         self.assertSequenceEqual(reduced, list(reader))
         return
         
@@ -99,7 +99,7 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), ("str", "int"))        
-        reader.reduce(reduction("float", max))        
+        reader.reduce(("float", max))        
         self.assertSequenceEqual(reduced, list(reader))
         return
 
@@ -112,7 +112,7 @@ class AggregateReaderTest(_AggregateTest):
             {"KEY": "DEF", "int": 3, "float": 4.})
         keyfunc = lambda record: (record["str"].upper(),)  # must be tuple
         reader = AggregateReader(iter(self.records), "KEY", keyfunc)
-        reader.reduce(reduction("int", sum), reduction("float", max))
+        reader.reduce(("int", sum), ("float", max))
         self.assertSequenceEqual(reduced, list(reader))
         return
 
@@ -140,7 +140,7 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, "str")
-        writer.reduce(reduction("int", sum), reduction("float", max))
+        writer.reduce(("int", sum), ("float", max))
         for record in self.records:
             writer.write(record)
         writer.close()
@@ -157,7 +157,7 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, ("str", "int"))
-        writer.reduce(reduction("float", max))        
+        writer.reduce(("float", max))        
         for record in self.records:
             writer.write(record)
         writer.close()
@@ -174,7 +174,7 @@ class AggregateWriterTest(_AggregateTest):
             {"KEY": "DEF", "int": 3, "float": 4.})
         keyfunc = lambda record: (record["str"].upper(),)  # must be tuple
         writer = AggregateWriter(self.buffer, "KEY", keyfunc)
-        writer.reduce(reduction("int", sum), reduction("float", max))
+        writer.reduce(("int", sum), ("float", max))
         for record in self.records:
             writer.write(record)
         writer.close()

@@ -59,20 +59,36 @@ class _Aggregator(object):
         """ Add reductions to this object or clear all reductions (default).
         
         A reduction is an callable object that takes a sequence of records and
-        aggregates them into a single dict-like result. Reductions are applied
-        in order to each sequence of grouped records and merged into a single
-        record for each group. This record will also contain the key fields.
-        Using reductions, it's possible to remove existing fields in the 
-        incoming data and create new fields.
+        aggregates them into a single dict-like result keyed by field name.
+        A reduction can return one or more fields. Reduction fields do not have
+        to match the incoming records. A reduction function is free to create
+        new fields, and, conversely, incoming fields that do not have a
+        reduction will not be in the aggregated data.
         
-        The reduction() function can be used to generate reductions from
-        primitive functions like the sum() built-in.
+        Reductions are applied in order to each group of records in the input
+        sequence, and the results are merged to create one record per group.
+        If multiple reductions return a field with the same name, the latter
+        value will overwrite the existing value.
+        
+        A reduction can be specifed as a (field, func) pair instead of a
+        callback. In this case, a reduction function will be generated that
+        applies the function to the given field and returns a value with the
+        same field name. This is intended for use with functions like sum(),
+        max(), etc.
         
         """
         if not callbacks:
             self._reductions = []
-        else:
-            self._reductions.extend(callbacks)
+            return
+        for callback in callbacks:
+            try:
+                # Generate a reduction for the given field and function. 
+                key, func = callback
+                callback = self._make_reduction(key, func)
+            except TypeError:
+                # Not iterable, assume this is a callback.
+                pass
+            self._reductions.append(callback)
         return
         
     def _queue(self, record):
@@ -101,7 +117,24 @@ class _Aggregator(object):
         self._output.append(record)
         self._buffer = []
         return
-
+        
+    @classmethod
+    def _make_reduction(cls, name, func):
+        """ Wrap a function for use with reduce().
+    
+        The function should take a sequence of values and return a single 
+        result, e.g. the sum() built-in. The reusulting function will operate 
+        on a single field in a sequence of data records. By default the 
+        reduction field will have the same name as the input field, or specify
+        a different value for 'field'.
+    
+        """
+        def wrapper(records):
+            """ Apply the function to the given field. """
+            return {name: func(map(itemgetter(name), records))}
+            
+        return wrapper
+        
 
 class AggregateReader(_Aggregator, _ReaderBuffer):
     """ Apply aggregate functions to input from another reader.
