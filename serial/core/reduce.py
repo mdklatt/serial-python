@@ -3,7 +3,6 @@
 """
 from __future__ import absolute_import
 
-from itertools import izip
 from operator import itemgetter
 
 from .buffer import _ReaderBuffer
@@ -39,14 +38,13 @@ class _Aggregator(object):
         """
         if not callable(key):
             if isinstance(key, basestring):
-                # Define a single-value key function. The key=key trick is to
-                # force static binding.
-                key = lambda record, key=key: {key: record[key]}
+                # Define a single-value key function.
+                name = key  # force static binding
+                key = lambda record: {name: record[name]}
             else:
-                # Define a key function for multiple fields. The key=key trick
-                # is to force static binding.
-                key = lambda record, key=key: dict((name, record[name]) 
-                                                   for name in key)
+                # Define a key function for multiple fields.
+                names = key  # force static binding
+                key = lambda record: dict((key, record[key]) for key in names)
         self._keyfunc = key
         self._keyval = None
         self._buffer = []
