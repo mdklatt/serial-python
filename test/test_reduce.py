@@ -77,7 +77,8 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), "str")
-        reader.reduce(("int", sum), ("float", max))
+        reader.reduce(AggregateReader.reduction(sum, "int"),
+                      AggregateReader.reduction(max, "float"))
         self.assertSequenceEqual(reduced, list(reader))
         return
         
@@ -90,7 +91,7 @@ class AggregateReaderTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         reader = AggregateReader(iter(self.records), ("str", "int"))        
-        reader.reduce(("float", max))        
+        reader.reduce(AggregateReader.reduction(max, "float"))        
         self.assertSequenceEqual(reduced, list(reader))
         return
 
@@ -103,23 +104,8 @@ class AggregateReaderTest(_AggregateTest):
             {"KEY": "DEF", "int": 3, "float": 4.})
         key = lambda record: {"KEY": record["str"].upper()}
         reader = AggregateReader(iter(self.records), key)
-        reader.reduce(("int", sum), ("float", max))
-        self.assertSequenceEqual(reduced, list(reader))
-        return
-
-    def test_iter_custom_reduce(self):
-        """ Test the iterator protocol with a custom reduction function.
-        
-        """
-        def custom_reduce(records):
-            """ Custom reduction function. """
-            return {"max": max(record["float"] for record in records)}
-        
-        reduced = (
-            {"str": "abc", "int": 5, "max": 3.},
-            {"str": "def", "int": 3, "max": 4.})
-        reader = AggregateReader(iter(self.records), "str")
-        reader.reduce(("int", sum), custom_reduce)
+        reader.reduce(AggregateReader.reduction(sum, "int"))
+        reader.reduce(AggregateReader.reduction(max, "float"))
         self.assertSequenceEqual(reduced, list(reader))
         return
         
@@ -156,7 +142,8 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, "str")
-        writer.reduce(("int", sum), ("float", max))
+        writer.reduce(AggregateWriter.reduction(sum, "int"),
+                      AggregateWriter.reduction(max, "float"))
         for record in self.records:
             writer.write(record)
         writer.close()
@@ -173,7 +160,7 @@ class AggregateWriterTest(_AggregateTest):
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
         writer = AggregateWriter(self.buffer, ("str", "int"))
-        writer.reduce(("float", max))        
+        writer.reduce(AggregateWriter.reduction(max, "float"))
         writer.dump(self.records)
         self.assertSequenceEqual(reduced, self.buffer.output)
         return
@@ -187,24 +174,8 @@ class AggregateWriterTest(_AggregateTest):
             {"KEY": "DEF", "int": 3, "float": 4.})
         key = lambda record: {"KEY": record["str"].upper()}
         writer = AggregateWriter(self.buffer, key)
-        writer.reduce(("int", sum), ("float", max))
-        writer.dump(self.records)
-        self.assertSequenceEqual(reduced, self.buffer.output)
-        return
-
-    def test_write_custom_reduce(self):
-        """ Test the iterator protocol with a custom reduction function.
-        
-        """
-        def custom_reduce(records):
-            """ Custom reduction function. """
-            return {"max": max(record["float"] for record in records)}
-        
-        reduced = (
-            {"str": "abc", "int": 5, "max": 3.},
-            {"str": "def", "int": 3, "max": 4.})
-        writer = AggregateWriter(self.buffer, "str")
-        writer.reduce(("int", sum), custom_reduce)
+        writer.reduce(AggregateWriter.reduction(sum, "int"))
+        writer.reduce(AggregateWriter.reduction(max, "float"))
         writer.dump(self.records)
         self.assertSequenceEqual(reduced, self.buffer.output)
         return
