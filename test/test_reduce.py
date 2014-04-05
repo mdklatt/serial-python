@@ -60,6 +60,15 @@ class AggregateReaderTest(_AggregateTest):
     """ Unit testing for tabular reader classes.
 
     """
+    def test_reduction(self):
+        """ Test the reduction() class method.
+        
+        """
+        add = lambda args: sum(a + b for a, b in args)
+        reduction = AggregateReader.reduction(add, ("int", "float"), "sum")
+        self.assertEqual({"sum": 18}, reduction(self.records))
+        return
+
     def test_iter(self):
         """ Test the iterator protocol.
 
@@ -113,7 +122,7 @@ class AggregateReaderTest(_AggregateTest):
         reader.reduce(("int", sum), custom_reduce)
         self.assertSequenceEqual(reduced, list(reader))
         return
-
+        
 
 class AggregateWriterTest(_AggregateTest):
     """ Unit testing for tabular writer classes.
@@ -128,6 +137,15 @@ class AggregateWriterTest(_AggregateTest):
         """
         super(AggregateWriterTest, self).setUp()
         self.buffer = _MockWriter()  
+        return
+
+    def test_reduction(self):
+        """ Test the reduction() class method.
+        
+        """
+        add = lambda args: sum(a + b for a, b in args)
+        reduction = AggregateWriter.reduction(add, ("int", "float"), "sum")
+        self.assertEqual({"sum": 18}, reduction(self.records))
         return
 
     def test_write(self):
@@ -174,7 +192,7 @@ class AggregateWriterTest(_AggregateTest):
         self.assertSequenceEqual(reduced, self.buffer.output)
         return
 
-    def test_iter_custom_reduce(self):
+    def test_write_custom_reduce(self):
         """ Test the iterator protocol with a custom reduction function.
         
         """

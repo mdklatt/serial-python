@@ -20,6 +20,32 @@ class _Aggregator(object):
     presumed to be sorted such that all records in a group are contiguous.
     
     """
+    @classmethod
+    def reduction(cls, callback, field, alias=None):
+        """ Create a reduction function from a callback.
+        
+        The callback should take a sequence of values as its argument and
+        return a value, e.g. the built-in function sum(). The field argument
+        specifies which values to pass to the callback from the sequence of
+        records being reduced. This is either a single name or sequence of
+        names. In the latter case, arguments are passed to the callback as
+        a sequence of tuples. By default the reduction field is named after the
+        input field, or specify an alias.
+        
+        """
+        def wrapper(records):
+            """ Execute the callback as a reduction function.
+            
+            """
+            return {alias: callback(map(get, records))}
+            
+        if isinstance(field, basestring):
+            field = field,
+        get = itemgetter(*field)
+        if not alias:
+            alias = field
+        return wrapper
+            
     def __init__(self, key):
         """ Initialize this object.
         
