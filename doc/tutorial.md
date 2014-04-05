@@ -467,11 +467,10 @@ fields as a dict-like object. A custom key function is free to create key
 fields that are not in the incoming data. 
 
 A reduction function takes a sequence of records as an argument and returns
-a dict-like object of reduced values. Use a (name, func) pair to automatically 
-generate a reduction that will apply the given function to a single field. The
-input function should take a sequence of values as an argument and return a 
-single value, e.g. the built-in function `sum()`. Custom reduction functions
-are free to create reduction fields that are not in the incoming data.
+a dict-like object of reduced values. The `reduction()` class method can be
+used to create a reduction function from basic functions like the `sum()`
+built-in. Reduction functions are free to create reduction fields that are not 
+in the incoming data.
 
 Reductions are chained in the order they are added to the Reader, and the 
 results are merged with the key fields to create a single aggregate record. If
@@ -485,9 +484,9 @@ reduction defined for them will not be in the aggregate record.
     
     # Aggregate input by site. Data should be sorted by site identifer. Each
     # aggregate record will have the sum of all "data" values for a given site.
-    aggregator = AggregateReader(reader, "stid")  # auto-generated key function
-    aggregator.reduce(("data", sum))  # auto-generated reduction
-    aggregated = list(aggregator)
+    reader = AggregateReader(reader, "stid")  # auto-generated key function
+    reader.reduce(AggregateReader.reduction(sum, "data"))
+    aggregate_records = list(reader)
 
 ## Aggregate Output ##
 
@@ -561,7 +560,7 @@ record. The library includes the `SliceFilter` and `RegexFilter` text filters.
     stream = FilteredIStream(open("data.txt", "r")) 
     stream.filter(lambda line: None if line.startswith("#") else line)
     stream.filter(SliceFilter((21, 25), ("PRCP",)))
-    with DelimitedReader.open(stream, fields, ",") as reader:
+    with FixedWidthReader.open(stream, fields) as reader:
         records = list(reader)
 
   
