@@ -162,7 +162,7 @@ class DelimitedWriter(_TabularWriter):
     def __init__(self, stream, fields, delim, esc=None, endl="\n"):
         """ Initialize this object.
 
-        To make the output compatible with a DataReader, any nonsignificant
+        To make the output compatible with a DataReader, any non-significant
         delimiters need to be escaped. Use the esc argument to specify an
         escape value if necessary.
                 

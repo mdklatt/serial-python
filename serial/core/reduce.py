@@ -56,7 +56,7 @@ class _Aggregate(object):
         free to create key fields that are not in the incoming data. 
         
         Because the key function is called for every record, optimization is 
-        (probably) worthwile. For multiple key fields, passing in a hard-coded 
+        (probably) worthwhile. For multiple key fields, passing in a hard-coded 
         key function instead of relying on the automatically-generated function 
         may be give better performance, e.g. 
             

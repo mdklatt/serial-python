@@ -482,7 +482,7 @@ reduction defined for them will not be in the aggregate record.
   
     ...
     
-    # Aggregate input by site. Data should be sorted by site identifer. Each
+    # Aggregate input by site. Data should be sorted by site identifier. Each
     # aggregate record will have the sum of all "data" values for a given site.
     reader = AggregateReader(reader, "stid")  # auto-generated key function
     reader.reduce(AggregateReader.reduction(sum, "data"))
@@ -516,9 +516,9 @@ all records get written to the destination writer.
             value = None
         return {"mean": value}
     
-    aggregator = AggregateWriter(writer, key)
-    aggregator.reduce(mean)
-    aggregator.dump(records)  # dump() calls close()
+    writer = AggregateWriter(writer, key)
+    writer.reduce(mean)
+    writer.dump(records)  # dump() calls close()
 
   
 # Stream Adaptors #
@@ -579,7 +579,7 @@ Quoting for a `DatetimeField` is controlled by its format string:
 
 ## Escaped Delimiters ##
 
-Nonsignificant delimiter values need to be escaped when reading data with a
+Non-significant delimiter values need to be escaped when reading data with a
 `DelimitedReader`. If the `esc` argument is defined when initializing the 
 reader, a delimiter value immediately following the escape value is ignored
 when splitting the line into fields. If output written with a `DelimitedWriter` 
@@ -590,7 +590,7 @@ argument when initializing the writer.
     writer = DelimitedWriter(stream, fields, delim=",", esc="\\")
     reader = DelimitedReader(stream, fields, delim=",", esc="\\")
 
-## Nonstandard Line Endings ##
+## Non-Standard Line Endings ##
 
 By default, lines of text are assumed to end with the platform-specific line
 ending, i.e. "\n". Readers expect that ending on each line of text from their
