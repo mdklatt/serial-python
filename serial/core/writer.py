@@ -17,7 +17,7 @@ class _Writer(object):
     """ Abstract base class for all serial data writers.
 
     Serial data consists of sequential records. A _Writer provides an interface
-    interface for writing serial data and allows for postprocessing of the data
+    interface for writing serial data and allows for preprocessing of the data
     using filters.
 
     """
@@ -38,9 +38,10 @@ class _Writer(object):
     def filter(self, *callbacks):
         """ Add filters to this writer or clear all filters (default).
 
-        A filter is a callable object that accepts a data record as its only
-        argument. Based on this record the filter can perform the following
-        actions:
+        Filters are applied in order to each record before it is finally
+        written. A filter is a callable object that accepts a data record as
+        its only argument. Based on this record the filter can perform the 
+        following actions:
         1. Return None to reject the record (it will not be written).
         2. Return the data record as is.
         3. Return a *new record.

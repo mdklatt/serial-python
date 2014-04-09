@@ -19,8 +19,7 @@ class _Reader(object):
     """ Abstract base class for all serial data readers.
 
     Serial data consists of sequential records. A _Reader provides an iterator
-    interface for reading serial data and allows for preprocessing of the data
-    using filters.
+    interface for reading serial data and implements data filtering.
 
     """
     def __init__(self):
@@ -40,8 +39,9 @@ class _Reader(object):
     def filter(self, *callbacks):
         """ Add filters to this reader or clear all filters (default).
 
-        A filter is a callable object that accepts a data record as its only
-        argument. Based on this record the filter can perform the following
+        Filters are applied in order to each record after is has been read. A 
+        filter is a callable object that accepts a data record as its only 
+        argument. Based on this record the filter can perform the following 
         actions:
         1. Return None to reject the record (the iterator will drop it).
         2. Return the data record as is.
