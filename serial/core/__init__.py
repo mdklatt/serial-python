@@ -11,3 +11,4 @@ from .stream import *
 from .filter import *
 from .buffer import *
 from .reduce import *
+from .sort import * 
