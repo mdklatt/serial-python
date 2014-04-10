@@ -13,13 +13,15 @@ from ._util import TimeFormat
 
 
 __all__ = ("ConstField", "IntField", "FloatField", "StringField", 
-           "DatetimeField", "ArrayField")
+           "DatetimeField", "RecordField", "ArrayField")
 
 
 class _ScalarField(object):
-    """ Base class for scalar field types.
+    """ Base class for scalar field types. 
 
     """
+    # _ScalarFields are mapped to exactly one input/output token.
+    
     def __init__(self, name, pos):
         """ Initialize this object.
 
@@ -246,6 +248,8 @@ class ArrayField(object):
     """ An array of composite field elements.
 
     """
+    # An ArrayField is mapped to 0 or more input/output tokens.
+    
     def __init__(self, name, pos, fields, default=None):
         """ Initialize this object.
 
@@ -300,3 +304,44 @@ class ArrayField(object):
         values = values or self._default or []
         return [field.encode(elem.get(field.name)) for elem, field in
                 product(values, self._fields)]
+
+                
+class RecordField(ArrayField):
+    """ A composite field. 
+
+    A RecordField is equivalent to the first element of an ArrayField with
+    exactly one element, e.g. array_field[0]. 
+
+    """
+    # From an implementation perspective a RecordField *is* an ArrayField, but
+    # semantically inheritance is a little murkier. For now, convenience
+    # prevails.
+        
+    def __init__(self, name, pos, fields, default=None):
+        """ Initialize this object.
+
+        """
+        if default is None:
+            default = dict((field.name, field.decode("")) for field in fields)
+        super(RecordField, self).__init__(name, pos, fields, [default])
+        return
+
+    def decode(self, tokens):
+        """ Convert a sequence of string of tokens to a dict.
+
+        This works for sequences of strings (e.g. from DelimitedReader) or a 
+        string as a sequence (e.g. from FixedWidthReader). Each dict element
+        corresponds to a component of this field.
+        
+        """
+        return super(RecordField, self).decode(tokens)[0]
+
+    def encode(self, value):
+        """ Convert a Python dict to a list of string tokens.
+
+        If the value is None or an empty dict the default field value is used
+        (None is encoded as an empty list). 
+
+        """
+        values = [value] if value else self._default
+        return super(RecordField, self).encode(values)

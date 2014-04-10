@@ -4,6 +4,7 @@ The module can be executed on its own or incorporated into a larger test suite.
 
 """
 from datetime import datetime
+from itertools import izip
 
 import _path
 import _unittest as unittest
@@ -215,8 +216,8 @@ class DatetimeFieldTest(_FieldTest):
         self.default_field = DatetimeField(self.name, self.pos, fmt, 3, 
                                            self.default_value)
         return
-
-
+    
+    
 class ArrayFieldTest(_FieldTest):
     """ Unit testing for the ArrayField class.
 
@@ -270,10 +271,51 @@ class ArrayFieldTest(_FieldTest):
         return
 
 
+class RecordFieldTest(ArrayFieldTest):
+    """ Unit testing for the RecordField class.
+    
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        self.fields = (
+            StringField("str", 0, default="xyz"), 
+            IntField("int", 1, default=-999))
+        self.name = "record"
+        self.pos = 1, 3 
+        self.width = 2
+        self.value = {"str": "abc", "int": 123}
+        self.token = ["abc", "123"]
+        self.field = RecordField(self.name, self.pos, self.fields)
+        self.default_value = {"str": "xyz", "int": -999}
+        self.default_token = ["xyz", "-999"]
+        self.default_field = RecordField(self.name, self.pos, self.fields, 
+                                         self.default_value)
+        return
+
+    def test_decode_null(self):
+        """ Test the decode() method for null input.
+    
+        """
+        self.assertEqual(self.default_value, self.field.decode([]))
+        return
+    
+    def test_encode_null(self):
+        """ Test the encode() method for null output.
+    
+        """
+        self.assertEqual(self.default_token, self.field.encode([]))
+        return
+
+
 # Specify the test cases to run for this module (disables automatic discovery).
 
 _TEST_CASES = (ConstFieldTest, IntFieldTest, FloatFieldTest, StringFieldTest,
-               DatetimeFieldTest, ArrayFieldTest)
+               DatetimeFieldTest, RecordFieldTest, ArrayFieldTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
