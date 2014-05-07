@@ -5,7 +5,7 @@ from __future__ import absolute_import
 
 from re import compile
 
-__all__ = ("FieldFilter", "RegexFilter", "SliceFilter")
+__all__ = ("FieldFilter", "RangeFilter", "RegexFilter", "SliceFilter")
 
 
 class FieldFilter(object):
@@ -39,6 +39,39 @@ class FieldFilter(object):
             # doesn't have a prohibited field value.
             valid = not self._whitelist
         return record if valid else None
+
+
+class RangeFilter(object):
+    """ Filter records by a range.
+    
+    This is intended for use with a Reader or Writer via their filter() method.
+    
+    """
+    def __init__(self, field, min=None, max=None, whitelist=True):
+        """ Initialize this object.
+        
+        By default, records whose 'field' value is within the range [min, max)
+        are passed through and all other records are dropped (whitelisting). If
+        whitelist is False this is reversed (blacklisting). If 'min' or 'max'
+        is None that end of the range is considered to be unlimited. If both
+        are None, the filter will pass all records if whitelist is True and
+        drop all records if it's False.
+                
+        """
+        self._field = field
+        self._min = min
+        self._max = max
+        self._whitelist = whitelist
+        return
+        
+    def __call__(self, record):
+        """ Execute the filter.
+        
+        """
+        value = record[self._field]
+        match = ((self._min is None or self._min <= value) and
+                 (self._max is None or value < self._max))
+        return record if match == self._whitelist else None
 
 
 class RegexFilter(object):

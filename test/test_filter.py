@@ -6,13 +6,11 @@ The module can be executed on its own or incorporated into a larger test suite.
 import _path
 import _unittest as unittest
 
-from serial.core import FieldFilter
-from serial.core import RegexFilter
-from serial.core import SliceFilter
+from serial.core.filter import *  # tests __all__
+
 
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
-
 
 class _FilterTest(unittest.TestCase):
     """ Unit testing for filter classes.
@@ -75,6 +73,43 @@ class FieldFilterTest(_FilterTest):
         return
 
                
+class RangeFilterTest(_FilterTest):
+    """ Unit testing for the RangeFilter class.
+
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        # Filters need to match the first two lines.
+        values = (1, 2, 3)
+        self.whitelist = RangeFilter("test", 1, 3)
+        self.blacklist = RangeFilter("test", 1, 3, False)
+        self.data = [{"test": value} for value in values]
+        return
+
+    def test_no_max(self):
+        """ Test the __call__ method with no upper limit.
+        
+        """
+        self.whitelist = RangeFilter("test", 2)
+        filtered = [None] + self.data[1:]
+        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
+        return
+
+    def test_no_min(self):
+        """ Test the __call__ method with no lower limit.
+        
+        """
+        self.whitelist = RangeFilter("test", max=3)
+        filtered = self.data[:2] + [None]
+        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
+        return
+
+
 class RegexFilterTest(_FilterTest):
     """ Unit testing for the RegexFilter class.
 
@@ -116,7 +151,8 @@ class SliceFilterTest(_FilterTest):
         
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (FieldFilterTest, RegexFilterTest, SliceFilterTest)
+_TEST_CASES = (FieldFilterTest, RangeFilterTest, RegexFilterTest, 
+               SliceFilterTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
