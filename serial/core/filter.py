@@ -32,13 +32,13 @@ class FieldFilter(object):
         
         """
         try:
-            valid = (record[self._field] in self._values) == self._whitelist
+            match = record[self._field] in self._values
         except KeyError:  # no such field
             # The record is invalid for whitelisting because it doesn't have
             # the required field value; for blacklisting it's valid because it
             # doesn't have a prohibited field value.
-            valid = not self._whitelist
-        return record if valid else None
+            match = False
+        return record if match == self._whitelist else None
 
 
 class RangeFilter(object):
@@ -96,8 +96,8 @@ class RegexFilter(object):
         """ Execute the filter.
         
         """
-        valid = (self._regex.search(line) is not None) == self._whitelist
-        return line if valid else None
+        match = self._regex.search(line) is not None
+        return line if match == self._whitelist else None
 
 
 class SliceFilter(object):
@@ -128,5 +128,5 @@ class SliceFilter(object):
         """ Execute the filter.
         
         """
-        valid = (line[self._slice] in self._values) == self._whitelist
-        return line if valid else None
+        match = line[self._slice] in self._values
+        return line if match == self._whitelist else None
