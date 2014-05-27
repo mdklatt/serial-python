@@ -67,8 +67,8 @@ class ConstField(_ScalarField):
         super(ConstField, self).__init__(name, pos)
         self._value = value
         self._token = format(self._value, fmt)
-	if self._fixed:
-	    self._token = self._token[:self.width].rjust(self.width)
+        if self._fixed:
+            self._token = self._token[:self.width].rjust(self.width)
         return
 
     def decode(self, token):
