@@ -84,83 +84,78 @@ class ConstField(_ScalarField):
         return self._token
 
 
-class IntField(_ScalarField):
+class _NumericField(_ScalarField):
+    """ A numeric field.
+    
+    """
+    _dtype = None  # must be defined by derived classes
+    
+    def __init__(self, name, pos, fmt, default=None):
+        """ Initialize this object.
+
+        """
+        super(_NumericField, self).__init__(name, pos)
+        self._fmt = fmt
+        self._default = default
+        return
+        
+    def decode(self, token):
+        """ Convert a string token to a Python numeric value.
+        
+        If the token is an empty string the default field value is used.
+        
+        """
+        try:
+            value = self._dtype(token)
+        except ValueError:  # type conversion failed
+            value = self._default
+        return value
+        
+    def encode(self, value):
+        """ Convert a Python numeric value to a string token.
+        
+        If the value is None the default field value is used (None is encoded 
+        as a null string). For fixed-width fields the token is padded on the 
+        left or trimmed on the right to fit the allotted width.
+
+        """
+        if value is None:
+            value = self._default  # may still be None
+        token = format(value, self._fmt) if value is not None else ""
+        return token[:self.width].rjust(self.width) if self._fixed else token
+    
+    
+class IntField(_NumericField):
     """ An integer field.
 
+    The maximum size of an int depends on the underlying platform, i.e. 32-bit
+    vs. 64-bit. This value is given by sys.maxint. For larger values use an
+    unbounded LongField. (In Python 3, all integers are unbounded.)
+    
     """
+    _dtype = int
+    
     def __init__(self, name, pos, fmt="d", default=None):
         """ Initialize this object.
 
         """
-        super(IntField, self).__init__(name, pos)
-        self._fmt = fmt
-        self._default = default
+        super(IntField, self).__init__(name, pos, fmt, default)
         return
-        
-    def decode(self, token):
-        """ Convert a string token to an int.
-        
-        If the token is an empty string the default field value is used.
-        
-        """
-        try:
-            value = int(token)
-        except ValueError:  # type conversion failed
-            value = self._default
-        return value
-        
-    def encode(self, value):
-        """ Convert a Python value to a string token.
-        
-        If the value is None the default field value is used (None is encoded 
-        as a null string). For fixed-width fields the token is padded on the 
-        left or trimmed on the right to fit the allotted width.
+ 
 
-        """
-        if value is None:
-            value = self._default  # may still be None
-        token = format(value, self._fmt) if value is not None else ""
-        return token[:self.width].rjust(self.width) if self._fixed else token
-
-
-class FloatField(_ScalarField):
+class FloatField(_NumericField):
     """ A floating point field.
 
     """
+    _dtype = float
+    
     def __init__(self, name, pos, fmt="g", default=None):
         """ Initialize this object.
 
         """
-        super(FloatField, self).__init__(name, pos)
-        self._fmt = fmt
-        self._default = default
+        super(FloatField, self).__init__(name, pos, fmt, default)
         return
         
-    def decode(self, token):
-        """ Convert a string token to a float.
-        
-        If the token is an empty string the default field value is used.
-
-        """
-        try:
-            value = float(token)
-        except ValueError:  # type conversion failed
-            value = self._default
-        return value
-        
-    def encode(self, value):
-        """ Convert a Python value to a string token.
-        
-        If the value is None the default field value is used (None is encoded 
-        as a null string). For fixed-width fields the token is padded on the 
-        left or trimmed on the right to fit the allotted width.
-        
-        """
-        if value is None:
-            value = self._default  # may still be None
-        token = format(value, self._fmt) if value is not None else ""
-        return token[:self.width].rjust(self.width) if self._fixed else token
-
 
 class StringField(_ScalarField):
     """ A string field.
