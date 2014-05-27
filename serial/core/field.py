@@ -12,7 +12,7 @@ from itertools import product
 from ._util import TimeFormat
 
 
-__all__ = ("ConstField", "IntField", "FloatField", "StringField", 
+__all__ = ("ConstField", "IntField", "LongField", "FloatField", "StringField", 
            "DatetimeField", "RecordField", "ArrayField")
 
 
@@ -129,8 +129,7 @@ class IntField(_NumericField):
     """ An integer field.
 
     The maximum size of an int depends on the underlying platform, i.e. 32-bit
-    vs. 64-bit. This value is given by sys.maxint. For larger values use an
-    unbounded LongField. (In Python 3, all integers are unbounded.)
+    vs. 64-bit (see sys.maxint). For larger values use a LongField.
     
     """
     _dtype = int
@@ -143,6 +142,23 @@ class IntField(_NumericField):
         return
  
 
+class LongField(_NumericField):
+    """ An unbounded integer field.
+
+    For better performance an IntField should be used if all field values fit 
+    into a plain int.
+    
+    """
+    _dtype = long
+    
+    def __init__(self, name, pos, fmt="d", default=None):
+        """ Initialize this object.
+
+        """
+        super(LongField, self).__init__(name, pos, fmt, default)
+        return
+
+ 
 class FloatField(_NumericField):
     """ A floating point field.
 

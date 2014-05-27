@@ -127,6 +127,31 @@ class IntFieldTest(_FieldTest):
         return
 
 
+class LongFieldTest(_FieldTest):
+    """ Unit testing for the LongField class.
+
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        fmt = "21d"
+        self.name = "long"
+        self.pos = 1, 22
+        self.width = 21
+        self.value = 99999999999999999999L  #  exceeds 64-bit sys.maxint
+        self.token = " 99999999999999999999"
+        self.field = LongField(self.name, self.pos, fmt)
+        self.default_value = -999
+        self.default_token = "                 -999"
+        self.default_field = IntField(self.name, self.pos, fmt, 
+                                      self.default_value)
+        return
+
+        
 class FloatFieldTest(_FieldTest):
     """ Unit testing for the FloatField class.
 
@@ -314,8 +339,9 @@ class RecordFieldTest(ArrayFieldTest):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (ConstFieldTest, IntFieldTest, FloatFieldTest, StringFieldTest,
-               DatetimeFieldTest, RecordFieldTest, ArrayFieldTest)
+_TEST_CASES = (ConstFieldTest, IntFieldTest, LongFieldTest, FloatFieldTest, 
+               StringFieldTest, DatetimeFieldTest, RecordFieldTest, 
+               ArrayFieldTest)
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
