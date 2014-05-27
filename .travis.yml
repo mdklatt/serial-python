@@ -11,6 +11,6 @@ branches:
         - dev
 
 install:
-    - pip install --use-mirrors -r optional-requirements.txt
+    - pip install -r requirements-py26.txt
 
 script: python test/run_tests.py
