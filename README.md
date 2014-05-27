@@ -15,9 +15,9 @@ Requirements
 * Python 2.6 - 2.7
 * [unittest2][4] (optional; required to run test suite with Python 2.6)
 
-Requirements can be installed using `pip`:
+Python 2.6 requirements can be installed using `pip`:
 
-    pip install -r optional-requirements.txt
+    pip install -r requirements-py26.txt
 
 
 Installation
