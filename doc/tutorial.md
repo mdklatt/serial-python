@@ -393,8 +393,8 @@ access them directly using the `_class_filters` attribute.
     class SampleReader(DelimitedReader):
         """ Sample data reader.
 
-        The base class implements the iterator protocol for reading records. All 
-        times are converted from UTC to LST during input.
+        The base class implements the iterator protocol for reading records. 
+        All times are converted from UTC to LST during input.
 
         """
         def __init__(self, stream, timezone=-6):
