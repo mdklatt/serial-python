@@ -5,6 +5,7 @@ from __future__ import absolute_import
 
 from re import compile
 
+
 __all__ = ("FieldFilter", "RangeFilter", "RegexFilter", "SliceFilter")
 
 
@@ -14,17 +15,17 @@ class FieldFilter(object):
     This is intended for use with a Reader or Writer via their filter() method.
     
     """
-    def __init__(self, field, values, whitelist=True):
+    def __init__(self, field, values, blacklist=False):
         """ Initialize this object.
         
         By default, records that match one of the given field values are passed
-        through and all other records are dropped (whitelisting). If whitelist
-        is False this is reversed (blacklisting).
+        through and all other records are dropped (whitelisting). If blacklist 
+        is True this is reversed (blacklisting).
         
         """
         self._field = field
         self._values = set(values)
-        self._whitelist = whitelist
+        self._blacklist = blacklist
         return
         
     def __call__(self, record):
@@ -38,7 +39,7 @@ class FieldFilter(object):
             # the required field value; for blacklisting it's valid because it
             # doesn't have a prohibited field value.
             match = False
-        return record if match == self._whitelist else None
+        return record if match != self._blacklist else None
 
 
 class RangeFilter(object):
@@ -47,21 +48,21 @@ class RangeFilter(object):
     This is intended for use with a Reader or Writer via their filter() method.
     
     """
-    def __init__(self, field, min=None, max=None, whitelist=True):
+    def __init__(self, field, min=None, max=None, blacklist=False):
         """ Initialize this object.
         
         By default, records whose 'field' value is within the range [min, max)
         are passed through and all other records are dropped (whitelisting). If
-        whitelist is False this is reversed (blacklisting). If 'min' or 'max'
+        blacklist is True this is reversed (blacklisting). If 'min' or 'max'
         is None that end of the range is considered to be unlimited. If both
-        are None, the filter will pass all records if whitelist is True and
+        are None, the filter will pass all records if blacklist is True and
         drop all records if it's False.
                 
         """
         self._field = field
         self._min = min
         self._max = max
-        self._whitelist = whitelist
+        self._blacklist = blacklist
         return
         
     def __call__(self, record):
@@ -71,7 +72,7 @@ class RangeFilter(object):
         value = record[self._field]
         match = ((self._min is None or self._min <= value) and
                  (self._max is None or value < self._max))
-        return record if match == self._whitelist else None
+        return record if match != self._blacklist else None
 
 
 class RegexFilter(object):
@@ -80,16 +81,16 @@ class RegexFilter(object):
     This is intended for use with a FilteredIStream or FilteredOStream.
     
     """
-    def __init__(self, regex, whitelist=True):
+    def __init__(self, regex, blacklist=False):
         """ Initialize this object.
         
         By default, lines that match the regular expression are passed through
-        and all other lines are dropped (whitelisting). If whitelist is False
+        and all other lines are dropped (whitelisting). If blacklist is True 
         this is reversed (blacklisting).
         
         """
         self._regex = compile(regex)
-        self._whitelist = whitelist
+        self._blacklist = blacklist
         return
         
     def __call__(self, line):
@@ -97,7 +98,7 @@ class RegexFilter(object):
         
         """
         match = self._regex.search(line) is not None
-        return line if match == self._whitelist else None
+        return line if match != self._blacklist else None
 
 
 class SliceFilter(object):
@@ -106,13 +107,13 @@ class SliceFilter(object):
     This is intended for use with a FilteredIStream or FilteredOStream.
     
     """
-    def __init__(self, expr, values, whitelist=True):
+    def __init__(self, expr, values, blacklist=False):
         """ Initialize this object.
         
         The slice expression can be a pair of numbers or a slice object. By
         default, lines where the slice matches one of the values are passed
-        through and all other lines are dropped (whitelisting). If whitelist
-        is False this is reversed (blacklisting).
+        through and all other lines are dropped (whitelisting). If blacklist
+        is True this is reversed (blacklisting).
         
         """
         try:
@@ -121,7 +122,7 @@ class SliceFilter(object):
         except TypeError:  # not a sequence
             self._slice = expr
         self._values = set(values)
-        self._whitelist = whitelist
+        self._blacklist = blacklist
         return
         
     def __call__(self, line):
@@ -129,4 +130,4 @@ class SliceFilter(object):
         
         """
         match = line[self._slice] in self._values
-        return line if match == self._whitelist else None
+        return line if match != self._blacklist else None

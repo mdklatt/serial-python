@@ -50,7 +50,7 @@ class FieldFilterTest(_FilterTest):
         # Filters need to match the first two records.
         values = ("abc", "def", "ghi")
         self.whitelist = FieldFilter("test", values[:2])
-        self.blacklist = FieldFilter("test", values[:2], False)
+        self.blacklist = FieldFilter("test", values[:2], True)
         self.data = [{"test": value} for value in values]
         return
 
@@ -87,7 +87,7 @@ class RangeFilterTest(_FilterTest):
         # Filters need to match the first two lines.
         values = (1, 2, 3)
         self.whitelist = RangeFilter("test", 1, 3)
-        self.blacklist = RangeFilter("test", 1, 3, False)
+        self.blacklist = RangeFilter("test", 1, 3, True)
         self.data = [{"test": value} for value in values]
         return
 
@@ -124,7 +124,7 @@ class RegexFilterTest(_FilterTest):
         # Filters need to match the first two lines.
         regex = r"abc|def"
         self.whitelist = RegexFilter(regex)
-        self.blacklist = RegexFilter(regex, False)
+        self.blacklist = RegexFilter(regex, True)
         self.data = ["abc\n", "def\n", "ghi\n"]
         return
 
@@ -144,7 +144,7 @@ class SliceFilterTest(_FilterTest):
         # of slice expressions.
         values = ("bc", "ef")
         self.whitelist = SliceFilter((1, 3), values)
-        self.blacklist = SliceFilter(slice(1, 3), values, False)
+        self.blacklist = SliceFilter(slice(1, 3), values, True)
         self.data = ["abc\n", "def\n", "ghi\n"]
         return
 

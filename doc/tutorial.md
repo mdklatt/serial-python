@@ -342,12 +342,12 @@ The library defines the `FieldFilter` class for use with Readers and Writers.
     
         ...
     
-        # Drop all records where the color field is not crimson or cream.
+        # Drop all records where the color is not crimson or cream.
         whitelist = FieldFilter("color", ("crimson", "cream"))
         reader.filter(whitelist)
     
-        # Drop all records where the color field is orange.
-        blacklist = FieldFilter("color", ("orange",), whitelist=False)
+        # Drop all records where the color is orange.
+        blacklist = FieldFilter("color", ("orange",), blacklist=True)
         reader.filter(blacklist)
 
 
