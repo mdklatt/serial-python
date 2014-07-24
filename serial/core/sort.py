@@ -3,6 +3,7 @@
 """
 from __future__ import absolute_import
 
+from collections import deque
 from operator import itemgetter
 
 from .buffer import _ReaderBuffer
@@ -42,7 +43,7 @@ class _Sort(object):
         
         """
         self._buffer.sort(key=self._keyfunc)
-        self._output = self._buffer
+        self._output = deque(self._buffer)
         self._buffer = None
         return
 

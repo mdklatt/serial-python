@@ -7,6 +7,8 @@ into one record, reorder records, or any combination thereof.
 """
 from __future__ import absolute_import
 
+from collections import deque
+
 from .reader import _Reader
 from .writer import _Writer
 
@@ -24,7 +26,7 @@ class _ReaderBuffer(_Reader):
         """
         super(_ReaderBuffer, self).__init__()
         self._reader = reader
-        self._output = []  # FIFO
+        self._output = deque()  # FIFO
         return
         
     def _get(self):
@@ -40,7 +42,7 @@ class _ReaderBuffer(_Reader):
                 # Underflow condition.
                 self._reader = None
                 self._uflow()  # raises StopIteration on EOF
-        return self._output.pop(0)
+        return self._output.popleft()
             
     def _queue(self, record):
         """ Process an incoming record.
@@ -77,7 +79,7 @@ class _WriterBuffer(_Writer):
         """
         super(_WriterBuffer, self).__init__()
         self._writer = writer
-        self._output = []  # FIFO
+        self._output = deque()  # FIFO
         return
         
     def write(self, record):
@@ -90,7 +92,7 @@ class _WriterBuffer(_Writer):
         for record in self._output:
             # Base class write() applies filters.
             super(_WriterBuffer, self).write(record) 
-        self._output = []
+        self._output = deque()
         return
 
     def close(self):
