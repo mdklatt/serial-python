@@ -212,63 +212,11 @@ class ChainReaderTest(unittest.TestCase):
         reader = ChainReader((), iter)
         self.assertSequenceEqual((), list(reader))
         return
-        
-
-class ReaderSequenceTest(unittest.TestCase):
-    
-    def setUp(self):
-        """ Set up the test fixture.
-
-        This is called before each test is run so that they are isolated from
-        any side effects. This is part of the unittest API.
-
-        """
-        fields = (
-            IntField("int", 0, ),
-            ArrayField("arr", (1, None), (
-                StringField("x", 0), 
-                StringField("y", 1))))
-        self.reader = partial(DelimitedReader, fields=fields, delim=",")
-        data = "123, abc, def\n456, ghi, jkl\n"
-        self.streams = (BytesIO(data), BytesIO(data.upper()))
-        self.records = (
-            {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
-            {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]},
-            {"int": 123, "arr": [{"x": "ABC", "y": "DEF"}]},
-            {"int": 456, "arr": [{"x": "GHI", "y": "JKL"}]})
-        return
-
-    def test_iter(self):
-        """ Test the __iter__() method.
-        
-        """
-        sequence = ReaderSequence(self.reader, *self.streams)
-        self.assertSequenceEqual(self.records, list(sequence))
-        self.assertTrue(all(stream.closed for stream in self.streams))
-        return
-        
-    def test_iter_context(self):
-        """ Test the __iter__() method inside a context block.
-        
-        """
-        with ReaderSequence(self.reader, *self.streams) as sequence:
-            self.assertSequenceEqual(self.records, list(sequence))
-        self.assertTrue(all(stream.closed for stream in self.streams))
-        return
-        
-    def test_iter_empty(self):
-        """ Test the __iter__() method for an empty input sequence.
-        
-        """
-        with ReaderSequence(self.reader) as sequence:
-            self.assertSequenceEqual((), list(sequence))
-        return
 
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest, ChainReaderTest,
-               ReaderSequenceTest)
+_TEST_CASES = DelimitedReaderTest, FixedWidthReaderTest, ChainReaderTest
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

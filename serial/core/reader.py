@@ -11,8 +11,7 @@ from functools import partial
 from itertools import chain
 from re import compile
 
-__all__ = ("DelimitedReader", "FixedWidthReader", "ChainReader",
-           "ReaderSequence")
+__all__ = "DelimitedReader", "FixedWidthReader", "ChainReader"
 
 
 class _Reader(object):
@@ -293,100 +292,6 @@ class ChainReader(_Reader):
             # Not a string, assume it's an open stream.
             stream = expr
         return stream
-
-
-class ReaderSequence(_Reader):
-    """ Iterate over multiple input sources as a single sequence of records.
-    
-    """
-    def __init__(self, callback, *input):
-        """ Initialize this object.
-        
-        The callback argument is any callable object that takes a stream as its
-        first argument and returns a reader to use on that stream, e.g. a class
-        constructor. The remaining arguments are either open streams or paths 
-        to open as plain text files. Each stream is closed once it has been 
-        exhausted.
-        
-        Filtering is applied at the ReaderSequence level, but for filters that
-        raise StopIteration this might not be the desired behavior. Raising
-        StopIteration from a ReaderSequence filter will halt input from all 
-        remaining streams in the sequence. If the intent is to stop input on
-        an individual stream, define the callback function to return a Reader 
-        that already has the desired filter(s) applied.
-        
-        """
-        from warnings import warn
-        message = "ReaderSequence is deprecated; use ChainReader instead"
-        warn(message, DeprecationWarning)
-        
-        super(ReaderSequence, self).__init__()
-        self._input = list(input)
-        self._callback = callback 
-        self._reader = None
-        return
-        
-    def _get(self):
-        """ Get the next parsed record from the sequence.
-        
-        This is called before any filters have been applied. A StopIteration 
-        exception is raised when all streams in the sequence have been 
-        exhausted.
-        
-        """
-        while True:
-            # Repeat until a record is returned or there are no more streams
-            # to open. If the current reader is None or exhausted try to open
-            # a new stream.
-            try:
-                return self._reader.next()
-            except AttributeError:
-                if self._reader is not None:
-                    # The reader has been initialized but doesn't have a next()
-                    # method.
-                    raise
-            except StopIteration:
-                # The reader is exhausted.
-                pass
-            self._open()
-        
-    def _open(self):
-        """ Create a reader for the next stream in the sequence.
-        
-        """
-        if self._reader:
-            # Close the open stream.
-            self._input.pop(0).close()
-        try:
-            # Try to open a path as a text file.
-            self._input[0] = open(self._input[0], "r")
-        except TypeError:
-            # Not a string, assume it's an open stream.
-            pass
-        except IndexError:
-            # No more streams.
-            raise StopIteration
-        self._reader = self._callback(self._input[0])
-        return 
-        
-    def __enter__(self):
-        """ Enter a context block.
-        
-        """ 
-        return self
-        
-    def __exit__(self, etype=None, value=None, trace=None):
-        """ Exit a context block.
-        
-        """
-        # The exception-handling arguments are ignored; if the context exits 
-        # due to an exception it will be passed along to the caller.
-        for stream in self._input:
-            try:
-                stream.close()
-            except AttributeError:  # no close
-                continue
-        return
 
 
 # class ContextualReader(_Reader):
