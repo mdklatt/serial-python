@@ -11,7 +11,7 @@ from functools import partial
 from itertools import chain
 from re import compile
 
-__all__ = ("DelimitedReader", "FixedWidthReader", "SequenceReader",
+__all__ = ("DelimitedReader", "FixedWidthReader", "ChainReader",
            "ReaderSequence")
 
 
@@ -211,17 +211,17 @@ class FixedWidthReader(_TabularReader):
         return tuple(line[field.pos] for field in self._fields)
 
 
-class SequenceReader(_Reader):
+class ChainReader(_Reader):
     """ Read a sequence of streams as a single series of records.
     
-    The SequenceReader opens streams as necessary and closes them once they
+    The ChainReader opens streams as necessary and closes them once they
     have been read.
     
     """
     @classmethod
     @contextmanager
     def open(cls, streams, reader, *args, **kwargs):
-        """ Create a runtime context for a SequenceReader and its streams.
+        """ Create a runtime context for a ChainReader and its streams.
         
         The arguments are passed to the class constructor. Each stream is
         closed once it has been exhausted, and any open streams remaining in
@@ -246,7 +246,7 @@ class SequenceReader(_Reader):
         class constructor. The args and kwargs values are passed to the reader 
         function.
     
-        Filtering is applied at the SequenceReader level, but for filters that
+        Filtering is applied at the ChainReader level, but for filters that
         raise StopIteration this might not be the desired behavior. Raising
         StopIteration from a ReaderSequence filter will halt input from all 
         remaining streams in the sequence. If the intent is to stop input on
@@ -266,7 +266,7 @@ class SequenceReader(_Reader):
                 self._streams.popleft()
             return
                    
-        super(SequenceReader, self).__init__()
+        super(ChainReader, self).__init__()
         self._streams = deque(streams)
         self._records = chain.from_iterable(readers())
         return
@@ -317,7 +317,7 @@ class ReaderSequence(_Reader):
         
         """
         from warnings import warn
-        message = "ReaderSequence is deprecated; use SequenceReader instead"
+        message = "ReaderSequence is deprecated; use ChainReader instead"
         warn(message, DeprecationWarning)
         
         super(ReaderSequence, self).__init__()

@@ -172,8 +172,8 @@ class FixedWidthReaderTest(_TabularReaderTest):
         return
 
 
-class SequenceReaderTest(unittest.TestCase):
-    """ Unit testing for the SequenceReader class.
+class ChainReaderTest(unittest.TestCase):
+    """ Unit testing for the ChainReader class.
     
     """
     def setUp(self):
@@ -196,7 +196,7 @@ class SequenceReaderTest(unittest.TestCase):
         """ Test the open() method.
         
         """
-        with SequenceReader.open(self.streams, FixedWidthReader, 
+        with ChainReader.open(self.streams, FixedWidthReader, 
                                  self.fields) as reader: 
             self.assertSequenceEqual(self.records[0], reader.next())
         self.assertTrue(all(stream.closed for stream in self.streams))
@@ -206,7 +206,7 @@ class SequenceReaderTest(unittest.TestCase):
         """ Test the iterator protocol.
         
         """
-        reader = SequenceReader(self.streams, FixedWidthReader, self.fields) 
+        reader = ChainReader(self.streams, FixedWidthReader, self.fields) 
         self.assertSequenceEqual(self.records, list(reader))
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
@@ -215,7 +215,7 @@ class SequenceReaderTest(unittest.TestCase):
         """ Test the iterator protocol for an empty input sequence.
         
         """
-        reader = SequenceReader((), FixedWidthReader, self.fields)
+        reader = ChainReader((), FixedWidthReader, self.fields)
         self.assertSequenceEqual((), list(reader))
         return
         
@@ -273,7 +273,7 @@ class ReaderSequenceTest(unittest.TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest, SequenceReaderTest,
+_TEST_CASES = (DelimitedReaderTest, FixedWidthReaderTest, ChainReaderTest,
                ReaderSequenceTest)
 
 def load_tests(loader, tests, pattern):
