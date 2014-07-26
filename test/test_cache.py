@@ -35,7 +35,15 @@ class CacheReaderTest(unittest.TestCase):
         """
         self.assertSequenceEqual(self.records, list(self.reader))
         return
+
+    def test_iter_empty(self):
+        """ Test the iterator protocol with empty input.
         
+        """
+        self.reader = CacheReader(iter([]))
+        self.assertSequenceEqual([], list(self.reader))
+        return
+                
     def test_rewind(self):
         """ Test the rewind() method.
         
