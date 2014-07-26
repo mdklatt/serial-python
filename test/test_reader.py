@@ -183,21 +183,15 @@ class ChainReaderTest(unittest.TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.delim = ","
-        self.fields = (IntField("int", (0, 4)), StringField("str", (4, 8)))
-        data = " 123 abc\n 456 def\n"
-        self.streams = (BytesIO(data), BytesIO(data.upper()))
-        self.records = (
-            {"int": 123, "str": "abc"}, {"int": 456, "str": "def"},
-            {"int": 123, "str": "ABC"}, {"int": 456, "str": "DEF"})
+        self.streams = BytesIO("abc\ndef\n"), BytesIO("ghi\njkl\n")
+        self.records = "abc\n", "def\n", "ghi\n", "jkl\n"
         return
 
     def test_open(self):
         """ Test the open() method.
         
         """
-        with ChainReader.open(self.streams, FixedWidthReader, 
-                                 self.fields) as reader: 
+        with ChainReader.open(self.streams, iter) as reader: 
             self.assertSequenceEqual(self.records[0], reader.next())
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
@@ -206,7 +200,7 @@ class ChainReaderTest(unittest.TestCase):
         """ Test the iterator protocol.
         
         """
-        reader = ChainReader(self.streams, FixedWidthReader, self.fields) 
+        reader = ChainReader(self.streams, iter) 
         self.assertSequenceEqual(self.records, list(reader))
         self.assertTrue(all(stream.closed for stream in self.streams))
         return
@@ -215,7 +209,7 @@ class ChainReaderTest(unittest.TestCase):
         """ Test the iterator protocol for an empty input sequence.
         
         """
-        reader = ChainReader((), FixedWidthReader, self.fields)
+        reader = ChainReader((), iter)
         self.assertSequenceEqual((), list(reader))
         return
         
