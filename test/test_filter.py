@@ -91,21 +91,21 @@ class RangeFilterTest(_FilterTest):
         self.data = [{"test": value} for value in values]
         return
 
-    def test_no_max(self):
+    def test_no_start(self):
+        """ Test the __call__ method with no lower limit.
+        
+        """
+        self.whitelist = RangeFilter("test", stop=3)
+        filtered = self.data[:2] + [None]
+        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
+        return
+
+    def test_no_stop(self):
         """ Test the __call__ method with no upper limit.
         
         """
         self.whitelist = RangeFilter("test", 2)
         filtered = [None] + self.data[1:]
-        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
-        return
-
-    def test_no_min(self):
-        """ Test the __call__ method with no lower limit.
-        
-        """
-        self.whitelist = RangeFilter("test", max=3)
-        filtered = self.data[:2] + [None]
         self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
         return
 

@@ -71,24 +71,24 @@ class RangeFilter(_RecordFilter):
     """ Filter records based on a range of values.
     
     """
-    def __init__(self, field, min=None, max=None, blacklist=False):
+    def __init__(self, field, start=None, stop=None, blacklist=False):
         """ Initialize this object.
         
-        Records are matched against the range [min, max). If min or max is None
-        that end of the range is considered to be unlimited.
+        Records are matched against the range [start, stop). If start or stop 
+        is None that end of the range is considered to be unlimited.
         
         """
         super(RangeFilter, self).__init__(field, blacklist)
-        self._min = min
-        self._max = max
+        self._start = start
+        self._stop = stop
         return
         
     def _match(self, value):
         """ Return True if the value is within the filter range.
         
         """
-        return ((self._min is None or self._min <= value) and
-                (self._max is None or value < self._max))
+        return ((self._start is None or self._start <= value) and
+                (self._stop is None or value < self._stop))
 
 
 class RegexFilter(object):
