@@ -36,7 +36,28 @@ class _FilterTest(unittest.TestCase):
         return
 
 
-class FieldFilterTest(_FilterTest):
+class _RecordFilterTest(_FilterTest):
+    """
+    """
+    def test_whitelist_missing(self):
+        """ Test the __call__ method with a missing field.
+        
+        """ 
+        self.data = [{"not_test": value} for value in self.values]
+        filtered = [None] * len(self.data)
+        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
+        return
+    
+    def test_blacklist_missing(self):
+        """ Test the __call__ method for blacklisting with a missing field.
+        
+        """
+        self.data = [{"not_test": value} for value in self.values]
+        self.assertSequenceEqual(self.data, map(self.blacklist, self.data))
+        return
+    
+    
+class FieldFilterTest(_RecordFilterTest):
     """ Unit testing for the FieldFilter class.
 
     """
@@ -48,32 +69,14 @@ class FieldFilterTest(_FilterTest):
 
         """
         # Filters need to match the first two records.
-        values = ("abc", "def", "ghi")
-        self.whitelist = FieldFilter("test", values[:2])
-        self.blacklist = FieldFilter("test", values[:2], True)
-        self.data = [{"test": value} for value in values]
-        return
-
-    def test_whitelist_missing(self):
-        """ Test the __call__ method with a missing field.
-        
-        """ 
-        self.data = [{"not_test": "xyz"}]  # no "test" field
-        filtered = [None]
-        self.assertSequenceEqual(filtered, map(self.whitelist, self.data))
-        return
-    
-    def test_blacklist_missing(self):
-        """ Test the __call__ method for blacklisting with a missing field.
-        
-        """
-        self.data = [{"not_test": "xyz"}]  # no "test" field
-        filtered = self.data
-        self.assertSequenceEqual(filtered, map(self.blacklist, self.data))
+        self.values = ("abc", "def", "ghi")
+        self.whitelist = FieldFilter("test", self.values[:2])
+        self.blacklist = FieldFilter("test", self.values[:2], True)
+        self.data = [{"test": value} for value in self.values]
         return
 
                
-class RangeFilterTest(_FilterTest):
+class RangeFilterTest(_RecordFilterTest):
     """ Unit testing for the RangeFilter class.
 
     """
@@ -84,11 +87,11 @@ class RangeFilterTest(_FilterTest):
         any side effects. This is part of the unittest API.
 
         """
-        # Filters need to match the first two lines.
-        values = (1, 2, 3)
+        # Filters need to match the first two records.
+        self.values = (1, 2, 3)
         self.whitelist = RangeFilter("test", 1, 3)
         self.blacklist = RangeFilter("test", 1, 3, True)
-        self.data = [{"test": value} for value in values]
+        self.data = [{"test": value} for value in self.values]
         return
 
     def test_no_start(self):
