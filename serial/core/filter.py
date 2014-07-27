@@ -9,22 +9,22 @@ from re import compile
 __all__ = ("FieldFilter", "RangeFilter", "RegexFilter", "SliceFilter")
 
 
-class FieldFilter(object):
-    """ Filter records by a specific field.
+class _RecordFilter(object):
+    """ Abstract base class for record filters.
     
-    This is intended for use with a Reader or Writer via their filter() method.
+    Record filters are intended for use with a Reader or Writer via their
+    filter() method.
     
     """
-    def __init__(self, field, values, blacklist=False):
+    def __init__(self, field, blacklist=False):
         """ Initialize this object.
         
-        By default, records that match one of the given field values are passed
-        through and all other records are dropped (whitelisting). If blacklist 
-        is True this is reversed (blacklisting).
+        By default, records that match on the value for the given field are 
+        passed through and all other records are dropped (whitelisting). If 
+        blacklist is True this is reversed (blacklisting).
         
         """
         self._field = field
-        self._values = set(values)
         self._blacklist = blacklist
         return
         
@@ -33,46 +33,62 @@ class FieldFilter(object):
         
         """
         try:
-            match = record[self._field] in self._values
-        except KeyError:  # no such field
-            # The record is invalid for whitelisting because it doesn't have
-            # the required field value; for blacklisting it's valid because it
-            # doesn't have a prohibited field value.
+            match = self._match(record[self._field])
+        except KeyError:
             match = False
         return record if match != self._blacklist else None
-
-
-class RangeFilter(object):
-    """ Filter records by a range.
+        
+    def _match(self, value):
+        """ Return True if the given field value is a match for the filter.
+        
+        Matching records will be passed along for whitelisting and dropped for
+        blacklisting.
+        
+        """
+        raise NotImplementedError
     
-    This is intended for use with a Reader or Writer via their filter() method.
+
+class FieldFilter(_RecordFilter):
+    """ Filter records by the value of a specific field.
+    
+    """
+    def __init__(self, field, values, blacklist=False):
+        """ Initialize this object.
+                
+        """
+        super(FieldFilter, self).__init__(field, blacklist)
+        self._values = set(values)
+        return
+
+    def _match(self, value):
+        """ Return True if the value matches the set of filter values.
+        
+        """
+        return value in self._values
+
+
+class RangeFilter(_RecordFilter):
+    """ Filter records based on a range of values.
     
     """
     def __init__(self, field, min=None, max=None, blacklist=False):
         """ Initialize this object.
         
-        By default, records whose 'field' value is within the range [min, max)
-        are passed through and all other records are dropped (whitelisting). If
-        blacklist is True this is reversed (blacklisting). If 'min' or 'max'
-        is None that end of the range is considered to be unlimited. If both
-        are None, the filter will pass all records if blacklist is True and
-        drop all records if it's False.
-                
+        Records are matched against the range [min, max). If min or max is None
+        that end of the range is considered to be unlimited.
+        
         """
-        self._field = field
+        super(RangeFilter, self).__init__(field, blacklist)
         self._min = min
         self._max = max
-        self._blacklist = blacklist
         return
         
-    def __call__(self, record):
-        """ Execute the filter.
+    def _match(self, value):
+        """ Return True if the value is within the filter range.
         
         """
-        value = record[self._field]
-        match = ((self._min is None or self._min <= value) and
-                 (self._max is None or value < self._max))
-        return record if match != self._blacklist else None
+        return ((self._min is None or self._min <= value) and
+                (self._max is None or value < self._max))
 
 
 class RegexFilter(object):
