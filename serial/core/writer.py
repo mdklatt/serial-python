@@ -134,7 +134,7 @@ class _TabularWriter(_Writer):
         
         """
         tokens = []
-        for index, field in enumerate(self._fields):
+        for field in self._fields:
             # Convert each field into a string token.
             token = field.encode(record.get(field.name))
             if isinstance(token, basestring):
