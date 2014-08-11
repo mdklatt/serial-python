@@ -2,6 +2,14 @@
 
 This package uses the Semantic Versioning scheme:
     <http://semver.org/>
+    
+Major versions introduce significant changes to the API, and backwards 
+compatibility is not guaranteed. Minor versions are for new features and other
+backwards-compatible changes to the API. Patch versions are for bug fixes and
+internal code changes that do not affect the API.
+
+Version 0.x should be considered a development version with an unstable API,
+and backwards compatibility changes are not guaranteed.
 
 """
-__version__ = "0.3.4dev"
+__version__ = "0.4.0"
