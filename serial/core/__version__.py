@@ -12,4 +12,4 @@ Version 0.x should be considered a development version with an unstable API,
 and backwards compatibility is not guaranteed.
 
 """
-__version__ = "0.4.1dec"
+__version__ = "0.4.1dev"

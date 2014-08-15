@@ -95,7 +95,7 @@ class _NumericField(_ScalarField):
 
         """
         super(_NumericField, self).__init__(name, pos)
-        self._fmt = fmt
+        self._fmtstr = fmt
         self._default = default
         return
         
@@ -121,7 +121,7 @@ class _NumericField(_ScalarField):
         """
         if value is None:
             value = self._default  # may still be None
-        token = format(value, self._fmt) if value is not None else ""
+        token = format(value, self._fmtstr) if value is not None else ""
         return token[:self.width].rjust(self.width) if self._fixed else token
     
     
@@ -182,7 +182,8 @@ class StringField(_ScalarField):
 
         """
         super(StringField, self).__init__(name, pos)
-        self._fmt = fmt
+        fmtstr = "{0:s}{{0:{1:s}}}{0:s}".format(quote, fmt)
+        self._valfmt = fmtstr.format
         self._quote = quote
         self._default = default
         return
@@ -205,7 +206,7 @@ class StringField(_ScalarField):
 
         """
         value = value or self._default or ""
-        token = "{0:s}{1:s}{0:s}".format(self._quote, format(value, self._fmt))
+        token = self._valfmt(value)
         return token[:self.width].rjust(self.width) if self._fixed else token
 
 
