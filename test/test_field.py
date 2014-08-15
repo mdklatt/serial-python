@@ -204,17 +204,21 @@ class StringFieldTest(_FieldTest):
         return
 
     def test_decode_quote(self):
-        """ Test the decode method() for a quoted string.
+        """ Test the decode() method for a quoted string.
 
         """
-        self.assertEqual(self.value, self.quote_field.decode(self.quote_token))
+        self.token = "'abc'"
+        self.field = StringField(self.name, self.pos, quote="'")
+        self.test_decode()
         return
 
     def test_encode_quote(self):
-        """ Test the decode method() for a quoted string.
+        """ Test the encode() method for a quoted string.
 
         """
-        self.assertEqual(self.quote_token, self.quote_field.encode(self.value))
+        self.token = "'abc'"
+        self.field = StringField(self.name, self.pos, quote="'")
+        self.test_encode()
         return
 
 
