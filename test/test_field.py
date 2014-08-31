@@ -329,8 +329,10 @@ class RecordFieldTest(ArrayFieldTest):
         self.value = {"str": "abc", "int": 123}
         self.token = ["abc", "123"]
         self.field = RecordField(self.name, self.pos, self.fields)
-        self.default_value = {"str": "xyz", "int": -999}
-        self.default_token = ["xyz", "-999"]
+        self.null_value = {"str": "xyz", "int": -999}
+        self.null_token = ["xyz", "-999"]
+        self.default_value = self.value
+        self.default_token = self.token
         self.default_field = RecordField(self.name, self.pos, self.fields, 
                                          self.default_value)
         return
@@ -339,22 +341,23 @@ class RecordFieldTest(ArrayFieldTest):
         """ Test the decode() method for null input.
     
         """
-        self.assertEqual(self.default_value, self.field.decode([]))
+        self.assertEqual(self.null_value, self.field.decode([]))
         return
-    
+
     def test_encode_null(self):
         """ Test the encode() method for null output.
     
         """
-        self.assertEqual(self.default_token, self.field.encode([]))
+        self.assertEqual(self.null_token, self.field.encode({}))
         return
 
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (ConstFieldTest, IntFieldTest, LongFieldTest, FloatFieldTest, 
-               StringFieldTest, DatetimeFieldTest, RecordFieldTest, 
-               ArrayFieldTest)
+_TEST_CASES = (
+    ConstFieldTest, IntFieldTest, LongFieldTest, FloatFieldTest, 
+    StringFieldTest, DatetimeFieldTest, RecordFieldTest, ArrayFieldTest)
+
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
