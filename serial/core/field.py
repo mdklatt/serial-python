@@ -60,13 +60,13 @@ class ConstField(_ScalarField):
     """ A constant value field.
 
     """
-    def __init__(self, name, pos, value, fmt="s"):
+    def __init__(self, name, pos, value, fmt=None):
         """ Initialize this object.
 
         """
         super(ConstField, self).__init__(name, pos)
         self._value = value
-        self._token = format(self._value, fmt)
+        self._token = format(self._value, fmt) if fmt else str(self._value)
         if self._fixed:
             self._token = self._token[:self.width].rjust(self.width)
         return

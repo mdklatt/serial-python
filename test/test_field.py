@@ -91,10 +91,19 @@ class ConstFieldTest(_FieldTest):
         self.width = 5
         self.value = 9999
         self.token = " 9999"
-        self.field = ConstField(self.name, self.pos, self.value, "5d")
+        self.field = ConstField(self.name, self.pos, self.value)
         self.default_value = self.value
         self.default_token = self.token
         self.default_field = self.field
+        return
+        
+    def test_encode_format(self):
+        """ Test the encode() method with a format specifier.
+        
+        """
+        self.field = ConstField(self.name, self.pos, self.value, fmt="05d")
+        self.token = "09999"
+        self.test_encode()
         return
 
     # ConstFields always have a non-null default value.
