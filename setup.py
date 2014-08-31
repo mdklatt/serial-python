@@ -11,7 +11,7 @@ from distutils.core import setup
 from subprocess import check_call
 
 from serial.core import __version__
-from test import run as run_tests
+from tests import run as run_tests
 
 
 CONFIG = {

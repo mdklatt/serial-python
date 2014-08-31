@@ -4,4 +4,4 @@
 # distribution for inclusion in self-contained projects.
 #
 exclude setup.py
-prune test
+prune tests
