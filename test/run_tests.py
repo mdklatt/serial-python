@@ -15,7 +15,7 @@ def main():
     
     """
     path = join(dirname(__file__))
-    suite = unittest.defaultTestLoader.discover(path, "test_*.py")
+    suite = unittest.defaultTestLoader.discover(path, "*_test.py")
     result = unittest.TextTestRunner().run(suite)
     return 0 if result.wasSuccessful() else 1
 
