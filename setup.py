@@ -11,7 +11,7 @@ from distutils.core import setup
 from subprocess import check_call
 
 from serial.core import __version__
-from tests import run as run_tests
+from tests import _unittest as unittest
 
 
 CONFIG = {
@@ -64,8 +64,11 @@ class TestCommand(_CustomCommand):
         """ Execute the command.
         
         """
-        if run_tests() != 0:
-            raise RuntimeError("test suite failed")
+        suite = unittest.defaultTestLoader.discover("tests", "*_test.py")
+        result = unittest.TextTestRunner().run(suite)
+        # return 0 if result.wasSuccessful() else 1
+        # if run_tests() != 0:
+        #     raise RuntimeError("test suite failed")
         return
 
 

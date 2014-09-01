@@ -3,7 +3,6 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import _path
 import _unittest as unittest
 
 from functools import partial

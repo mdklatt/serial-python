@@ -1,9 +1,15 @@
 """ The serial.core library test package.
 
-The test suite can be executed from within an application by calling run().
+Tests must be run from the project root directory. Use `python setup.py test`
+to run the entire test suite or `python -m tests.xxxx_test` to run individual
+tests.
 
 """
-from run_tests import main as run
+# Add the project root to the path so that the development version of the 
+# library is always loaded.
 
-def hello():
-    print("Hello.")
+from os.path import join
+from os.path import dirname
+from sys import path
+
+path.insert(0, join(dirname(__file__), ".."))

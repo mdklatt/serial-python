@@ -9,7 +9,6 @@ from io import BytesIO
 from zlib import compress
 from zlib import decompress
 
-import _path
 import _unittest as unittest
 
 from serial.core import BufferedIStream
