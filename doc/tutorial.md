@@ -430,7 +430,7 @@ access them directly using the `_class_filters` attribute.
                 
             super(SampleWriter, self).__init__(stream, _SAMPLE_FIELDS, _DELIM)
             utc_offset = timedelta(hours=timezone)  # fractional timezones okay
-            self._class_filters(utc_filter)  # always applied last
+            self._class_filters.append(utc_filter)  # always applied last
             return record
             
     # Test the module. 
