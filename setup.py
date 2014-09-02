@@ -11,7 +11,8 @@ from distutils.core import setup
 from subprocess import check_call
 
 from serial.core import __version__
-from tests import _unittest as unittest
+from tests._unittest import defaultTestLoader 
+from tests._unittest import TextTestRunner 
 
 
 CONFIG = {
@@ -30,7 +31,7 @@ class _CustomCommand(Command):
     # with "=" if it accepts an argument), its single-character alias, and a
     # description.
     description = ""
-    user_options = [] # this must be a list
+    user_options = []  # this must be a list
     
     def initialize_options(self):
         """ Set the default values for all user options.
@@ -64,11 +65,8 @@ class TestCommand(_CustomCommand):
         """ Execute the command.
         
         """
-        suite = unittest.defaultTestLoader.discover("tests", "*_test.py")
-        result = unittest.TextTestRunner().run(suite)
-        # return 0 if result.wasSuccessful() else 1
-        # if run_tests() != 0:
-        #     raise RuntimeError("test suite failed")
+        suite = defaultTestLoader.discover("tests", "*_test.py")
+        TextTestRunner().run(suite)
         return
 
 
