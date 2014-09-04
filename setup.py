@@ -8,7 +8,9 @@ if all tests pass:
 """
 from distutils.core import Command
 from distutils.core import setup
-from subprocess import check_call
+from subprocess import call
+
+import test  # select the correct version of unittest
 from unittest import defaultTestLoader
 from unittest import TextTestRunner
 
@@ -50,6 +52,8 @@ class _CustomCommand(Command):
         
     def run(self):
         """ Execute the command.
+       
+        Raise SystemExit to indicate failure. 
         
         """
         raise NotImplementedError
@@ -66,7 +70,9 @@ class TestCommand(_CustomCommand):
         
         """
         suite = defaultTestLoader.discover("test", "[a-z]*.py")
-        TextTestRunner().run(suite)
+        result = TextTestRunner().run(suite)
+        if not result.wasSuccessful():
+            raise SystemExit 
         return
 
 
@@ -93,7 +99,8 @@ class UpdateCommand(_CustomCommand):
         """
         args = {"remote": self.remote, "branch": self.branch}
         cmdl = "git pull --ff-only {remote:s} {branch:s}".format(**args)
-        check_call(cmdl.split())  # throws exception on error
+        if call(cmdl.split()) != 0:
+            raise SystemExit
         return
 
 
