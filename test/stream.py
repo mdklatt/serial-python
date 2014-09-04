@@ -6,10 +6,11 @@ The module can be executed on its own or incorporated into a larger test suite.
 from contextlib import closing
 from gzip import GzipFile
 from io import BytesIO
+from unittest import TestCase
+from unittest import TestSuite
+from unittest import main
 from zlib import compress
 from zlib import decompress
-
-import unittest
 
 from serial.core import BufferedIStream
 from serial.core import FilteredIStream
@@ -20,7 +21,7 @@ from serial.core import GzippedIStream
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class BufferedIStreamTest(unittest.TestCase):
+class BufferedIStreamTest(TestCase):
     """ Unit testing for the BufferedIStream class.
 
     """
@@ -70,7 +71,7 @@ class BufferedIStreamTest(unittest.TestCase):
         return
         
 
-class FilteredIStreamTest(unittest.TestCase):
+class FilteredIStreamTest(TestCase):
     """ Unit testing for the FilteredIStream class.
     
     """
@@ -121,7 +122,7 @@ class FilteredIStreamTest(unittest.TestCase):
         return
         
 
-class FilteredOStreamTest(unittest.TestCase):
+class FilteredOStreamTest(TestCase):
     """ Unit testing for the FilteredIStream class.
     
     """
@@ -159,7 +160,7 @@ class FilteredOStreamTest(unittest.TestCase):
         return
 
  
-class GzippedIStreamTest(unittest.TestCase):
+class GzippedIStreamTest(TestCase):
     """ Unit testing for the GzippedIStream class.
     
     """
@@ -222,7 +223,7 @@ def load_tests(loader, tests, pattern):
     from this module.
 
     """
-    suite = unittest.TestSuite()
+    suite = TestSuite()
     for test_case in _TEST_CASES:
         tests = loader.loadTestsFromTestCase(test_case)
         suite.addTests(tests)
@@ -232,4 +233,4 @@ def load_tests(loader, tests, pattern):
 # Make the module executable.
 
 if __name__ == "__main__":
-    unittest.main()  # main() calls sys.exit()
+    main()  # main() calls sys.exit()

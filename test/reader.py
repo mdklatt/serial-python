@@ -3,10 +3,11 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import unittest
-
 from functools import partial
 from io import BytesIO
+from unittest import TestCase
+from unittest import TestSuite
+from unittest import main
 
 from serial.core import ArrayField
 from serial.core import IntField
@@ -45,7 +46,7 @@ def stop_filter(record):
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class _TabularReaderTest(unittest.TestCase):
+class _TabularReaderTest(TestCase):
     """ Unit testing for tabular reader classes.
 
     This is an abstract class and should not be called directly by any test
@@ -171,7 +172,7 @@ class FixedWidthReaderTest(_TabularReaderTest):
         return
 
 
-class ChainReaderTest(unittest.TestCase):
+class ChainReaderTest(TestCase):
     """ Unit testing for the ChainReader class.
     
     """
@@ -225,7 +226,7 @@ def load_tests(loader, tests, pattern):
     from this module.
 
     """
-    suite = unittest.TestSuite()
+    suite = TestSuite()
     for test_case in _TEST_CASES:
         tests = loader.loadTestsFromTestCase(test_case)
         suite.addTests(tests)
@@ -235,4 +236,4 @@ def load_tests(loader, tests, pattern):
 # Make the module executable.
 
 if __name__ == "__main__":
-    unittest.main()  # main() calls sys.exit()
+    main()  # main() calls sys.exit()

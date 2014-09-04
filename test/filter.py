@@ -3,7 +3,9 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import unittest
+from unittest import TestCase
+from unittest import TestSuite
+from unittest import main
 
 from serial.core.filter import *  # tests __all__
 
@@ -11,7 +13,7 @@ from serial.core.filter import *  # tests __all__
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class _FilterTest(unittest.TestCase):
+class _FilterTest(TestCase):
     """ Unit testing for filter classes.
 
     This is an abstract class and should not be called directly by any test
@@ -164,7 +166,7 @@ def load_tests(loader, tests, pattern):
     from this module.
 
     """
-    suite = unittest.TestSuite()
+    suite = TestSuite()
     for test_case in _TEST_CASES:
         tests = loader.loadTestsFromTestCase(test_case)
         suite.addTests(tests)
@@ -174,4 +176,4 @@ def load_tests(loader, tests, pattern):
 # Make the module executable.
 
 if __name__ == "__main__":
-    unittest.main()  # this calls exit()
+    main()  # this calls exit()

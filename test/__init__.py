@@ -25,4 +25,3 @@ try:
     modules["unittest"] = unittest2
 except ImportError:
     pass
-
