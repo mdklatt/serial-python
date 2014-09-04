@@ -7,17 +7,22 @@ Overview
 
 The [**serial-python**][3] library provides tools for reading and writing
 record-oriented data in various formats. The core library is contained in the
-`serial.core` package. Library extensions are contained in their own packages.
+`serial.core` package. Library extensions will be contained in their own 
+packages.
+
+
+Features
+--------
+* Read/write delimited and fixed-width data
+* Named and typed data fields
+* Data filtering via callbacks
+* Data aggregation
+* Advanced data transformations 
 
 
 Requirements
 ------------
 * Python 2.6 - 2.7
-* [unittest2][4] (optional; required to run test suite with Python 2.6)
-
-Python 2.6 requirements can be installed using `pip`:
-
-    pip install -r requirements-py26.txt
 
 
 Installation
@@ -26,16 +31,29 @@ Place the [serial][5] directory in the Python [module search path][6]. The
 [setup script][7] can be used to install the library in the desired location,
 typically the system or user-specific `site-packages` directory.
 
-    python setup.py install --user  # install for the current user
+    python setup.py install --user
 
 
 Usage
 -----
-The core package requires a single import.
 
     import serial.core
 
 The [tutorial][8] has examples of how to use and extend this library.
+
+
+Testing
+-------
+Tests are contained in the `test` package and can be run from the package root
+on a per-module basis or altogether.
+
+    python -m test.name
+    python setup.py test
+ 
+For Python 2.6 the [unittest2][4] library is required to run the test suite.
+
+    pip install --requirement=test/requirements-py26.txt
+
 
 
 
