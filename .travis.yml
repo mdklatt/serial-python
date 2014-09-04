@@ -11,6 +11,6 @@ branches:
         - dev
 
 install:
-    - pip install -r tests/requirements-py26.txt
+    - pip install --requirement=test/requirements-py26.txt
 
 script: python setup.py test 
