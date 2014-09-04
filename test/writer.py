@@ -5,7 +5,7 @@ The module can be executed on its own or incorporated into a larger test suite.
 """
 from io import BytesIO
 
-import _unittest as unittest
+import unittest
 
 from serial.core import DelimitedWriter
 from serial.core import FixedWidthWriter

@@ -3,7 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import _unittest as unittest
+import unittest
 
 from io import BytesIO
 from random import shuffle

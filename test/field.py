@@ -6,7 +6,7 @@ The module can be executed on its own or incorporated into a larger test suite.
 from datetime import datetime
 from itertools import izip
 
-import _unittest as unittest
+import unittest
 
 from serial.core.field import *  # test __all__
 

@@ -3,7 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-import _unittest as unittest
+import unittest
 
 from serial.core.buffer import _ReaderBuffer
 from serial.core.buffer import _WriterBuffer

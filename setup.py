@@ -9,13 +9,13 @@ if all tests pass:
 from distutils.core import Command
 from distutils.core import setup
 from subprocess import check_call
+from unittest import defaultTestLoader
+from unittest import TextTestRunner
 
 from serial.core import __version__
-from tests._unittest import defaultTestLoader 
-from tests._unittest import TextTestRunner 
 
 
-CONFIG = {
+_CONFIG = {
     "name": "serial-core",
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
@@ -65,7 +65,7 @@ class TestCommand(_CustomCommand):
         """ Execute the command.
         
         """
-        suite = defaultTestLoader.discover("tests", "*_test.py")
+        suite = defaultTestLoader.discover("test", "[a-z]*.py")
         TextTestRunner().run(suite)
         return
 
@@ -101,7 +101,7 @@ def main():
     """ Execute the setup commands.
     
     """
-    setup(cmdclass={"test": TestCommand, "update": UpdateCommand}, **CONFIG)
+    setup(cmdclass={"test": TestCommand, "update": UpdateCommand}, **_CONFIG)
     return 0
 
 
