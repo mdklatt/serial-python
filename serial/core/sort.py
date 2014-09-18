@@ -47,7 +47,7 @@ class _Sort(object):
         """
         if self._groupfunc:
             groupval = self._groupfunc(record)
-            if groupval != self._groupval and self._buffer:
+            if groupval != self._groupval:
                 # This is a new group; process the previous group.
                 self._flush()
             self._groupval = groupval
@@ -58,6 +58,8 @@ class _Sort(object):
         """ Send sorted records to the output queue.
         
         """
+        if not self._buffer:
+            return
         self._buffer.sort(key=self._keyfunc)
         self._output = deque(self._buffer)
         self._buffer = []
