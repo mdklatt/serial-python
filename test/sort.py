@@ -3,7 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from io import BytesIO
+from operator import itemgetter
 from random import shuffle
 from unittest import TestCase
 from unittest import TestSuite
@@ -44,10 +44,11 @@ class _SortTest(TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        values = list("abcdefghijk")
-        self.sorted = tuple({"KEY": val} for val in values)
-        shuffle(values)
-        self.records = tuple({"KEY": val} for val in values)
+        self.num_sorted = [{"num": x, "mod": x%2} for x in range(20)]
+        self.mod_sorted = sorted(self.num_sorted, key=itemgetter("mod"))
+        self.num_random = self.num_sorted[:]
+        shuffle(self.num_random)
+        self.mod_random = sorted(self.num_random, key=itemgetter("mod"))
         return
 
 
@@ -55,24 +56,22 @@ class SortReaderTest(_SortTest):
     """ Unit testing for the SortReader class.
 
     """
-    def setUp(self):
-        """ Set up the test fixture.
-
-        This is called before each test is run so that they are isolated from
-        any side effects. This is part of the unittest API.
-
-        """
-        super(SortReaderTest, self).setUp()
-        self.reader = SortReader(iter(self.records), key="KEY")
-        return
-
     def test_iter(self):
         """ Test the __iter__() method.
-
+    
         """
-        self.assertSequenceEqual(self.sorted, list(self.reader))
+        reader = SortReader(iter(self.num_random), "num")
+        self.assertSequenceEqual(self.num_sorted, list(reader))
         return
         
+    def test_iter_group(self):
+        """ Test the __iter__() method with grouping.
+    
+        """
+        reader = SortReader(iter(self.mod_random), "num", "mod")
+        self.assertSequenceEqual(self.mod_sorted, list(reader))
+        return
+
 
 class SortWriterTest(_SortTest):
     """ Unit testing for the SortWriter class.
@@ -86,19 +85,28 @@ class SortWriterTest(_SortTest):
 
         """
         super(SortWriterTest, self).setUp()
-        self.buffer = _MockWriter()  
+        self.writer = _MockWriter()  
         return
 
     def test_write(self):
         """ Test the write() and close() methods.
 
         """
-        writer = SortWriter(self.buffer, "KEY")
-        for record in self.records:
+        writer = SortWriter(self.writer, "num")
+        for record in self.num_random:
             writer.write(record)
         writer.close()
         writer.close()  # test that redundant calls are a no-op
-        self.assertSequenceEqual(self.sorted, self.buffer.output)
+        self.assertSequenceEqual(self.num_sorted, self.writer.output)
+        return
+
+    def test_write_group(self):
+        """ Test the write() and dump() methods with grouping.
+
+        """
+        writer = SortWriter(self.writer, "num", "mod")
+        writer.dump(self.mod_random)
+        self.assertSequenceEqual(self.mod_sorted, self.writer.output)
         return
 
 

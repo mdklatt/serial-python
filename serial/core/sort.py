@@ -17,16 +17,26 @@ class _Sort(object):
     """ Base class for SortReader and SortWriter.
     
     """
-    def __init__(self, key):
+    def __init__(self, key, group=None):
         """ Initialize this object.
         
-        The key argument is either a single field name, a sequence of names,
-        or a key function that returns a key value.
+        The key argument determines sort order and is either a single field 
+        name, a sequence of names, or a key function that returns a key value.
+        
+        The optional group argument is like the key argument but is used to 
+        group records that are already partially sorted. Records will be sorted 
+        within each group rather than as a single sequence. This reduces memory 
+        usage, but the effect on performance is mixed. If the groups are small 
+        relative to the total sequence length, grouping increases performance. 
+        However, as group size increases the performance advantage decreases 
+        and eventually goes negative.
                         
         """
-        if not callable(key):
-            key = itemgetter(key)
-        self._keyfunc = key
+        self._keyfunc = key if callable(key) else itemgetter(key)
+        if group:
+            group = group if callable(group) else itemgetter(group)
+        self._groupfunc = group
+        self._groupval = None
         self._buffer = []
         self._output = None  # defined by _ReaderBuffer or _WriterBuffer
         return
@@ -35,6 +45,12 @@ class _Sort(object):
         """ Process each incoming record.
         
         """
+        if self._groupfunc:
+            groupval = self._groupfunc(record)
+            if groupval != self._groupval and self._buffer:
+                # This is a new group; process the previous group.
+                self._flush()
+            self._groupval = groupval
         self._buffer.append(record)
         return
         
@@ -44,7 +60,7 @@ class _Sort(object):
         """
         self._buffer.sort(key=self._keyfunc)
         self._output = deque(self._buffer)
-        self._buffer = None
+        self._buffer = []
         return
 
 
@@ -55,11 +71,11 @@ class SortReader(_Sort, _ReaderBuffer):
     reader.
     
     """
-    def __init__(self, reader, key):
+    def __init__(self, reader, key, group=None):
         """ Initialize this object.
         
         """
-        _Sort.__init__(self, key)
+        _Sort.__init__(self, key, group)
         _ReaderBuffer.__init__(self, reader)
         return
 
@@ -83,10 +99,10 @@ class SortWriter(_Sort, _WriterBuffer):
     No output is available until close() is called for this writer.
     
     """
-    def __init__(self, writer, key):
+    def __init__(self, writer, key, group=None):
         """ Initialize this object.
         
         """
-        _Sort.__init__(self, key)
+        _Sort.__init__(self, key, group)
         _WriterBuffer.__init__(self, writer)
         return
