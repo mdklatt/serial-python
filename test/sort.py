@@ -48,7 +48,7 @@ class _SortTest(TestCase):
         self.mod_sorted = sorted(self.num_sorted, key=itemgetter("mod"))
         self.all_random = self.num_sorted[:]
         shuffle(self.all_random)
-        self.mod_random = sorted(self.all_random, key=itemgetter("mod"))
+        self.num_random = sorted(self.all_random, key=itemgetter("mod"))
         return
 
 
@@ -76,7 +76,7 @@ class SortReaderTest(_SortTest):
         """ Test the __iter__() method with grouping.
     
         """
-        reader = SortReader(iter(self.mod_random), "num", "mod")
+        reader = SortReader(iter(self.num_random), "num", "mod")
         self.assertSequenceEqual(self.mod_sorted, list(reader))
         return
 
@@ -123,10 +123,19 @@ class SortWriterTest(_SortTest):
 
         """
         writer = SortWriter(self.writer, "num", "mod")
-        for record in self.mod_random:
+        for record in self.num_random:
             writer.write(record)
         writer.close()
         self.assertSequenceEqual(self.mod_sorted, self.writer.output)
+        return
+
+    def test_dump(self):
+        """ Test the dump() method.
+
+        """
+        writer = SortWriter(self.writer, "num")
+        writer.dump(self.all_random)
+        self.assertSequenceEqual(self.num_sorted, self.writer.output)
         return
 
 

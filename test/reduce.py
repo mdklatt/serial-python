@@ -122,7 +122,7 @@ class AggregateWriterTest(_AggregateTest):
 
         """
         super(AggregateWriterTest, self).setUp()
-        self.buffer = _MockWriter()  
+        self.writer = _MockWriter()  
         return
 
     def test_reduction(self):
@@ -141,43 +141,64 @@ class AggregateWriterTest(_AggregateTest):
         reduced = (
             {"str": "abc", "int": 5, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
-        writer = AggregateWriter(self.buffer, "str")
-        writer.reduce(AggregateWriter.reduction(sum, "int"),
-                      AggregateWriter.reduction(max, "float"))
+        writer = AggregateWriter(self.writer, "str")
+        writer.reduce(
+            AggregateWriter.reduction(sum, "int"),
+            AggregateWriter.reduction(max, "float"))
         for record in self.records:
             writer.write(record)
         writer.close()
         writer.close()  # test that redundant calls are a no-op
-        self.assertSequenceEqual(reduced, self.buffer.output)
+        self.assertSequenceEqual(reduced, self.writer.output)
         return
 
     def test_write_multi_key(self):
-        """ Test the write() and close() methods with a multi-field key.
+        """ Test the write() method with a multi-field key.
 
         """
         reduced = (
             {"str": "abc", "int": 1, "float": 2.},
             {"str": "abc", "int": 3, "float": 3.},
             {"str": "def", "int": 3, "float": 4.})
-        writer = AggregateWriter(self.buffer, ("str", "int"))
+        writer = AggregateWriter(self.writer, ("str", "int"))
         writer.reduce(AggregateWriter.reduction(max, "float"))
-        writer.dump(self.records)
-        self.assertSequenceEqual(reduced, self.buffer.output)
+        for record in self.records:
+            writer.write(record)
+        writer.close()
+        self.assertSequenceEqual(reduced, self.writer.output)
         return
 
     def test_write_custom_key(self):
-        """ Test the write() and close() with a custom key function.
+        """ Test the write() method with a custom key function.
 
         """
         reduced = (
             {"KEY": "ABC", "int": 5, "float": 3.},
             {"KEY": "DEF", "int": 3, "float": 4.})
         key = lambda record: {"KEY": record["str"].upper()}
-        writer = AggregateWriter(self.buffer, key)
-        writer.reduce(AggregateWriter.reduction(sum, "int"))
-        writer.reduce(AggregateWriter.reduction(max, "float"))
+        writer = AggregateWriter(self.writer, key)
+        writer.reduce(
+            AggregateWriter.reduction(sum, "int"),
+            AggregateWriter.reduction(max, "float"))
+        for record in self.records:
+            writer.write(record)
+        writer.close()
+        self.assertSequenceEqual(reduced, self.writer.output)
+        return
+
+    def test_dump(self):
+        """ Test the dump() method.
+
+        """
+        reduced = (
+            {"str": "abc", "int": 5, "float": 3.},
+            {"str": "def", "int": 3, "float": 4.})
+        writer = AggregateWriter(self.writer, "str")
+        writer.reduce(
+            AggregateWriter.reduction(sum, "int"),
+            AggregateWriter.reduction(max, "float"))
         writer.dump(self.records)
-        self.assertSequenceEqual(reduced, self.buffer.output)
+        self.assertSequenceEqual(reduced, self.writer.output)
         return
 
 
