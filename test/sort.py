@@ -46,9 +46,9 @@ class _SortTest(TestCase):
         """
         self.num_sorted = [{"num": x, "mod": x%2} for x in range(20)]
         self.mod_sorted = sorted(self.num_sorted, key=itemgetter("mod"))
-        self.num_random = self.num_sorted[:]
-        shuffle(self.num_random)
-        self.mod_random = sorted(self.num_random, key=itemgetter("mod"))
+        self.all_random = self.num_sorted[:]
+        shuffle(self.all_random)
+        self.mod_random = sorted(self.all_random, key=itemgetter("mod"))
         return
 
 
@@ -60,9 +60,17 @@ class SortReaderTest(_SortTest):
         """ Test the __iter__() method.
     
         """
-        reader = SortReader(iter(self.num_random), "num")
+        reader = SortReader(iter(self.all_random), "num")
         self.assertSequenceEqual(self.num_sorted, list(reader))
         return
+    
+    def test_iter_multi_key(self):
+        """ Test the __iter__() method with a multi-key sort.
+        
+        """
+        reader = SortReader(iter(self.all_random), ("mod", "num"))
+        self.assertSequenceEqual(self.mod_sorted, list(reader))
+        
         
     def test_iter_group(self):
         """ Test the __iter__() method with grouping.
@@ -93,19 +101,31 @@ class SortWriterTest(_SortTest):
 
         """
         writer = SortWriter(self.writer, "num")
-        for record in self.num_random:
+        for record in self.all_random:
             writer.write(record)
         writer.close()
         writer.close()  # test that redundant calls are a no-op
         self.assertSequenceEqual(self.num_sorted, self.writer.output)
         return
 
+    def test_write_multi_key(self):
+        """ Test the write() method with a multi-key sort.
+        
+        """
+        writer = SortWriter(self.writer, ("mod", "num"))
+        for record in self.all_random:
+            writer.write(record)
+        writer.close()
+        self.assertSequenceEqual(self.mod_sorted, self.writer.output)
+
     def test_write_group(self):
-        """ Test the write() and dump() methods with grouping.
+        """ Test the write() method with grouping.
 
         """
         writer = SortWriter(self.writer, "num", "mod")
-        writer.dump(self.mod_random)
+        for record in self.mod_random:
+            writer.write(record)
+        writer.close()
         self.assertSequenceEqual(self.mod_sorted, self.writer.output)
         return
 

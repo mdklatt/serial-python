@@ -14,7 +14,7 @@ __all__ = ("SortReader", "SortWriter")
 
 
 class _Sort(object):
-    """ Base class for SortReader and SortWriter.
+    """ Abstract base class for SortReader and SortWriter.
     
     """
     def __init__(self, key, group=None):
@@ -32,13 +32,19 @@ class _Sort(object):
         and eventually goes negative.
                         
         """
-        self._keyfunc = key if callable(key) else itemgetter(key)
-        if group:
-            group = group if callable(group) else itemgetter(group)
-        self._groupfunc = group
+        def keyfunc(key):
+            """ Create a key function. """
+            if not key or callable(key):
+                return key
+            if isinstance(key, basestring):
+                key = (key,)
+            return itemgetter(*key)
+            
+        self._keyfunc = keyfunc(key)
+        self._groupfunc = keyfunc(group)
         self._groupval = None
         self._buffer = []
-        self._output = None  # defined by _ReaderBuffer or _WriterBuffer
+        self._output = None  # defined by derived classes
         return
         
     def _queue(self, record):
