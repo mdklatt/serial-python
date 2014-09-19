@@ -70,6 +70,14 @@ class SortReaderTest(_SortTest):
         """
         reader = SortReader(iter(self.all_random), ("mod", "num"))
         self.assertSequenceEqual(self.mod_sorted, list(reader))
+
+    def test_iter_custom_key(self):
+        """ Test the __iter__() method with a custom sort key.
+        
+        """
+        keyfunc = lambda record: record["num"]
+        reader = SortReader(iter(self.all_random), keyfunc)
+        self.assertSequenceEqual(self.num_sorted, list(reader))
         
         
     def test_iter_group(self):
@@ -117,6 +125,18 @@ class SortWriterTest(_SortTest):
             writer.write(record)
         writer.close()
         self.assertSequenceEqual(self.mod_sorted, self.writer.output)
+
+    def test_write_custom_key(self):
+        """ Test the write() method with a custom sort key.
+
+        """
+        keyfunc = lambda record: record["num"]
+        writer = SortWriter(self.writer, keyfunc)
+        for record in self.all_random:
+            writer.write(record)
+        writer.close()
+        self.assertSequenceEqual(self.num_sorted, self.writer.output)
+        return
 
     def test_write_group(self):
         """ Test the write() method with grouping.
