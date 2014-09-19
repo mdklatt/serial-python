@@ -25,11 +25,9 @@ class _Sort(object):
         
         The optional group argument is like the key argument but is used to 
         group records that are already partially sorted. Records will be sorted 
-        within each group rather than as a single sequence. This reduces memory 
-        usage, but the effect on performance is mixed. If the groups are small 
-        relative to the total sequence length, grouping increases performance. 
-        However, as group size increases the performance advantage decreases 
-        and eventually goes negative.
+        within each group rather than as a single sequence. If the groups are 
+        small relative to the total sequence length this can significantly 
+        improve performance and memory usage.
                         
         """
         def keyfunc(key):
@@ -40,23 +38,23 @@ class _Sort(object):
                 key = (key,)
             return itemgetter(*key)
             
-        self._keyfunc = keyfunc(key)
-        self._groupfunc = keyfunc(group)
-        self._groupval = None
+        self._get_key = keyfunc(key)
+        self._get_group = keyfunc(group)
+        self._group = None
         self._buffer = []
-        self._output = None  # defined by derived classes
+        self._output = None  # initialized by derived classes
         return
         
     def _queue(self, record):
         """ Process each incoming record.
         
         """
-        if self._groupfunc:
-            groupval = self._groupfunc(record)
-            if groupval != self._groupval:
+        if self._get_group:
+            group = self._get_group(record)
+            if group != self._group:
                 # This is a new group; process the previous group.
                 self._flush()
-            self._groupval = groupval
+            self._group = group
         self._buffer.append(record)
         return
         
@@ -66,7 +64,7 @@ class _Sort(object):
         """
         if not self._buffer:
             return
-        self._buffer.sort(key=self._keyfunc)
+        self._buffer.sort(key=self._get_key)
         self._output = deque(self._buffer)
         self._buffer = []
         return
@@ -74,9 +72,6 @@ class _Sort(object):
 
 class SortReader(_Sort, _ReaderBuffer):
     """ Sort input from another reader.
-    
-    No input is available until all records have been read from the source
-    reader.
     
     """
     def __init__(self, reader, key, group=None):
@@ -103,8 +98,6 @@ class SortReader(_Sort, _ReaderBuffer):
 
 class SortWriter(_Sort, _WriterBuffer):
     """ Sort output for another writer.
-    
-    No output is available until close() is called for this writer.
     
     """
     def __init__(self, writer, key, group=None):

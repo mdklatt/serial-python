@@ -24,6 +24,7 @@ class CacheReaderTest(TestCase):
         any side effects. This is part of the unittest API.
 
         """
+        # Need at least 3 records.
         self.records = {"str": "abc"}, {"str": "def"}, {"str": "ghi"}
         self.reader = CacheReader(iter(self.records))
         return
@@ -49,9 +50,9 @@ class CacheReaderTest(TestCase):
         """ Test the rewind() method.
         
         """
-        list(self.reader)
+        list(self.reader)  # exhaust reader
         self.reader.rewind()
-        self.reader.rewind()  # multiple rewinds should be a no-op
+        self.reader.rewind()  # should be a no-op
         self.assertSequenceEqual(self.records, list(self.reader))
         return
 
@@ -60,7 +61,7 @@ class CacheReaderTest(TestCase):
         
         """
         count = 1
-        list(self.reader)
+        list(self.reader)  # exhaust reader
         self.reader.rewind(count)
         self.assertSequenceEqual(self.records[-count:], list(self.reader))
         return
@@ -69,10 +70,10 @@ class CacheReaderTest(TestCase):
         """ Test the rewind() method with a maxlen value.
         
         """
-        maxlen = 2
+        maxlen = len(self.records) - 1
         self.reader = CacheReader(iter(self.records), maxlen)
-        list(self.reader)
-        self.reader.rewind(maxlen+1)  # attempt to rewind beyond buffer
+        list(self.reader)  # exhaust reader
+        self.reader.rewind(maxlen+1)  # attempt to rewind beyond cache
         self.assertSequenceEqual(self.records[-maxlen:], list(self.reader))
         return
         
@@ -89,7 +90,7 @@ def load_tests(loader, tests, pattern):
     from this module.
 
     """
-    suite =TestSuite()
+    suite = TestSuite()
     for test_case in _TEST_CASES:
         tests = loader.loadTestsFromTestCase(test_case)
         suite.addTests(tests)

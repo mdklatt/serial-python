@@ -16,8 +16,8 @@ class CacheReader(_ReaderBuffer):
     def __init__(self, reader, maxlen=None):
         """ Initialize this object.
         
-        By default, all input is cached, or specify maxlen to limit the 
-        number of records.
+        By default all input is cached, or specify maxlen to limit the number
+        of cached records.
         
         """
         # Using a plain list as the buffer because random access approaches
@@ -31,7 +31,7 @@ class CacheReader(_ReaderBuffer):
     def rewind(self, count=None):
         """ Rewind the reader.
         
-        Rewind to the first saved record by default, or specify a count.
+        Rewind to the first cached record by default, or specify a count.
         
         """
         self._bufpos = 0 if count is None else max(0, self._bufpos - count)

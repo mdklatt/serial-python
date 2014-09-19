@@ -41,23 +41,22 @@ class TimeFormat(object):
                     esc = False
             return
 
-        # The presumed use case is multiple conversions using the same format
-        # string, so scan the string once and build a template.
-        self._template = []
         self._fields = []
+        template_fields = []
         for char, esc in scan():
+            # The presumed use case is multiple conversions using the same
+            # format string, so scan the string once and build a template.
             if not esc:
                 # A character literal
-                self._template.append(char)
+                template_fields.append(char)
                 continue
-            # Add a new field.
             try:
                 field = self._formats[char]
-            except:
+            except KeyError:
                 raise ValueError("unknown field specifier: {0:s}".format(char))
-            self._template.append("{{{0:d}:s}}".format(len(self._fields)))
+            template_fields.append("{{{0:d}:s}}".format(len(self._fields)))
             self._fields.append(field)
-        self._template = "".join(self._template)
+        self._template = "".join(template_fields)
         return
 
     def __call__(self, time):
