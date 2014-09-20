@@ -99,7 +99,7 @@ class UpdateCommand(_CustomCommand):
         """ Execute the command.
         
         """
-        # Reload the package after pulling the latest commit so than any
+        # Reload the package after pulling the latest commit so that any
         # subsequent subcommands (e.g. `test`) will use the updated version.
         args = {"remote": self.remote, "branch": self.branch}
         cmdl = "git pull --ff-only {remote:s} {branch:s}".format(**args)
