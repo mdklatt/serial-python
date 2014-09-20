@@ -6,6 +6,8 @@ if all tests pass:
     python setup.py test install --user
 
 """
+from __future__ import print_function
+
 from distutils.core import Command
 from distutils.core import setup
 from subprocess import call
@@ -14,7 +16,7 @@ import test  # select the correct version of unittest
 from unittest import defaultTestLoader
 from unittest import TextTestRunner
 
-from serial.core import __version__
+import serial.core as package
 
 
 _CONFIG = {
@@ -22,7 +24,7 @@ _CONFIG = {
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
     "author_email": "mdklatt@ou.edu",
-    "version": __version__}
+    "version": package.__version__}
 
 
 class _CustomCommand(Command):
@@ -97,10 +99,14 @@ class UpdateCommand(_CustomCommand):
         """ Execute the command.
         
         """
+        # Reload the package after pulling the latest commit so than any
+        # subsequent subcommands (e.g. `test`) will use the updated version.
         args = {"remote": self.remote, "branch": self.branch}
         cmdl = "git pull --ff-only {remote:s} {branch:s}".format(**args)
         if call(cmdl.split()) != 0:
             raise SystemExit
+        reload(package)
+        print("package version is now {0:s}".format(package.__version__))
         return
 
 
