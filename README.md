@@ -15,8 +15,9 @@ Features
 --------
 * Read/write delimited and fixed-width data
 * Named and typed data fields
-* Data filtering via callbacks
-* Data aggregation
+* Filtering
+* Aggregation
+* Sorting
 * Advanced data transformations 
 
 
