@@ -13,7 +13,7 @@ from .buffer import _WriterBuffer
 __all__ = ("SortReader", "SortWriter")
 
 
-class _Sort(object):
+class _Sorter(object):
     """ Abstract base class for SortReader and SortWriter.
     
     """
@@ -70,7 +70,7 @@ class _Sort(object):
         return
 
 
-class SortReader(_Sort, _ReaderBuffer):
+class SortReader(_Sorter, _ReaderBuffer):
     """ Sort input from another reader.
     
     """
@@ -78,7 +78,7 @@ class SortReader(_Sort, _ReaderBuffer):
         """ Initialize this object.
         
         """
-        _Sort.__init__(self, key, group)
+        _Sorter.__init__(self, key, group)
         _ReaderBuffer.__init__(self, reader)
         return
 
@@ -96,7 +96,7 @@ class SortReader(_Sort, _ReaderBuffer):
         return
         
 
-class SortWriter(_Sort, _WriterBuffer):
+class SortWriter(_Sorter, _WriterBuffer):
     """ Sort output for another writer.
     
     """
@@ -104,6 +104,6 @@ class SortWriter(_Sort, _WriterBuffer):
         """ Initialize this object.
         
         """
-        _Sort.__init__(self, key, group)
+        _Sorter.__init__(self, key, group)
         _WriterBuffer.__init__(self, writer)
         return
