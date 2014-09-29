@@ -12,7 +12,7 @@ from .buffer import _WriterBuffer
 __all__ = ("AggregateReader", "AggregateWriter")
 
 
-class _Aggregate(object):
+class _Aggregator(object):
     """ Base class for AggregateReader and AggregateWriter.
     
     During aggregation, incoming records are grouped, reduction functions are
@@ -131,7 +131,7 @@ class _Aggregate(object):
         return
                 
 
-class AggregateReader(_Aggregate, _ReaderBuffer):
+class AggregateReader(_Aggregator, _ReaderBuffer):
     """ Apply aggregate functions to input from another reader.
     
     """
@@ -139,7 +139,7 @@ class AggregateReader(_Aggregate, _ReaderBuffer):
         """ Initialize this object.
         
         """
-        _Aggregate.__init__(self, key)
+        _Aggregator.__init__(self, key)
         _ReaderBuffer.__init__(self, reader)
         return
 
@@ -158,7 +158,7 @@ class AggregateReader(_Aggregate, _ReaderBuffer):
         return
 
 
-class AggregateWriter(_Aggregate, _WriterBuffer):
+class AggregateWriter(_Aggregator, _WriterBuffer):
     """ Apply aggregate functions to output for another writer.
     
     """
@@ -166,6 +166,6 @@ class AggregateWriter(_Aggregate, _WriterBuffer):
         """ Initialize this object.
         
         """
-        _Aggregate.__init__(self, key)
+        _Aggregator.__init__(self, key)
         _WriterBuffer.__init__(self, writer)
         return
