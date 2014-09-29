@@ -9,7 +9,7 @@ from unittest import TestCase
 from unittest import TestSuite
 from unittest import main
 
-from serial.core import ArrayField
+from serial.core import ListField
 from serial.core import IntField
 from serial.core import StringField
 
@@ -126,7 +126,7 @@ class DelimitedReaderTest(_TabularReaderTest):
         """
         fields = (
             IntField("int", 0, ),
-            ArrayField("arr", (1, None), (
+            ListField("arr", (1, None), (
                 StringField("x", 0), 
                 StringField("y", 1))))
         self.data = "123, abc, def\n456, ghi, jkl\n"
@@ -162,7 +162,7 @@ class FixedWidthReaderTest(_TabularReaderTest):
         """
         fields = (
             IntField("int", (0, 4), "3d"),
-            ArrayField("arr", (4, None), ( 
+            ListField("arr", (4, None), ( 
                 StringField("x", (0, 4)), 
                 StringField("y", (4, 8)))))
         self.data = " 123 abc def\n 456 ghi jkl\n"

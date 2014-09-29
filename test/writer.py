@@ -10,7 +10,7 @@ from unittest import main
 
 from serial.core import DelimitedWriter
 from serial.core import FixedWidthWriter
-from serial.core import ArrayField
+from serial.core import ListField
 from serial.core import IntField
 from serial.core import StringField
 
@@ -97,7 +97,7 @@ class DelimitedWriterTest(_TabularWriterTest):
         """
         fields = (
             IntField("int", 0),
-            ArrayField("arr", (1, None), ( 
+            ListField("arr", (1, None), ( 
                 StringField("x", 0), 
                 StringField("y", 1))))
         super(DelimitedWriterTest, self).setUp()
@@ -142,7 +142,7 @@ class FixedWidthWriterTest(_TabularWriterTest):
         """
         fields = (
             IntField("int", (0, 4), "4d"),
-            ArrayField("arr", (4, None), (
+            ListField("arr", (4, None), (
                 StringField("x", (0, 4), "4s"), 
                 StringField("y", (4, 8), "4s")))) 
         super(FixedWidthWriterTest, self).setUp()

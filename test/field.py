@@ -256,8 +256,8 @@ class DatetimeFieldTest(_FieldTest):
         return
     
     
-class ArrayFieldTest(_FieldTest):
-    """ Unit testing for the ArrayField class.
+class ListFieldTest(_FieldTest):
+    """ Unit testing for the ListField class.
 
     """
     def setUp(self):
@@ -267,16 +267,16 @@ class ArrayFieldTest(_FieldTest):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields =  (StringField("str", 0), IntField("int", 1))
+        list_fields =  (StringField("str", 0), IntField("int", 1))
         self.name = "array"
         self.pos = 1, 5 
         self.width = 4
         self.value = [{"str": "abc", "int": 123}, {"str": "def", "int": 456}]
         self.token = ["abc", "123", "def", "456"]
-        self.field = ArrayField(self.name, self.pos, array_fields)
+        self.field = ListField(self.name, self.pos, list_fields)
         self.default_value = [{"str": "xyz", "int": -999}]
         self.default_token = ["xyz", "-999"]
-        self.default_field = ArrayField(self.name, self.pos, array_fields, 
+        self.default_field = ListField(self.name, self.pos, list_fields, 
                                         self.default_value)
         return
  
@@ -309,7 +309,7 @@ class ArrayFieldTest(_FieldTest):
         return
 
 
-class RecordFieldTest(ArrayFieldTest):
+class RecordFieldTest(ListFieldTest):
     """ Unit testing for the RecordField class.
     
     """
@@ -356,7 +356,7 @@ class RecordFieldTest(ArrayFieldTest):
 
 _TEST_CASES = (
     ConstFieldTest, IntFieldTest, LongFieldTest, FloatFieldTest, 
-    StringFieldTest, DatetimeFieldTest, RecordFieldTest, ArrayFieldTest)
+    StringFieldTest, DatetimeFieldTest, RecordFieldTest, ListFieldTest)
 
 
 def load_tests(loader, tests, pattern):

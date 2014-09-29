@@ -13,7 +13,7 @@ from ._util import TimeFormat
 
 
 __all__ = ("ConstField", "IntField", "LongField", "FloatField", "StringField", 
-           "DatetimeField", "RecordField", "ArrayField")
+           "DatetimeField", "RecordField", "ListField")
 
 
 class _ScalarField(object):
@@ -256,11 +256,11 @@ class DatetimeField(_ScalarField):
         return token[:self.width].rjust(self.width) if self._fixed else token
 
 
-class ArrayField(object):
+class ListField(object):
     """ An array of composite field elements.
 
     """
-    # An ArrayField is mapped to 0 or more input/output tokens.
+    # An ListField is mapped to 0 or more input/output tokens.
     
     def __init__(self, name, pos, fields, default=None):
         """ Initialize this object.
@@ -318,14 +318,14 @@ class ArrayField(object):
                 product(values, self._fields)]
 
                 
-class RecordField(ArrayField):
+class RecordField(ListField):
     """ A composite field. 
 
-    A RecordField is equivalent to the first element of an ArrayField with
+    A RecordField is equivalent to the first element of an ListField with
     exactly one element, e.g. array_field[0]. 
 
     """
-    # From an implementation perspective a RecordField *is* an ArrayField, but
+    # From an implementation perspective a RecordField *is* an ListField, but
     # semantically inheritance is a little murkier. For now, convenience
     # prevails.
         
