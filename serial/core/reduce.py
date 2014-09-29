@@ -75,7 +75,9 @@ class _Aggregator(object):
         self._keyfunc = key
         self._keyval = None
         self._buffer = []
-        self._reductions = []        
+        self._reductions = []
+        self._output = None  # initialized by derived classes
+          
         return
 
     def reduce(self, *callbacks):

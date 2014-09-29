@@ -6,7 +6,6 @@ Writers convert data records to lines of text.
 from __future__ import absolute_import
 
 from contextlib import contextmanager
-from functools import partial
 from itertools import chain
 
 
@@ -171,8 +170,8 @@ class DelimitedWriter(_TabularWriter):
         super(DelimitedWriter, self).__init__(stream, fields, endl)
         self._delim = delim
         if esc:
-            self._escape = lambda tokens: (tok.replace(delim, esc+delim) for 
-                                           tok in tokens)
+            self._escape = lambda tokens: (token.replace(delim, esc+delim) for 
+                                           token in tokens)
         else:
             self._escape = lambda tokens: tokens
         return
