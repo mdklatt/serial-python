@@ -309,6 +309,31 @@ class ListFieldTest(_FieldTest):
         return
 
 
+class ArrayFieldTest(ListFieldTest):
+    """ Unit testing for the ArrayField class.
+
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        array_fields =  (StringField("str", 0), IntField("int", 1))
+        self.name = "array"
+        self.pos = 1, 5 
+        self.width = 4
+        self.value = [{"str": "abc", "int": 123}, {"str": "def", "int": 456}]
+        self.token = ["abc", "123", "def", "456"]
+        self.field = ArrayField(self.name, self.pos, array_fields)
+        self.default_value = [{"str": "xyz", "int": -999}]
+        self.default_token = ["xyz", "-999"]
+        self.default_field = ArrayField(self.name, self.pos, array_fields, 
+                                        self.default_value)
+        return
+
+
 class RecordFieldTest(ListFieldTest):
     """ Unit testing for the RecordField class.
     
@@ -356,7 +381,8 @@ class RecordFieldTest(ListFieldTest):
 
 _TEST_CASES = (
     ConstFieldTest, IntFieldTest, LongFieldTest, FloatFieldTest, 
-    StringFieldTest, DatetimeFieldTest, RecordFieldTest, ListFieldTest)
+    StringFieldTest, DatetimeFieldTest, RecordFieldTest, ListFieldTest,
+    ArrayFieldTest)
 
 
 def load_tests(loader, tests, pattern):

@@ -8,12 +8,13 @@ from __future__ import absolute_import
 
 from datetime import datetime
 from itertools import product
+from warnings import warn
 
 from ._util import TimeFormat
 
 
 __all__ = ("ConstField", "IntField", "LongField", "FloatField", "StringField", 
-           "DatetimeField", "RecordField", "ListField")
+           "DatetimeField", "RecordField", "ListField", "ArrayField")
 
 
 class _ScalarField(object):
@@ -316,6 +317,20 @@ class ListField(object):
         values = values or self._default or []
         return [field.encode(elem.get(field.name)) for elem, field in
                 product(values, self._fields)]
+
+
+class ArrayField(ListField):
+    """ Alias for ListField to maintain backwards compatibility.
+    
+    """
+    def __init__(self, name, pos, fields, default=None):
+        """ Initialize this object.
+
+        """
+        super(ArrayField, self).__init__(name, pos, fields, default)
+        message = "ArrayField has been renamed to ListField"
+        warn(message, DeprecationWarning)
+        return
 
                 
 class RecordField(ListField):
