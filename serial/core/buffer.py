@@ -40,7 +40,6 @@ class _ReaderBuffer(_Reader):
                 self._queue(self._reader.next())
             except (AttributeError, StopIteration):
                 # Underflow condition.
-                self._reader = None
                 self._uflow()  # raises StopIteration on EOF
         return self._output.popleft()
             
