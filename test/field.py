@@ -5,6 +5,7 @@ The module can be executed on its own or incorporated into a larger test suite.
 """
 from datetime import datetime
 from itertools import izip
+from warnings import simplefilter as filter_warnings
 from unittest import TestCase
 from unittest import TestSuite
 from unittest import main
@@ -309,28 +310,20 @@ class ListFieldTest(_FieldTest):
         return
 
 
-class ArrayFieldTest(ListFieldTest):
+class ArrayFieldTest(TestCase):
     """ Unit testing for the ArrayField class.
 
+    ArrayField is now a deprecated alias for ListField, so normal Field tests
+    are ignored.
+
     """
-    def setUp(self):
-        """ Set up the test fixture.
-
-        This is called before each test is run so that they are isolated from
-        any side effects. This is part of the unittest API.
-
+    def test_init(self):
+        """ Test the __init__() method. 
+        
         """
-        array_fields = StringField("str", 0), IntField("int", 1)
-        self.name = "array"
-        self.pos = 1, 5 
-        self.width = 4
-        self.value = [{"str": "abc", "int": 123}, {"str": "def", "int": 456}]
-        self.token = ["abc", "123", "def", "456"]
-        self.field = ArrayField(self.name, self.pos, array_fields)
-        self.default_value = [{"str": "xyz", "int": -999}]
-        self.default_token = ["xyz", "-999"]
-        self.default_field = ArrayField(self.name, self.pos, array_fields, 
-                                        self.default_value)
+        filter_warnings("error", DeprecationWarning)  # raise exception
+        with self.assertRaises(DeprecationWarning):
+            ArrayField("array", (0, 1), [])
         return
 
 
