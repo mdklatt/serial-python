@@ -103,21 +103,20 @@ class _TabularReader(_Reader):
     """
     @classmethod
     @contextmanager
-    def open(cls, expr, *args, **kwargs):
+    def open(cls, stream, *args, **kwargs):
         """ Create a runtime context for a _TabularReader and its stream.
         
         The arguments are passed to the reader's constructor, except that the
-        first argument is either an open stream or a file path that is used to 
-        open a text file for reading. In both cases the stream will be closed
-        upon exit from the context block.
+        first argument is either an open stream or a path that is used to open
+        a text file for reading. In both cases the stream will be closed upon
+        exit from the context block.
         
         """
         # This assumes that first argument for all derived class constructors
         # is the stream; if not, this will need to be overridden.
-        try:
-            stream = open(expr, "r")
-        except TypeError:  # not a string
-            stream = expr
+        if isinstance(stream, basestring):
+            # Treat this as a file path.
+            stream = open(stream, "r")
         yield cls(stream, *args, **kwargs)
         try:
             stream.close()
@@ -276,21 +275,18 @@ class ChainReader(_Reader):
         """
         return self._records.next()
     
-    def _stream(self, expr):
-        """ Return an open stream using the given expression.
+    def _stream(self, stream):
+        """ Return an open stream based on the given argument.
         
-        The expression is either a path to open as a text file or an already 
-        open stream. Derived classes can override this to support other types
-        of streams, e.g. network streams. Return None to a skip a given item in
-        the sequence.
+        The argument is either an open stream or a path to open as a text file. 
+        Derived classes can override this to support other types of streams, 
+        e.g. network streams. Return None to a skip a given item in the 
+        sequence.
         
         """
-        try:
-            # Try to open a path as a text file.
-            stream = open(expr, "r")
-        except TypeError:
-            # Not a string, assume it's an open stream.
-            stream = expr
+        if isinstance(stream, basestring):
+            # Treat this as a file path.
+            stream = open(stream, "r")
         return stream
 
 

@@ -267,8 +267,8 @@ class ListFieldTest(_FieldTest):
         any side effects. This is part of the unittest API.
 
         """
-        list_fields =  (StringField("str", 0), IntField("int", 1))
-        self.name = "array"
+        list_fields = StringField("str", 0), IntField("int", 1)
+        self.name = "list"
         self.pos = 1, 5 
         self.width = 4
         self.value = [{"str": "abc", "int": 123}, {"str": "def", "int": 456}]
@@ -320,7 +320,7 @@ class ArrayFieldTest(ListFieldTest):
         any side effects. This is part of the unittest API.
 
         """
-        array_fields =  (StringField("str", 0), IntField("int", 1))
+        array_fields = StringField("str", 0), IntField("int", 1)
         self.name = "array"
         self.pos = 1, 5 
         self.width = 4
