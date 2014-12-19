@@ -6,10 +6,9 @@ if all tests pass:
     python setup.py test install --user
 
 """
-from __future__ import print_function
-
 from distutils.core import Command
 from distutils.core import setup
+from distutils import log
 from subprocess import call
 
 import test  # select the correct version of unittest
@@ -71,6 +70,7 @@ class TestCommand(_CustomCommand):
         """ Execute the command.
         
         """
+        log.info("package version is {0:s}".format(package.__version__))
         suite = defaultTestLoader.discover("test", "[a-z]*.py")
         result = TextTestRunner().run(suite)
         if not result.wasSuccessful():
@@ -106,7 +106,7 @@ class UpdateCommand(_CustomCommand):
         if call(cmdl.split()) != 0:
             raise SystemExit
         reload(package)
-        print("package version is now {0:s}".format(package.__version__))
+        log.info("package version is {0:s}".format(package.__version__))
         return
 
 
