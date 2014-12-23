@@ -11,10 +11,7 @@ from distutils.core import setup
 from distutils import log
 from subprocess import call
 
-import test  # select the correct version of unittest
-from unittest import defaultTestLoader
-from unittest import TextTestRunner
-
+from test import run as run_tests
 import serial.core as package
 
 
@@ -27,77 +24,77 @@ _CONFIG = {
 
 
 class _CustomCommand(Command):
-    """ Abstract base class for a distutils custom setup command. 
-    
+    """ Abstract base class for a distutils custom setup command.
+
     """
     # Each user option is a tuple consisting of the option's long name (ending
     # with "=" if it accepts an argument), its single-character alias, and a
     # description.
     description = ""
     user_options = []  # this must be a list
-    
+
     def initialize_options(self):
         """ Set the default values for all user options.
-        
+
         """
         return
-        
+
     def finalize_options(self):
         """ Set final values for all user options.
-        
+
         This is run after all other option assigments have been completed (e.g.
         command-line options, other commands, etc.)
-        
+
         """
         return
-        
+
     def run(self):
         """ Execute the command.
-       
-        Raise SystemExit to indicate failure. 
-        
+
+        Raise SystemExit to indicate failure.
+
         """
         raise NotImplementedError
-    
+
 
 class TestCommand(_CustomCommand):
     """ Custom setup command to run the test suite.
-    
+
     """
     description = "run the test suite"
 
     def run(self):
         """ Execute the command.
-        
+
         """
         log.info("package version is {0:s}".format(package.__version__))
-        suite = defaultTestLoader.discover("test", "[a-z]*.py")
-        result = TextTestRunner().run(suite)
-        if not result.wasSuccessful():
-            raise SystemExit 
+        if run_tests() != 0:
+            # TODO: Is there a better way to signal command failure to
+            # distutils?
+            raise SystemExit
         return
 
 
 class UpdateCommand(_CustomCommand):
     """ Custom setup command to pull from a remote branch.
-    
+
     """
     description = "update from the tracking branch"
     user_options = [
         ("remote=", "r", "remote name [default: tracking remote]"),
         ("branch=", "b", "branch name [default: tracking branch]")]
-    
+
     def initialize_options(self):
         """ Set the default values for all user options.
-        
+
         """
         self.remote = ""  # default to tracking remote
         self.branch = ""  # default to tracking branch
         return
-        
+
     def run(self):
         """ Execute the command.
-        
+
         """
         # Reload the package after pulling the latest commit so that any
         # subsequent subcommands (e.g. `test`) will use the updated version.
@@ -112,7 +109,7 @@ class UpdateCommand(_CustomCommand):
 
 def main():
     """ Execute the setup commands.
-    
+
     """
     setup(cmdclass={"test": TestCommand, "update": UpdateCommand}, **_CONFIG)
     return 0

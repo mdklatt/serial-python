@@ -13,4 +13,4 @@ branches:
 install:
     - pip install --requirement=test/requirements-py26.txt
 
-script: python setup.py test 
+script: python -m test.__main__  # explicit __main__ needed for Python 2.6

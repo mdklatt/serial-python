@@ -48,8 +48,10 @@ Testing
 Tests are contained in the `test` package and can be run from the package root
 on a per-module basis or altogether.
 
-    python -m test.name
-    python setup.py test
+    python -m test.name 
+    python -m test           
+    python -m test.__main__  # Python 2.6
+
  
 For Python 2.6 the [unittest2][4] library is required to run the test suite.
 
