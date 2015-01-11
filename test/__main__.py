@@ -8,6 +8,7 @@ from os.path import dirname
 from unittest import defaultTestLoader
 from unittest import TextTestRunner
 
+
 def main():
     """ Run all tests in this directory.
 

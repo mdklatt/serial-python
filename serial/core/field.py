@@ -233,7 +233,7 @@ class DatetimeField(_ScalarField):
     def decode(self, token):
         """ Convert a string token to a datetime.
 
-	    If the token is an empty string the default field value is used.        
+        If the token is an empty string the default field value is used.
 
         """
         token = token.strip()

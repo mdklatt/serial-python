@@ -5,7 +5,6 @@ run individual test modules from the command line. Import run() to run the test
 suite from another script.
 
 """
-from os.path import join
 from os.path import dirname
 from sys import modules
 from sys import path
@@ -19,4 +18,4 @@ except ImportError:
 
 from .__main__ import main as run
 
-path.insert(0, join(dirname(__file__), ".."))  # add project root to path
+path.insert(0, dirname(dirname(__file__)))  # add project root to path

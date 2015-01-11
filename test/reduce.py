@@ -3,14 +3,9 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from io import BytesIO
 from unittest import TestCase
 from unittest import TestSuite
 from unittest import main
-
-from serial.core import IntField
-from serial.core import FloatField
-from serial.core import StringField
 
 from serial.core.reduce import *  # tests __all__
 
@@ -205,6 +200,7 @@ class AggregateWriterTest(_AggregateTest):
 # Specify the test cases to run for this module (disables automatic discovery).
 
 _TEST_CASES = (AggregateReaderTest, AggregateWriterTest)
+
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

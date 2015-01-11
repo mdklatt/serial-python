@@ -82,6 +82,7 @@ class CacheReaderTest(TestCase):
 
 _TEST_CASES = (CacheReaderTest,)
 
+
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
 

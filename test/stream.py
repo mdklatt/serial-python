@@ -10,7 +10,6 @@ from unittest import TestCase
 from unittest import TestSuite
 from unittest import main
 from zlib import compress
-from zlib import decompress
 
 from serial.core import BufferedIStream
 from serial.core import FilteredIStream
@@ -177,7 +176,7 @@ class GzippedIStreamTest(TestCase):
         self.lines = ("\n", "abcdefgh\n", "ijkl")
         self.zlib_stream = BytesIO(compress("".join(self.lines)))
         self.gzip_stream = BytesIO()
-        with  closing(GzipFile(fileobj=self.gzip_stream, mode="w")) as stream:
+        with closing(GzipFile(fileobj=self.gzip_stream, mode="w")) as stream:
             # Explicit closing() context is necessary for Python 2.6 but not
             # for 2.7. Closing stream doesn't close fileobj.
             stream.write("".join(self.lines))
@@ -214,6 +213,7 @@ class GzippedIStreamTest(TestCase):
 
 _TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, FilteredOStreamTest,
                GzippedIStreamTest)
+
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

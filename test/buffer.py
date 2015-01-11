@@ -227,6 +227,7 @@ class WriterBufferTest(_BufferTest):
 
 _TEST_CASES = (ReaderBufferTest, WriterBufferTest)
 
+
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
 

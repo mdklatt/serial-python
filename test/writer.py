@@ -165,6 +165,7 @@ class FixedWidthWriterTest(_TabularWriterTest):
 
 _TEST_CASES = (DelimitedWriterTest, FixedWidthWriterTest)
 
+
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
 

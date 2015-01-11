@@ -44,7 +44,7 @@ class _SortTest(TestCase):
         any side effects. This is part of the unittest API.
 
         """
-        self.num_sorted = [{"num": x, "mod": x%2} for x in range(20)]
+        self.num_sorted = [{"num": x, "mod": x % 2} for x in range(20)]
         self.mod_sorted = sorted(self.num_sorted, key=itemgetter("mod"))
         self.all_random = self.num_sorted[:]
         shuffle(self.all_random)
@@ -78,8 +78,7 @@ class SortReaderTest(_SortTest):
         keyfunc = lambda record: record["num"]
         reader = SortReader(iter(self.all_random), keyfunc)
         self.assertSequenceEqual(self.num_sorted, list(reader))
-        
-        
+
     def test_iter_group(self):
         """ Test the __iter__() method with grouping.
     
@@ -162,6 +161,7 @@ class SortWriterTest(_SortTest):
 # Specify the test cases to run for this module (disables automatic discovery).
 
 _TEST_CASES = (SortReaderTest, SortWriterTest)
+
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

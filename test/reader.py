@@ -3,7 +3,6 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from functools import partial
 from io import BytesIO
 from unittest import TestCase
 from unittest import TestSuite
@@ -53,6 +52,8 @@ class _TabularReaderTest(TestCase):
     runners.
 
     """
+    TestClass = None  # must be defined by dervied classes
+
     def setUp(self):
         """ Set up the test fixture.
 
@@ -217,6 +218,7 @@ class ChainReaderTest(TestCase):
 # Specify the test cases to run for this module (disables automatic discovery).
 
 _TEST_CASES = DelimitedReaderTest, FixedWidthReaderTest, ChainReaderTest
+
 
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.

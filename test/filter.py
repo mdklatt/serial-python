@@ -158,6 +158,7 @@ class SliceFilterTest(_FilterTest):
 _TEST_CASES = (FieldFilterTest, RangeFilterTest, RegexFilterTest, 
                SliceFilterTest)
 
+
 def load_tests(loader, tests, pattern):
     """ Define a TestSuite for this module.
 

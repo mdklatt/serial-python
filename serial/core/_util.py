@@ -16,13 +16,13 @@ class TimeFormat(object):
         "d": ("02d", lambda time: time.day),
         "f": ("06d", lambda time: time.microsecond),
         "H": ("02d", lambda time: time.hour),
-        "I": ("02d", lambda time: time.hour%12),
+        "I": ("02d", lambda time: time.hour % 12),
         "M": ("02d", lambda time: time.minute),
         "m": ("02d", lambda time: time.month),
         "p": ("s", lambda time: "AM" if time.hour < 12 else "PM"),  # no locale
         "S": ("02d", lambda time: time.second),
         "Y": ("04d", lambda time: time.year),
-        "y": ("02d", lambda time: time.year%100)}
+        "y": ("02d", lambda time: time.year % 100)}
 
     def __init__(self, timefmt):
         """ Initialize this object.
