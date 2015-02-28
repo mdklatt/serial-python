@@ -11,7 +11,8 @@ from functools import partial
 from itertools import chain
 from re import compile
 
-__all__ = "DelimitedReader", "FixedWidthReader", "ChainReader"
+
+__all__ = "DictReader", "DelimitedReader", "FixedWidthReader", "ChainReader"
 
 
 class _Reader(object):
@@ -91,6 +92,30 @@ class _Reader(object):
 
         """
         raise NotImplementedError
+
+
+class DictReader(_Reader):
+    """ Read a sequence of dict-like records.
+
+    """
+    def __init__(self, records, keys=None):
+        """
+
+        """
+        super(DictReader, self).__init__()
+        if keys:
+            keys = list(keys)
+            subset = lambda record: {key: record[key] for key in keys}
+            self._records = iter(subset(record) for record in records)
+        else:
+            self._records = iter(records)
+        return
+
+    def _get(self):
+        """
+
+        """
+        return self._records.next()
 
 
 class _TabularReader(_Reader):
