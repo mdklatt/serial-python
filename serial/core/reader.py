@@ -9,10 +9,14 @@ from collections import deque
 from contextlib import contextmanager
 from functools import partial
 from itertools import chain
+from itertools import imap
+from itertools import izip
+from operator import attrgetter
 from re import compile
 
 
-__all__ = "DictReader", "DelimitedReader", "FixedWidthReader", "ChainReader"
+__all__ = ("DictReader", "ObjectReader", "DelimitedReader", "FixedWidthReader",
+           "ChainReader")
 
 
 class _Reader(object):
@@ -105,8 +109,8 @@ class DictReader(_Reader):
         super(DictReader, self).__init__()
         if keys:
             keys = list(keys)
-            subset = lambda record: {key: record[key] for key in keys}
-            self._records = iter(subset(record) for record in records)
+            get_keys = lambda record: {key: record[key] for key in keys}
+            self._records = iter(get_keys(record) for record in records)
         else:
             self._records = iter(records)
         return
@@ -116,6 +120,28 @@ class DictReader(_Reader):
 
         """
         return self._records.next()
+
+
+class ObjectReader(_Reader):
+    """ Read a sequence of objects.
+
+    """
+    def __init__(self, objects, attrs):
+        """
+
+        """
+        super(ObjectReader, self).__init__()
+        keys = list(attrs)
+        values = attrgetter(*keys)
+        items = (izip(keys, values(obj)) for obj in objects)
+        self._records = imap(dict, items)
+        return
+
+    def _get(self):
+        """
+
+        """
+        return next(self._records)
 
 
 class _TabularReader(_Reader):

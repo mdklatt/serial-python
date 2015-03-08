@@ -4,6 +4,7 @@ The module can be executed on its own or incorporated into a larger test suite.
 
 """
 from io import BytesIO
+from collections import namedtuple
 from unittest import TestCase
 from unittest import TestSuite
 from unittest import main
@@ -123,6 +124,25 @@ class DictReaderTest(_ReaderTest):
         self.records = [{key: record[key]} for record in self.records]
         self.reader = DictReader(self.records, [key])
         self.test_next()
+        return
+
+
+class ObjectReaderTest(_ReaderTest):
+    """ Unit testing for the ObjectReader class.
+
+    """
+    def setUp(self):
+        """ Set up the test fixture.
+
+        This is called before each test is run so that they are isolated from
+        any side effects. This is part of the unittest API.
+
+        """
+        super(ObjectReaderTest, self).setUp()
+        attrs = self.records[0].keys()
+        Object = namedtuple("Object", attrs)
+        self.objects = [Object(**record) for record in self.records]
+        self.reader = ObjectReader(self.objects, attrs)
         return
 
 
@@ -261,8 +281,8 @@ class ChainReaderTest(TestCase):
 
 # Specify the test cases to run for this module (disables automatic discovery).
 
-_TEST_CASES = (DictReaderTest, DelimitedReaderTest, FixedWidthReaderTest,
-               ChainReaderTest)
+_TEST_CASES = (DictReaderTest, ObjectReaderTest, DelimitedReaderTest,
+               FixedWidthReaderTest, ChainReaderTest)
 
 
 def load_tests(loader, tests, pattern):
