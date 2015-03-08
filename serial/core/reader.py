@@ -11,7 +11,6 @@ from functools import partial
 from itertools import chain
 from itertools import imap
 from itertools import izip
-from operator import attrgetter
 from re import compile
 
 
@@ -103,23 +102,27 @@ class DictReader(_Reader):
 
     """
     def __init__(self, records, keys=None):
-        """
+        """ Initialize this object.
+
+        By default the entire incoming record is read, or specify a sequence
+        of keys to use a subset.
 
         """
         super(DictReader, self).__init__()
         if keys:
             keys = list(keys)
-            get_keys = lambda record: {key: record[key] for key in keys}
-            self._records = iter(get_keys(record) for record in records)
+            values = lambda record: (record[key] for key in keys)
+            items = (izip(keys, values(record)) for record in records)
+            self._records = imap(dict, items)
         else:
             self._records = iter(records)
         return
 
     def _get(self):
-        """
+        """ Return the next record in the sequence.
 
         """
-        return self._records.next()
+        return next(self._records)
 
 
 class ObjectReader(_Reader):
@@ -127,18 +130,20 @@ class ObjectReader(_Reader):
 
     """
     def __init__(self, objects, attrs):
-        """
+        """ Initialize this object.
+
+        Only the specified attributes are read from each incoming record.
 
         """
         super(ObjectReader, self).__init__()
         keys = list(attrs)
-        values = attrgetter(*keys)
-        items = (izip(keys, values(obj)) for obj in objects)
+        values = lambda object: (getattr(object, name) for name in keys)
+        items = (izip(keys, values(object)) for object in objects)
         self._records = imap(dict, items)
         return
 
     def _get(self):
-        """
+        """ Return the next record in the sequence.
 
         """
         return next(self._records)
