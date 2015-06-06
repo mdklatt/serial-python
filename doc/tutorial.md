@@ -223,7 +223,7 @@ explicitly and pass it to `open()`; this stream will be automatically closed.
 Calling a Reader or Writer constructor directly provides the most control. The
 client code is responsible for opening and closing the associated stream. The
 constructor takes the same arguments as `open()`, except that the constructor
-requires an open stream instead of an optional file path.
+requires an open stream instead of a file path.
         
     stream = GzipFile("data.csv.gz", "r")
     reader = DelimitedReader(stream, fields, ",")
