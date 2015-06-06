@@ -9,10 +9,10 @@ if all tests pass:
 from distutils.core import Command
 from distutils.core import setup
 from distutils import log
-from subprocess import call
+from subprocess import check_call
+from subprocess import CalledProcessError
 
 from test import run as run_tests
-import serial.core as package
 
 
 _CONFIG = {
@@ -20,7 +20,17 @@ _CONFIG = {
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
     "author_email": "mdklatt@ou.edu",
-    "version": package.__version__}
+    "url": "https://github.com/mdklatt/serial-python"
+}
+
+
+def version():
+    """ Return the local package version.
+
+    """
+    with open("serial/core/__version__.py") as stream:
+        exec(stream.read())
+    return __version__
 
 
 class _CustomCommand(Command):
@@ -42,8 +52,8 @@ class _CustomCommand(Command):
     def finalize_options(self):
         """ Set final values for all user options.
 
-        This is run after all other option assigments have been completed (e.g.
-        command-line options, other commands, etc.)
+        This is run after all other option assignments have been completed
+        (e.g. command-line options, other commands, etc.)
 
         """
         return
@@ -67,11 +77,9 @@ class TestCommand(_CustomCommand):
         """ Execute the command.
 
         """
-        log.info("package version is {0:s}".format(package.__version__))
+        log.info("package version is {0:s}".format(version()))
         if run_tests() != 0:
-            # TODO: Is there a better way to signal command failure to
-            # distutils?
-            raise SystemExit
+            raise SystemExit(1)
         return
 
 
@@ -82,7 +90,8 @@ class UpdateCommand(_CustomCommand):
     description = "update from the tracking branch"
     user_options = [
         ("remote=", "r", "remote name [default: tracking remote]"),
-        ("branch=", "b", "branch name [default: tracking branch]")]
+        ("branch=", "b", "branch name [default: tracking branch]"),
+    ]
 
     def initialize_options(self):
         """ Set the default values for all user options.
@@ -96,14 +105,13 @@ class UpdateCommand(_CustomCommand):
         """ Execute the command.
 
         """
-        # Reload the package after pulling the latest commit so that any
-        # subsequent subcommands (e.g. `test`) will use the updated version.
         args = {"remote": self.remote, "branch": self.branch}
         cmdl = "git pull --ff-only {remote:s} {branch:s}".format(**args)
-        if call(cmdl.split()) != 0:
-            raise SystemExit
-        reload(package)
-        log.info("package version is {0:s}".format(package.__version__))
+        try:
+            check_call(cmdl.split())
+        except CalledProcessError:
+            raise SystemExit(1)
+        log.info("package version is now {0:s}".format(version()))
         return
 
 
@@ -111,6 +119,7 @@ def main():
     """ Execute the setup commands.
 
     """
+    _CONFIG["version"] = version()
     setup(cmdclass={"test": TestCommand, "update": UpdateCommand}, **_CONFIG)
     return 0
 
