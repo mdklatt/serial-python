@@ -6,8 +6,8 @@ if all tests pass:
     python setup.py test install --user
 
 """
-from distutils.core import Command
-from distutils.core import setup
+from setuptools import Command
+from setuptools import setup
 from distutils import log
 from subprocess import check_call
 from subprocess import CalledProcessError
