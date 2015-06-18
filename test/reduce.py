@@ -3,9 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
+import unittest
 
 from serial.core.reduce import *  # tests __all__
 
@@ -29,11 +27,8 @@ class _MockWriter(object):
 # module being tested has its own TestCase.
 
 
-class _AggregateTest(TestCase):
-    """ Base class for AggregateReader/Writer unit tests.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+class _AggregateTest(object):
+    """ Abstract base class for AggregateReader/Writer class unit testing.
 
     """
     def setUp(self):
@@ -51,8 +46,8 @@ class _AggregateTest(TestCase):
         return
     
 
-class AggregateReaderTest(_AggregateTest):
-    """ Unit testing for tabular reader classes.
+class AggregateReaderTest(_AggregateTest, unittest.TestCase):
+    """ Unit testing for the AggregateReader class.
 
     """
     def test_reduction(self):
@@ -105,8 +100,8 @@ class AggregateReaderTest(_AggregateTest):
         return
         
 
-class AggregateWriterTest(_AggregateTest):
-    """ Unit testing for tabular writer classes.
+class AggregateWriterTest(_AggregateTest, unittest.TestCase):
+    """ Unit testing for the AggregateWriter class.
 
     """
     def setUp(self):
@@ -197,27 +192,7 @@ class AggregateWriterTest(_AggregateTest):
         return
 
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (AggregateReaderTest, AggregateWriterTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # calls sys.exit()

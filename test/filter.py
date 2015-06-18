@@ -3,9 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
+import unittest
 
 from serial.core.filter import *  # tests __all__
 
@@ -13,11 +11,8 @@ from serial.core.filter import *  # tests __all__
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class _FilterTest(TestCase):
-    """ Unit testing for filter classes.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+class _FilterTest(object):
+    """ Abstract base class for Filter class unit testing.
 
     """
     def test_whitelist(self):
@@ -38,7 +33,8 @@ class _FilterTest(TestCase):
 
 
 class _RecordFilterTest(_FilterTest):
-    """
+    """ Abstract base class for RecordFilter class unit testing.
+
     """
     def test_whitelist_missing(self):
         """ Test the __call__ method with a missing field.
@@ -58,7 +54,7 @@ class _RecordFilterTest(_FilterTest):
         return
     
     
-class FieldFilterTest(_RecordFilterTest):
+class FieldFilterTest(_RecordFilterTest, unittest.TestCase):
     """ Unit testing for the FieldFilter class.
 
     """
@@ -77,7 +73,7 @@ class FieldFilterTest(_RecordFilterTest):
         return
 
                
-class RangeFilterTest(_RecordFilterTest):
+class RangeFilterTest(_RecordFilterTest, unittest.TestCase):
     """ Unit testing for the RangeFilter class.
 
     """
@@ -114,7 +110,7 @@ class RangeFilterTest(_RecordFilterTest):
         return
 
 
-class RegexFilterTest(_FilterTest):
+class RegexFilterTest(_FilterTest, unittest.TestCase):
     """ Unit testing for the RegexFilter class.
 
     """
@@ -133,7 +129,7 @@ class RegexFilterTest(_FilterTest):
         return
 
 
-class SliceFilterTest(_FilterTest):
+class SliceFilterTest(_FilterTest, unittest.TestCase):
     """ Unit testing for the SliceFilter class.
 
     """
@@ -152,29 +148,8 @@ class SliceFilterTest(_FilterTest):
         self.data = ["abc\n", "def\n", "ghi\n"]
         return
 
-        
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (FieldFilterTest, RangeFilterTest, RegexFilterTest, 
-               SliceFilterTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
 
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # this calls exit()
+    unittest.main()  # calls sys.exit()

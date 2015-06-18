@@ -3,11 +3,9 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
+import unittest
 from io import BytesIO
 from collections import namedtuple
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
 
 from serial.core import ListField
 from serial.core import IntField
@@ -47,11 +45,8 @@ def stop_filter(record):
 # module being tested has its own TestCase.
 
 
-class _ReaderTest(TestCase):
-    """ Unit testing for reader classes.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+class _ReaderTest(object):
+    """ Abstract base class for Reader class unit testing.
 
     """
     def setUp(self):
@@ -102,7 +97,7 @@ class _ReaderTest(TestCase):
         return
 
 
-class DictReaderTest(_ReaderTest):
+class DictReaderTest(_ReaderTest, unittest.TestCase):
     """ Read a sequence of dict-like items.
 
     """
@@ -127,7 +122,7 @@ class DictReaderTest(_ReaderTest):
         return
 
 
-class ObjectReaderTest(_ReaderTest):
+class ObjectReaderTest(_ReaderTest, unittest.TestCase):
     """ Unit testing for the ObjectReader class.
 
     """
@@ -147,10 +142,7 @@ class ObjectReaderTest(_ReaderTest):
 
 
 class _TabularReaderTest(_ReaderTest):
-    """ Unit testing for tabular reader classes.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+    """ Abstract base class for TabularReader class unit testing.
 
     """
     TestClass = None  # must be defined by derived classes
@@ -176,7 +168,7 @@ class _TabularReaderTest(_ReaderTest):
         return
 
 
-class DelimitedReaderTest(_TabularReaderTest):
+class DelimitedReaderTest(_TabularReaderTest, unittest.TestCase):
     """ Unit testing for the DelimitedReader class.
 
     """
@@ -212,7 +204,7 @@ class DelimitedReaderTest(_TabularReaderTest):
         return
 
 
-class FixedWidthReaderTest(_TabularReaderTest):
+class FixedWidthReaderTest(_TabularReaderTest, unittest.TestCase):
     """ Unit testing for the FixedWidthReader class.
 
     """
@@ -237,7 +229,7 @@ class FixedWidthReaderTest(_TabularReaderTest):
         return
 
 
-class ChainReaderTest(TestCase):
+class ChainReaderTest(unittest.TestCase):
     """ Unit testing for the ChainReader class.
 
     """
@@ -279,28 +271,7 @@ class ChainReaderTest(TestCase):
         return
 
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (DictReaderTest, ObjectReaderTest, DelimitedReaderTest,
-               FixedWidthReaderTest, ChainReaderTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # calls sys.exit()

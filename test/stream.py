@@ -3,12 +3,10 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
+import unittest
 from contextlib import closing
 from gzip import GzipFile
 from io import BytesIO
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
 from zlib import compress
 
 from serial.core import BufferedIStream
@@ -20,7 +18,7 @@ from serial.core import GzippedIStream
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class BufferedIStreamTest(TestCase):
+class BufferedIStreamTest(unittest.TestCase):
     """ Unit testing for the BufferedIStream class.
 
     """
@@ -70,7 +68,7 @@ class BufferedIStreamTest(TestCase):
         return
         
 
-class FilteredIStreamTest(TestCase):
+class FilteredIStreamTest(unittest.TestCase):
     """ Unit testing for the FilteredIStream class.
     
     """
@@ -121,7 +119,7 @@ class FilteredIStreamTest(TestCase):
         return
         
 
-class FilteredOStreamTest(TestCase):
+class FilteredOStreamTest(unittest.TestCase):
     """ Unit testing for the FilteredIStream class.
     
     """
@@ -159,7 +157,7 @@ class FilteredOStreamTest(TestCase):
         return
 
  
-class GzippedIStreamTest(TestCase):
+class GzippedIStreamTest(unittest.TestCase):
     """ Unit testing for the GzippedIStream class.
     
     """
@@ -209,28 +207,7 @@ class GzippedIStreamTest(TestCase):
         return
 
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (BufferedIStreamTest, FilteredIStreamTest, FilteredOStreamTest,
-               GzippedIStreamTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # calls sys.exit()

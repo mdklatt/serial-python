@@ -3,12 +3,10 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
+import unittest
 from datetime import datetime
-from itertools import izip
 from warnings import simplefilter as filter_warnings
 from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
 
 from serial.core.field import *  # test __all__
 
@@ -16,11 +14,8 @@ from serial.core.field import *  # test __all__
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class _FieldTest(TestCase):
-    """ Unit testing for data field classes.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+class _FieldTest(object):
+    """ Abstract base class for data Field class unit testing.
 
     """
     def test_init(self):
@@ -76,7 +71,7 @@ class _FieldTest(TestCase):
          return
 
 
-class ConstFieldTest(_FieldTest):
+class ConstFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the ConstField class.
 
     """
@@ -112,7 +107,7 @@ class ConstFieldTest(_FieldTest):
     test_encode_null = _FieldTest.test_encode_default
 
 
-class IntFieldTest(_FieldTest):
+class IntFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the IntField class.
 
     """
@@ -137,7 +132,7 @@ class IntFieldTest(_FieldTest):
         return
 
 
-class LongFieldTest(_FieldTest):
+class LongFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the LongField class.
 
     """
@@ -162,7 +157,7 @@ class LongFieldTest(_FieldTest):
         return
 
         
-class FloatFieldTest(_FieldTest):
+class FloatFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the FloatField class.
 
     """
@@ -187,7 +182,7 @@ class FloatFieldTest(_FieldTest):
         return
 
 
-class StringFieldTest(_FieldTest):
+class StringFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the StringField class.
 
     """
@@ -232,7 +227,7 @@ class StringFieldTest(_FieldTest):
         return
 
 
-class DatetimeFieldTest(_FieldTest):
+class DatetimeFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the DatetimeField class.
 
     """
@@ -257,7 +252,7 @@ class DatetimeFieldTest(_FieldTest):
         return
     
     
-class ListFieldTest(_FieldTest):
+class ListFieldTest(_FieldTest, unittest.TestCase):
     """ Unit testing for the ListField class.
 
     """
@@ -310,7 +305,7 @@ class ListFieldTest(_FieldTest):
         return
 
 
-class ArrayFieldTest(TestCase):
+class ArrayFieldTest(unittest.TestCase):
     """ Unit testing for the ArrayField class.
 
     ArrayField is now a deprecated alias for ListField, so normal Field tests
@@ -370,30 +365,7 @@ class RecordFieldTest(ListFieldTest):
         return
 
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (
-    ConstFieldTest, IntFieldTest, LongFieldTest, FloatFieldTest, 
-    StringFieldTest, DatetimeFieldTest, RecordFieldTest, ListFieldTest,
-    ArrayFieldTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # calls sys.exit()

@@ -19,7 +19,7 @@ _CONFIG = {
     "name": "serial-core",
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
-    "author_email": "mdklatt@ou.edu",
+    "author_email": "mdklatt@alumni.ou.edu",
     "url": "https://github.com/mdklatt/serial-python"
 }
 

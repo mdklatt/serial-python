@@ -3,9 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
+import unittest
 
 from serial.core.buffer import _ReaderBuffer
 from serial.core.buffer import _WriterBuffer
@@ -107,11 +105,8 @@ class MockWriter(object):
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class _BufferTest(TestCase):
-    """ Unit testing for buffer classes.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+class _BufferTest(object):
+    """ Abstract base class for Buffer class unit testing.
 
     """
     @staticmethod
@@ -140,7 +135,7 @@ class _BufferTest(TestCase):
         return
         
 
-class ReaderBufferTest(_BufferTest):
+class ReaderBufferTest(_BufferTest, unittest.TestCase):
     """ Unit testing for the ReaderBuffer class.
 
     """    
@@ -176,7 +171,7 @@ class ReaderBufferTest(_BufferTest):
         return
     
 
-class WriterBufferTest(_BufferTest):
+class WriterBufferTest(_BufferTest, unittest.TestCase):
     """ Unit testing for the WriterBuffer class.
 
     """    
@@ -223,27 +218,7 @@ class WriterBufferTest(_BufferTest):
         return
 
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (ReaderBufferTest, WriterBufferTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # calls sys.exit()

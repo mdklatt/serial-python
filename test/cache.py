@@ -3,9 +3,7 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
+import unittest
 
 from serial.core.cache import *  # tests __all__
 
@@ -13,7 +11,7 @@ from serial.core.cache import *  # tests __all__
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class CacheReaderTest(TestCase):
+class CacheReaderTest(unittest.TestCase):
     """ Unit testing for the CacheReader class.
 
     """
@@ -78,27 +76,7 @@ class CacheReaderTest(TestCase):
         return
         
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (CacheReaderTest,)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # main() calls sys.exit()

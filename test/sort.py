@@ -3,11 +3,9 @@
 The module can be executed on its own or incorporated into a larger test suite.
 
 """
+import unittest
 from operator import itemgetter
 from random import shuffle
-from unittest import TestCase
-from unittest import TestSuite
-from unittest import main
 
 from serial.core.sort import *  # tests __all__
 
@@ -30,11 +28,8 @@ class _MockWriter(object):
 # Define the TestCase classes for this module. Each public component of the
 # module being tested has its own TestCase.
 
-class _SortTest(TestCase):
-    """ Base class for SortReaderTest and SortWriterTest.
-
-    This is an abstract class and should not be called directly by any test
-    runners.
+class _SortTest(object):
+    """ Abstract base class for SortReader/Writer unit testing.
 
     """
     def setUp(self):
@@ -52,7 +47,7 @@ class _SortTest(TestCase):
         return
 
 
-class SortReaderTest(_SortTest):
+class SortReaderTest(_SortTest, unittest.TestCase):
     """ Unit testing for the SortReader class.
 
     """
@@ -88,7 +83,7 @@ class SortReaderTest(_SortTest):
         return
 
 
-class SortWriterTest(_SortTest):
+class SortWriterTest(_SortTest, unittest.TestCase):
     """ Unit testing for the SortWriter class.
 
     """
@@ -158,27 +153,7 @@ class SortWriterTest(_SortTest):
         return
 
 
-# Specify the test cases to run for this module (disables automatic discovery).
-
-_TEST_CASES = (SortReaderTest, SortWriterTest)
-
-
-def load_tests(loader, tests, pattern):
-    """ Define a TestSuite for this module.
-
-    This is part of the unittest API. The last two arguments are ignored. The
-    _TEST_CASES global is used to determine which TestCase classes to load
-    from this module.
-
-    """
-    suite = TestSuite()
-    for test_case in _TEST_CASES:
-        tests = loader.loadTestsFromTestCase(test_case)
-        suite.addTests(tests)
-    return suite
-
-
 # Make the module executable.
 
 if __name__ == "__main__":
-    main()  # main() calls sys.exit()
+    unittest.main()  # calls sys.exit()
