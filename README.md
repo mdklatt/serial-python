@@ -57,6 +57,9 @@ For Python 2.6 the [unittest2][4] library is required to run the test suite.
 
     pip install --requirement=test/requirements-py26.txt
 
+The test suite can be also run using a [py.test][9] test runner.
+
+    py.test test/
 
 
 
@@ -69,3 +72,4 @@ For Python 2.6 the [unittest2][4] library is required to run the test suite.
 [6]: http://docs.python.org/tutorial/modules.html#the-module-search-path "Python import"
 [7]: https://github.com/mdklatt/serial-python/blob/master/setup.py "setup.py"
 [8]: http://github.com/mdklatt/serial-python/blob/master/doc/tutorial.md "tutorial.md"
+[9]: http://pytest.org/latest "pytest"
