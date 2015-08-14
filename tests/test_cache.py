@@ -9,7 +9,7 @@ environment or setuptools develop mode to test against the development version.
 """
 import pytest
 
-from serial.core import *  # tests __all__
+from serial.core.cache import *  # tests __all__
 
 
 class CacheReaderTest(object):
