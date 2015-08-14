@@ -11,6 +11,7 @@ import pytest
 from operator import itemgetter
 from random import shuffle
 
+from fixture import writer
 from serial.core.sort import *  # tests __all__
 
 
@@ -74,25 +75,6 @@ class SortWriterTest(object):
     """ Unit testing for the SortWriter class.
 
     """
-    @pytest.fixture
-    def writer(self):
-        """ Return a mock writer for testing.
-
-        """
-        class _MockWriter(object):
-            """ Simulate a _Writer for testing purposes.
-
-            """
-            def __init__(self):
-                """ Initialize this object.
-
-                """
-                self.output = []
-                self.write = self.output.append
-                return
-
-        return _MockWriter()
-
     def test_write(self, records, writer):
         """ Test the write() and close() methods.
 

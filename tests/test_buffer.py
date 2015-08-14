@@ -9,6 +9,7 @@ environment or setuptools develop mode to test against the development version.
 """
 import pytest
 
+from fixture import writer
 from serial.core.buffer import _ReaderBuffer
 from serial.core.buffer import _WriterBuffer
 
@@ -62,25 +63,6 @@ class WriterBufferTest(object):
     """ Unit testing for the _WriterBuffer class.
 
     """
-    @pytest.fixture
-    def writer(self):
-        """ Return a mock writer for testing.
-
-        """
-        class _MockWriter(object):
-            """ Simulate a _Writer for testing purposes.
-
-            """
-            def __init__(self):
-                """ Initialize this object.
-
-                """
-                self.output = []
-                self.write = self.output.append
-                return
-
-        return _MockWriter()
-
     def test_write(self, input, output, writer):
         """ Test the write() anc close() methods.
 
