@@ -105,6 +105,15 @@ class BufferedIStream(_IStreamAdaptor):
         self._bufpos = 0 if count is None else max(0, self._bufpos - count)
         return
 
+    def close(self):
+        """ Close the adaptor and its stream.
+
+        """
+        super(BufferedIStream, self).close()
+        self._buffer.clear()
+        self._bufpos = 0
+        return
+
 
 class FilteredIStream(_IStreamAdaptor):
     """ Add filtering to an input stream.
