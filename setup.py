@@ -15,6 +15,7 @@ from subprocess import CalledProcessError
 
 _CONFIG = {
     "name": "serial-core",
+    "package_dir": {"": "src"},
     "packages": ("serial", "serial.core"),
     "author": "Michael Klatt",
     "author_email": "mdklatt@alumni.ou.edu",
@@ -26,7 +27,7 @@ def version():
     """ Return the local package version.
 
     """
-    with open("serial/core/__version__.py") as stream:
+    with open("src/serial/core/__version__.py") as stream:
         exec(stream.read())
     return __version__
 
