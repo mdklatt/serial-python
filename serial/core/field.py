@@ -193,7 +193,8 @@ class StringField(_ScalarField):
         """ Convert a string token to a string.
 
         Surrounding whitespace and quotes are removed, and if the resulting
-        string is null the default field value is used.
+        string is null the default field value is used. Whitespace is stripped
+        before any quotes, so quoted whitespace will not be null.
 
         """
         return token.strip().strip(self._quote) or self._default
@@ -206,7 +207,8 @@ class StringField(_ScalarField):
         left or trimmed on the right to fit the allotted width.
 
         """
-        value = value or self._default or ""
+        if not value:
+            value = self._default or ""
         token = self._valfmt(value)
         return token[:self.width].rjust(self.width) if self._fixed else token
 
@@ -215,7 +217,7 @@ class DatetimeField(_ScalarField):
     """ A datetime field.
 
     """
-    def __init__(self, name, pos, fmt, prec=0, default=None):
+    def __init__(self, name, pos, fmt=None, prec=0, default=None):
         """ Initialize this object.
 
         The precision argument specifies precision to use for fractional
@@ -223,6 +225,8 @@ class DatetimeField(_ScalarField):
         decoding).
 
         """
+        # The TimeFormat formatter is used instead of strfmtime() because
+        # strftime() does not support years before 1900.
         super(DatetimeField, self).__init__(name, pos)
         self._fmtstr = fmt
         self._fmtobj = TimeFormat(self._fmtstr)
@@ -249,7 +253,8 @@ class DatetimeField(_ScalarField):
         left or trimmed on the right to fit the allotted width.
 
         """
-        value = value or self._default
+        if not value:
+            value = self._default
         token = "" if value is None else self._fmtobj(value)
         if token and self._prec > 0:
             time, usecs = token.split(".")
@@ -302,7 +307,8 @@ class ListField(object):
             elem = dict((field.name, field.decode(elem[field.pos])) for field 
                         in self._fields)
             values.append(elem)
-        values = values or self._default or []
+        if not values:
+            values = self._default or []
         return values
 
     def encode(self, values):
@@ -314,7 +320,8 @@ class ListField(object):
         for this array.
 
         """
-        values = values or self._default or []
+        if not values:
+            values = self._default or []
         return [field.encode(elem.get(field.name)) for elem, field in
                 product(values, self._fields)]
 
