@@ -1,0 +1,5 @@
+## Python requirements for generating documentation.
+##
+##    pip install --requirement=requirements-doc.txt
+##
+Sphinx>=1.3
