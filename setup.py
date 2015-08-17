@@ -1,39 +1,36 @@
-""" Distutils setup script for the serial.core library package.
-
-Basic command to run the test suite and install in the user's package directory
-if all tests pass:
-
-    python setup.py test install --user
+""" Setup script for the serial-core library.
 
 """
 from setuptools import Command
+from setuptools import find_packages
 from setuptools import setup
 from distutils import log
+from os.path import join
 from subprocess import check_call
 from subprocess import CalledProcessError
 
 
 _CONFIG = {
-    "name": "serial-core",
-    "package_dir": {"": "src"},
-    "packages": ("serial", "serial.core"),
+    "name": "{{cookiecutter.repo_name}}",
     "author": "Michael Klatt",
     "author_email": "mdklatt@alumni.ou.edu",
-    "url": "https://github.com/mdklatt/serial-python"
-}
+    "url": "https://github.com/mdklatt/serial-python",
+    "package_dir": {"": "src"},
+    "packages": find_packages("src")}
 
 
 def version():
-    """ Return the local package version.
+    """ Get the local package version.
 
     """
-    with open("src/serial/core/__version__.py") as stream:
+    path = join("src", "serial", "core", "__version__.py")
+    with open(path) as stream:
         exec(stream.read())
     return __version__
 
 
 class _CustomCommand(Command):
-    """ Abstract base class for a distutils custom setup command.
+    """ Abstract base class for a custom setup command.
 
     """
     # Each user option is a tuple consisting of the option's long name (ending
@@ -70,11 +67,10 @@ class UpdateCommand(_CustomCommand):
     """ Custom setup command to pull from a remote branch.
 
     """
-    description = "update from the tracking branch"
+    description = "update from a remote branch"
     user_options = [
         ("remote=", "r", "remote name [default: tracking remote]"),
-        ("branch=", "b", "branch name [default: tracking branch]"),
-    ]
+        ("branch=", "b", "branch name [default: tracking branch]")]
 
     def initialize_options(self):
         """ Set the default values for all user options.
@@ -94,7 +90,7 @@ class UpdateCommand(_CustomCommand):
             check_call(cmdl.split())
         except CalledProcessError:
             raise SystemExit(1)
-        log.info("package version is now {0:s}".format(version()))
+        log.info("package version is now {:s}".format(version()))
         return
 
 
@@ -106,8 +102,7 @@ class VirtualenvCommand(_CustomCommand):
     user_options = [
         ("name=", "m", "environment name [default: venv]"),
         ("python=", "p", "Python interpreter"),
-        ("requirements=", "r", "pip requirements file"),
-    ]
+        ("requirements=", "r", "pip requirements file")]
 
     def initialize_options(self):
         """ Set the default values for all user options.
@@ -122,10 +117,10 @@ class VirtualenvCommand(_CustomCommand):
         """ Execute the command.
 
         """
-        venv = "virtualenv {0:s}"
+        venv = "virtualenv {:s}"
         if self.python:
-            venv += " -p {1:s}"
-        pip = "{0:s}/bin/pip install -r {2:s}" if self.requirements else None
+            venv += " -p {:s}"
+        pip = "{:s}/bin/pip install -r {:s}" if self.requirements else None
         args = self.name, self.python, self.requirements
         try:
             check_call(venv.format(*args).split())
@@ -143,9 +138,8 @@ def main():
     """
     _CONFIG["version"] = version()
     _CONFIG["cmdclass"] = {
-        "update": UpdateCommand,
-        "virtualenv": VirtualenvCommand
-    }
+        "virtualenv": VirtualenvCommand,
+        "update": UpdateCommand}
     setup(**_CONFIG)
     return 0
 
