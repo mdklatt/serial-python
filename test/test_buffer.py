@@ -9,7 +9,7 @@ environment or setuptools develop mode to test against the development version.
 """
 import pytest
 
-from fixture import writer
+from _fixture import writer
 from serial.core.buffer import _ReaderBuffer
 from serial.core.buffer import _WriterBuffer
 

@@ -12,8 +12,6 @@ from distutils import log
 from subprocess import check_call
 from subprocess import CalledProcessError
 
-from test import run as run_tests
-
 
 _CONFIG = {
     "name": "serial-core",
@@ -65,22 +63,6 @@ class _CustomCommand(Command):
 
         """
         raise NotImplementedError
-
-
-class TestCommand(_CustomCommand):
-    """ Custom setup command to run the test suite.
-
-    """
-    description = "run the test suite"
-
-    def run(self):
-        """ Execute the command.
-
-        """
-        log.info("package version is {0:s}".format(version()))
-        if run_tests() != 0:
-            raise SystemExit(1)
-        return
 
 
 class UpdateCommand(_CustomCommand):
@@ -160,7 +142,6 @@ def main():
     """
     _CONFIG["version"] = version()
     _CONFIG["cmdclass"] = {
-        "test": TestCommand,
         "update": UpdateCommand,
         "virtualenv": VirtualenvCommand
     }

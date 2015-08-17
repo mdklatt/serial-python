@@ -11,7 +11,7 @@ import pytest
 from operator import itemgetter
 from random import shuffle
 
-from fixture import writer
+from _fixture import writer
 from serial.core.sort import *  # tests __all__
 
 

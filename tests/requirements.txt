@@ -1,6 +1,0 @@
-## Additional requirements for running tests.
-##
-##    pip install --requirement=tests/requirements.txt
-##
-
-pytest>=2.7
