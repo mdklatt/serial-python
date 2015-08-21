@@ -1,6 +1,6 @@
 """ The current version of the serial.core library.
 
-This package uses the Semantic Versioning scheme in conjunction with PEP 0440:
+This project uses the Semantic Versioning scheme in conjunction with PEP 0440:
 
     <http://semver.org/>
     <https://www.python.org/dev/peps/pep-0440>
@@ -14,4 +14,4 @@ Version 0.x should be considered a development version with an unstable API,
 and backwards compatibility is not guaranteed for minor versions.
 
 """
-__version__ = "0.5.2.dev4"
+__version__ = "0.5.2.dev5"
