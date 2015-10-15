@@ -52,9 +52,8 @@ Basic Example
 Requirements
 ------------
 
-Python 2.6 and 2.7 are supported, although **2.6 support is deprecated** and
-will be dropped in a future version. While an attempt has been made to maximize
-forward compatibility with Python 3.3+, this has not been tested.
+Python 2.7 is required. While an attempt has been made to maximize forward
+compatibility with Python 3.3+, this has not been tested.
 
 Packages
 ~~~~~~~~

@@ -1,10 +1,10 @@
 ## Travis CI configuration for the serial-core library.
 ##
-## This verifies that the library can be installed and pass its test suite.
+##  <https://travis-ci.org/mdklatt/serial-python>
 ##
 language: python
+
 python:
-  - "2.6"
   - "2.7"
 
 branches:
@@ -15,12 +15,7 @@ branches:
 sudo: false
 
 install:
-  - python setup.py install
-
-before_script:
-  # Travis CI preinstalls py.test, but automatic test discovery fails for the
-  # default version (2.6), so make sure the correct version is installed.
-  - pip install --requirement=requirements-test.txt
+  - pip install . -r requirements-test.txt
 
 script:
   - py.test --verbose test/
