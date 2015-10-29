@@ -1,4 +1,4 @@
-""" Testing for the the filter.py module
+""" Test suite for the the filter.py module
 
 The script can be executed on its own or incorporated into a larger test suite.
 However the tests are run, be aware of which version of the module is actually
@@ -44,7 +44,7 @@ class _RecordFilterTest(object):
         """
         filter, blacklist = testobj
         expect = data if data["accept"] is not blacklist else None
-        assert filter(data) == expect
+        assert expect == filter(data)
         return
 
     def test_call_missing(self, testobj, data):
@@ -55,8 +55,23 @@ class _RecordFilterTest(object):
         data = data.copy()  # record is NOT test-independent
         del data["value"]
         expect = data if blacklist else None
-        assert filter(data) == expect
+        assert expect == filter(data)
         return
+
+
+class BoolFilterTest(_RecordFilterTest):
+    """ Unit testing for the BoolFilter class.
+
+    """
+    _DATA = (1, True), (False, False), ("", False), (None, False)
+
+    @pytest.fixture(params=(False, True))
+    def testobj(self, request):
+        """ Construct a BoolFilter for testing.
+
+        """
+        blacklist = request.param
+        return BoolFilter("value", blacklist), blacklist
 
 
 class FieldFilterTest(_RecordFilterTest):
@@ -101,7 +116,7 @@ class RangeFilterTest(_RecordFilterTest):
             expect = data if start <= data["value"] else None
         else:
             assert False  # shouldn't get here
-        assert filter(data) == expect
+        assert expect == filter(data)
         return
 
 
@@ -126,7 +141,7 @@ class _TextFilterTest(object):
         filter, blacklist = testobj
         text = data["text"]
         expect = text if data["accept"] is not blacklist else None
-        assert filter(text) == expect
+        assert expect == filter(text)
         return
 
 

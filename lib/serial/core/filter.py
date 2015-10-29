@@ -6,7 +6,8 @@ from __future__ import absolute_import
 from re import compile
 
 
-__all__ = ("FieldFilter", "RangeFilter", "RegexFilter", "SliceFilter")
+__all__ = ("BoolFilter", "FieldFilter", "RangeFilter",
+           "RegexFilter", "SliceFilter")
 
 
 class _RecordFilter(object):
@@ -47,6 +48,27 @@ class _RecordFilter(object):
         """
         raise NotImplementedError
     
+
+class BoolFilter(_RecordFilter):
+    """ Filter records by the boolean value of a specific field.
+
+    Accept values that are not false-y (False, 0, None, empty string, etc.) for
+    whitelisting and reject them for blacklisting.
+
+    """
+    def __init__(self, field, blacklist=False):
+        """ Initialize this object.
+
+        """
+        super(BoolFilter, self).__init__(field, blacklist)
+        return
+
+    def _match(self, value):
+        """ Return True if the value is not false-y,
+
+        """
+        return bool(value)
+
 
 class FieldFilter(_RecordFilter):
     """ Filter records by the value of a specific field.
