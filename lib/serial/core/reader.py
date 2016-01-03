@@ -274,7 +274,7 @@ class ChainReader(_Reader):
     """
     @classmethod
     @contextmanager
-    def open(cls, streams, reader, *args, **kwargs):
+    def open(cls, *args, **kwargs):
         """ Create a runtime context for a ChainReader and its streams.
         
         The arguments are passed to the class constructor. Each stream is
@@ -282,7 +282,7 @@ class ChainReader(_Reader):
         the sequence will be closed upon exit from the context block.
         
         """
-        reader = cls(streams, reader, *args, **kwargs)
+        reader = cls(*args, **kwargs)
         yield reader
         for stream in reader._streams:
             # Close each remaining stream in the sequence.
