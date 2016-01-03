@@ -1,4 +1,6 @@
-""" Internal utility classes for the serial.core package.
+""" Time utilities.
+
+This is internal to the serial.core implementation.
 
 """
 from __future__ import absolute_import

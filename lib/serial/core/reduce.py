@@ -9,7 +9,7 @@ from .buffer import _ReaderBuffer
 from .buffer import _WriterBuffer
 
 
-__all__ = ("AggregateReader", "AggregateWriter")
+__all__ = "AggregateReader", "AggregateWriter"
 
 
 class _Aggregator(object):
@@ -71,7 +71,7 @@ class _Aggregator(object):
             else:
                 # Define a key function for multiple fields.
                 names = key  # force static binding
-                key = lambda record: dict((key, record[key]) for key in names)
+                key = lambda record: {key: record[key] for key in names}
         self._keyfunc = key
         self._keyval = None
         self._buffer = []

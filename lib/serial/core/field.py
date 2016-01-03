@@ -10,7 +10,7 @@ from datetime import datetime
 from itertools import product
 from warnings import warn
 
-from ._util import TimeFormat
+from ._time import TimeFormat
 
 
 __all__ = ("ConstField", "IntField", "LongField", "FloatField", "StringField", 
@@ -304,8 +304,8 @@ class ListField(object):
         values = []
         for elem in parse():
             # Decode the fields in each element into a dict.
-            elem = dict((field.name, field.decode(elem[field.pos])) for field 
-                        in self._fields)
+            elem = {field.name: field.decode(elem[field.pos]) for field
+                    in self._fields}
             values.append(elem)
         if not values:
             values = self._default or []
@@ -356,7 +356,7 @@ class RecordField(ListField):
 
         """
         if default is None:
-            default = dict((field.name, field.decode("")) for field in fields)
+            default = {field.name: field.decode("") for field in fields}
         super(RecordField, self).__init__(name, pos, fields, [default])
         return
 

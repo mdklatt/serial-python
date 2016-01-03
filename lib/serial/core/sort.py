@@ -10,7 +10,7 @@ from .buffer import _ReaderBuffer
 from .buffer import _WriterBuffer
 
 
-__all__ = ("SortReader", "SortWriter")
+__all__ = "SortReader", "SortWriter"
 
 
 class _Sorter(object):

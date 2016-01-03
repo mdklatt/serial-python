@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from itertools import chain
 
 
-__all__ = ("DelimitedWriter", "FixedWidthWriter")
+__all__ = "DelimitedWriter", "FixedWidthWriter"
 
 
 class _Writer(object):

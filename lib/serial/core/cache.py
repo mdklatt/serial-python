@@ -6,7 +6,7 @@ from __future__ import absolute_import
 from .buffer import _ReaderBuffer
 
 
-__all__ = ("CacheReader",)
+__all__ = "CacheReader",
 
 
 class CacheReader(_ReaderBuffer):
