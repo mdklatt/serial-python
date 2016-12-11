@@ -15,7 +15,7 @@ branches:
 sudo: false
 
 install:
-  - pip install . -r requirements-test.txt
+  - pip install . -r test/requirements.txt
 
 script:
   - py.test --verbose test/
