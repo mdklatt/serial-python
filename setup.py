@@ -15,15 +15,15 @@ _CONFIG = {
     "author": "Michael Klatt",
     "author_email": "mdklatt@alumni.ou.edu",
     "url": "https://github.com/mdklatt/serial-python",
-    "package_dir": {"": "lib"},
-    "packages": find_packages("lib")}
+    "package_dir": {"": "src"},
+    "packages": find_packages("src")}
 
 
 def version():
     """ Get the local package version.
 
     """
-    path = join("lib", "serial", "core", "__version__.py")
+    path = join("src", "serial", "core", "__version__.py")
     with open(path) as stream:
         exec(stream.read())
     return __version__
