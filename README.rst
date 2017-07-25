@@ -1,5 +1,15 @@
-Overview |travis.png|
----------------------
+===========
+serial-core
+===========
+.. |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=master
+   :alt: Travis CI build status
+   :target: `travis`_
+.. _travis: https://travis-ci.org/mdklatt/serial-python
+.. _serial: http://github.com/mdklatt/serial-python
+
+
+|travis.png|
+
 
 The `serial`_ Python library provides extensible tools for reading and writing
 record-oriented data in various formats. The core library provided here is
@@ -7,26 +17,19 @@ contained in the ``serial.core`` package. Library extensions will be contained
 in their own packages under the ``serial`` namespace.
 
 
-..  |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=master
-    :alt: Travis CI build status
-    :target: `travis`_
-..  _travis: https://travis-ci.org/mdklatt/serial-python
-..  _serial: http://github.com/mdklatt/serial-python
-
-
 Features
---------
-* Read/write delimited and fixed-width data
-* Named, typed, and formatted data fields
-* Filtering
-* Aggregation
-* Sorting
+========
+- Read/write delimited and fixed-width data
+- Named, typed, and formatted data fields
+- Filtering
+- Aggregation
+- Sorting
 
 
 Basic Example
--------------
+=============
 
-..  code-block::
+..  code-block:: python
 
     """ Read a comma-delimited file.
 
@@ -50,29 +53,24 @@ Basic Example
 
 
 Requirements
-------------
+============
+.. _Sphinx: http://sphinx-doc.org
+.. _pytest: http://pytest.org
 
 Python 2.7 is required. While an attempt has been made to maximize forward
-compatibility with Python 3.3+, this has not been tested.
+compatibility with Python 3, this is not guaranteed.
 
-Packages
-~~~~~~~~
-* `Sphinx`_ (optional; required to build documentation)
-* `py.test`_ (optional; required to run test suite)
+- `Sphinx`_ (optional; required to build documentation)
+- `pytest`_ (optional; required to run test suite)
 
-
-..  _Sphinx: http://sphinx-doc.org
-..  _py.test: http://pytest.org
 
 
 Installation
-------------
+============
+.. _GitHub: https://github.com/mdklatt/serial-python
 
-Install the library from GitHub:
+Install the library from `GitHub`_:
 
-..  code-block::
-   
+..  code-block:: shell
+
     $ pip install git+git://github.com/mdklatt/serial-python.git
-
-
-..  _GitHub: https://github.com/mdklatt/serial-python

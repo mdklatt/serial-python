@@ -1,6 +1,6 @@
 ## Travis CI configuration for the serial-core library.
 ##
-##  <https://travis-ci.org/mdklatt/serial-python>
+##   <https://travis-ci.org/mdklatt/serial-python>
 ##
 language: python
 
@@ -18,4 +18,4 @@ install:
   - pip install . -r test/requirements.txt
 
 script:
-  - py.test --verbose test/
+  - pytest --verbose test/
