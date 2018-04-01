@@ -182,7 +182,7 @@ class GzippedIStream(_IStreamAdaptor):
         """
         super(GzippedIStream, self).__init__(stream)
         self._decode = decompressobj(MAX_WBITS + 32).decompress
-        self._buffer = ""
+        self._buffer = b""
         return
             
     def __next__(self):
@@ -201,11 +201,12 @@ class GzippedIStream(_IStreamAdaptor):
                 return False
             self._buffer += self._decode(data)
             return True
-        
+
+        endl = "\n".encode()
         while True:
             # Find the end of the next complete line.
             try:
-                pos = self._buffer.index("\n") + 1  # include \n
+                pos = self._buffer.index(endl) + len(endl)  # include \n
             except ValueError:  # \n not found
                 # Keep going as long as the stream is still good, otherwise
                 # this is the last line (the newline is missing).
@@ -215,7 +216,7 @@ class GzippedIStream(_IStreamAdaptor):
             break
         if not self._buffer:
             raise StopIteration
-        line = self._buffer[:pos]
+        line = self._buffer[:pos].decode()
         self._buffer = self._buffer[pos:]
         return line
 

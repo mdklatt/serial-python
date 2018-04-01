@@ -7,9 +7,9 @@ precedence over the version in this project directory. Use a virtualenv test
 environment or setuptools develop mode to test against the development version.
 
 """
-from contextlib import closing
 from gzip import GzipFile
 from io import BytesIO
+from io import StringIO
 from zlib import compress
 
 import pytest
@@ -29,17 +29,16 @@ def zlib_stream(data):
     """ Return test data as a zlib-compressed stream.
 
     """
-    return BytesIO(compress(data))
+    return BytesIO(compress(data.encode()))
+
 
 def gzip_stream(data):
     """ Return data as a gzip-compressed stream.
 
     """
     stream = BytesIO()
-    with closing(GzipFile(fileobj=stream, mode="w")) as writer:
-        # Explicit closing() context is necessary for Python 2.6 but not for
-        # 2.7. Closing the GzipFile doesn't close its fileobj.
-        writer.write(data)
+    with GzipFile(fileobj=stream, mode="w") as writer:
+        writer.write(data.encode())
     stream.seek(0)  # rewind for reading
     return stream
 
@@ -84,7 +83,7 @@ class BufferedIStreamTest(_IStreamTest):
         """ Return a test data stream.
 
         """
-        return BufferedIStream(BytesIO("".join(lines)), cls.BUFLEN)
+        return BufferedIStream(StringIO("".join(lines)), cls.BUFLEN)
 
     def test_rewind(self, stream, lines):
         """ Test the rewind() method.
@@ -116,7 +115,7 @@ class FilteredIStreamTest(_IStreamTest):
         """ Return a test data stream.
 
         """
-        return FilteredIStream(BytesIO("".join(lines)))
+        return FilteredIStream(StringIO("".join(lines)))
 
     def test_filter(self, stream, lines):
         """ Test the filter method.
@@ -168,7 +167,7 @@ class FilteredOStreamTest(object):
         """ Test the write() method.
 
         """
-        stream = BytesIO()
+        stream = StringIO()
         writer = FilteredOStream(stream)
         for line in lines:
             writer.write(line)
@@ -186,7 +185,7 @@ class FilteredOStreamTest(object):
             """ Modify a line. """
             return line.lower()
 
-        stream = BytesIO()
+        stream = StringIO()
         writer = FilteredOStream(stream)
         writer.filter(reject_filter, modify_filter)
         for line in lines:
@@ -197,7 +196,7 @@ class FilteredOStreamTest(object):
         """ Test the close() method.
 
         """
-        stream = FilteredOStream(BytesIO())
+        stream = FilteredOStream(StringIO())
         stream.close()
         with pytest.raises(ValueError) as exinfo:
             stream.write(lines[0])
