@@ -75,4 +75,4 @@ Install the library from `GitHub`_:
 
 .. code-block:: shell
 
-    $ pip install git+git://github.com/mdklatt/serial-python.git
+    $ python -m pip install git+git://github.com/mdklatt/serial-python.git
