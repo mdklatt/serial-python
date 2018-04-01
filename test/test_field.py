@@ -95,49 +95,6 @@ class IntFieldTest(object):
         return
 
 
-class LongFieldTest(object):
-    """ Unit testing for the IntField class.
-
-    """
-    @pytest.mark.parametrize(("pos", "width"), [(0, 1), ((0, 4), 4)])
-    def test_init(self, pos, width):
-        """ Tess the __init__() method.
-
-        """
-        field = LongField(__name__, pos)
-        assert field.name == __name__
-        assert field.pos == pos or field.pos == slice(*pos)
-        assert field.width == width
-        return
-
-    @pytest.mark.parametrize(("token", "value"), [
-        (" ", -999),
-        ("99999999999999999999", 99999999999999999999)])
-    def test_decode(self, token, value):
-        """ Test the decode method.
-
-        """
-        # TODO: Need to test default value for 'default'.
-        field = LongField(__name__, 0, default=-999)
-        assert field.decode(token) == value
-        return
-
-    @pytest.mark.parametrize(("pos", "fmt", "token", "value"), [
-        (0, "d", "-999", None),
-        (0, "21d", " 99999999999999999999", 99999999999999999999),
-        ((0, 21), "d", "                 -999", None),
-        ((0, 21), "d", " 99999999999999999999", 99999999999999999999),
-        ((0, 21), "22d", "  9999999999999999999", 99999999999999999999)])
-    def test_encode(self, pos, fmt, token, value):
-        """ Test the encode method.
-
-        """
-        # TODO: Need to test default value for 'default'.
-        field = LongField(__name__, pos, fmt, default=-999)
-        assert field.encode(value) == token
-        return
-
-
 class FloatFieldTest(object):
     """ Unit testing for the FloatField class.
 

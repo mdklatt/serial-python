@@ -11,7 +11,7 @@ from warnings import warn
 from ._time import TimeFormat
 
 
-__all__ = ("ConstField", "IntField", "LongField", "FloatField", "StringField", 
+__all__ = ("ConstField", "IntField", "FloatField", "StringField",
            "DatetimeField", "RecordField", "ListField", "ArrayField")
 
 
@@ -141,23 +141,6 @@ class IntField(_NumericField):
         return
  
 
-class LongField(_NumericField):
-    """ An unbounded integer field.
-
-    For better performance an IntField should be used if all field values fit 
-    into a plain int.
-    
-    """
-    _dtype = int
-    
-    def __init__(self, name, pos, fmt="d", default=None):
-        """ Initialize this object.
-
-        """
-        super(LongField, self).__init__(name, pos, fmt, default)
-        return
-
- 
 class FloatField(_NumericField):
     """ A floating point field.
 
