@@ -1,8 +1,6 @@
 """ Sorted input and output.
 
 """
-from __future__ import absolute_import
-
 from collections import deque
 from operator import itemgetter
 
@@ -34,7 +32,7 @@ class _Sorter(object):
             """ Create a key function. """
             if not key or callable(key):
                 return key
-            if isinstance(key, basestring):
+            if isinstance(key, str):
                 key = (key,)
             return itemgetter(*key)
             

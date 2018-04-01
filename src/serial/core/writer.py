@@ -3,8 +3,6 @@
 Writers convert data records to lines of text.
 
 """
-from __future__ import absolute_import
-
 from contextlib import contextmanager
 from itertools import chain
 
@@ -105,7 +103,7 @@ class _TabularWriter(_Writer):
         """
         # This assumes that first argument for all derived class constructors
         # is the stream; if not, this will need to be overridden.
-        if isinstance(stream, basestring):
+        if isinstance(stream, str):
             # Treat this as a file path.
             stream = open(stream, "w")
         yield cls(stream, *args, **kwargs)
@@ -135,7 +133,7 @@ class _TabularWriter(_Writer):
         for field in self._fields:
             # Convert each field into a string token.
             token = field.encode(record.get(field.name))
-            if isinstance(token, basestring):
+            if isinstance(token, str):
                 tokens.append(token)
             else:
                 # A sequence of tokens (e.g. an ArrayType); expand inline.

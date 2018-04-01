@@ -1,8 +1,6 @@
 """ Apply aggregate functions to data.
 
 """
-from __future__ import absolute_import
-
 from operator import itemgetter
 
 from .buffer import _ReaderBuffer
@@ -38,11 +36,11 @@ class _Aggregator(object):
             """ Execute the callback as a reduction function.
             
             """
-            return {alias: callback(map(get, records))}
+            return {alias: callback(list(map(get, records)))}
             
         if not alias:
             alias = field
-        if isinstance(field, basestring):
+        if isinstance(field, str):
             field = field,
         get = itemgetter(*field)
         return wrapper
@@ -64,7 +62,7 @@ class _Aggregator(object):
                 
         """
         if not callable(key):
-            if isinstance(key, basestring):
+            if isinstance(key, str):
                 # Define a single-value key function.
                 name = key  # force static binding
                 key = lambda record: {name: record[name]}

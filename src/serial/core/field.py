@@ -4,8 +4,6 @@ Client code defines the field type for each input/output field, but the _Reader
 and _Writer classes are responsible for using them.
 
 """
-from __future__ import absolute_import
-
 from datetime import datetime
 from itertools import product
 from warnings import warn
@@ -150,7 +148,7 @@ class LongField(_NumericField):
     into a plain int.
     
     """
-    _dtype = long
+    _dtype = int
     
     def __init__(self, name, pos, fmt="d", default=None):
         """ Initialize this object.
@@ -296,7 +294,7 @@ class ListField(object):
             """ Split input into array elements. """
             # If the length of the input array is not a multiple of _stride the
             # last element will be incomplete.
-            for beg in xrange(0, len(tokens), self._stride):
+            for beg in range(0, len(tokens), self._stride):
                 end = beg + self._stride
                 yield tokens[beg:end]
             return        

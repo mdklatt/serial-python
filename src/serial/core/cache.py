@@ -1,8 +1,6 @@
 """ Cached input and output.
 
 """
-from __future__ import absolute_import
-
 from .buffer import _ReaderBuffer
 
 

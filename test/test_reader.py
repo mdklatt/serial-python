@@ -9,7 +9,6 @@ environment or setuptools develop mode to test against the development version.
 """
 from io import BytesIO
 from collections import namedtuple
-from itertools import imap
 
 import pytest
 
@@ -57,10 +56,10 @@ class _ReaderTest(object):
 
     """
     def test_next(self, reader, records):
-        """ Test the next() method.
+        """ Test the __next__() method.
 
         """
-        assert reader.next() == records[0]
+        assert next(reader) == records[0]
 
     def test_iter(self, reader, records):
         """ Test the __iter__() method.
@@ -91,13 +90,13 @@ class DictReaderTest(_ReaderTest):
         return DictReader(records)
 
     def test_next_keys(self, records):
-        """ Test the next() method for a subset of keys.
+        """ Test the __next__() method for a subset of keys.
 
         """
         key = "int"
         records = [{key: record[key]} for record in records]
         reader = DictReader(records, [key])
-        assert reader.next() == records[0]
+        assert next(reader) == records[0]
         return
 
 
@@ -111,7 +110,7 @@ class ObjectReaderTest(_ReaderTest):
         """ Return an ObjectReader for testing.
 
         """
-        attrs = records[0].keys()
+        attrs = list(records[0].keys())
         obj = namedtuple("Object", attrs)
         objects = [obj(**record) for record in records]
         return ObjectReader(objects, attrs)
@@ -136,7 +135,7 @@ class _TabularReaderTest(_ReaderTest):
 
         """
         with self.TEST_CLASS.open(stream, **kwargs) as reader:
-            assert reader.next() == records[0]
+            assert next(reader) == records[0]
         assert stream.closed
         return
 
@@ -218,7 +217,7 @@ class ChainReaderTest(object):
         """
         # Data for a FixedWidthReader
         data = " 123 abc def\n 456 ghi jkl\n", " 789 mno pqr\n"
-        return imap(BytesIO, data)
+        return list(map(BytesIO, data))
 
     @classmethod
     def reader(cls, stream):
@@ -233,11 +232,11 @@ class ChainReaderTest(object):
         return FixedWidthReader(stream, fields)
 
     def test_next(self, streams, records):
-        """ Test the next() method.
+        """ Test the __next__() method.
 
         """
         reader = ChainReader(streams, self.reader)
-        assert reader.next() == records[0]
+        assert next(reader) == records[0]
 
     def test_iter(self, streams, records):
         """ Test the __iter__() method.
@@ -260,7 +259,7 @@ class ChainReaderTest(object):
 
         """
         with ChainReader.open(streams, self.reader) as reader:
-            assert reader.next() == records[0]
+            assert next(reader) == records[0]
         assert all(stream.closed for stream in streams)
 
 

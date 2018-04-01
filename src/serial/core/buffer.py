@@ -5,8 +5,6 @@ a buffer can split one record into multiple records, merge multiple records
 into one record, reorder records, or any combination thereof. 
 
 """
-from __future__ import absolute_import
-
 from collections import deque
 
 from .reader import _Reader
@@ -37,7 +35,7 @@ class _ReaderBuffer(_Reader):
         """
         while not self._output:
             try:
-                self._queue(self._reader.next())
+                self._queue(next(self._reader))
             except (AttributeError, StopIteration):
                 # Underflow condition.
                 self._uflow()  # raises StopIteration on EOF

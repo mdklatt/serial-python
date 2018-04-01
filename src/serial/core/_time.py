@@ -3,9 +3,6 @@
 This is internal to the serial.core implementation.
 
 """
-from __future__ import absolute_import
-
-
 class TimeFormat(object):
     """ Convert datetime-like objects to formatted strings. 
     

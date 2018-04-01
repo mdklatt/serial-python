@@ -1,8 +1,6 @@
 """ Tools for working with streams.
 
 """
-from __future__ import absolute_import
-
 from collections import deque
 from zlib import decompressobj
 from zlib import MAX_WBITS
@@ -43,7 +41,7 @@ class _IStreamAdaptor(_StreamAdaptor):
     protocol.
 
     """
-    def next(self):
+    def __next__(self):
         """ Return the next line of text from a stream.
 
         """
@@ -72,7 +70,7 @@ class BufferedIStream(_IStreamAdaptor):
         while len(self._buffer) < buflen:
             # Fill the buffer one record at a time.
             try:
-                self._buffer.append(self._stream.next())
+                self._buffer.append(next(self._stream))
             except StopIteration:  # stream is exhausted
                 # Don't raise StopIteration until self.next() is called with an
                 # exhausted buffer.
@@ -80,7 +78,7 @@ class BufferedIStream(_IStreamAdaptor):
         self._bufpos = 0  # always points to the current record
         return
 
-    def next(self):
+    def __next__(self):
         """ Return the next line of text.
 
         If the stream has been rewound this will return the first buffered 
@@ -92,7 +90,7 @@ class BufferedIStream(_IStreamAdaptor):
             self._bufpos += 1
         except IndexError:
             # At the end of the buffer so get a new line.
-            line = self._stream.next()
+            line = next(self._stream)
             self._buffer.append(line)  # pops _buffer[0]
         return line
 
@@ -146,7 +144,7 @@ class FilteredIStream(_IStreamAdaptor):
             self._filters.extend(callbacks)
         return
     
-    def next(self):
+    def __next__(self):
         """ Return the next filtered line from the stream.
         
         """
@@ -156,7 +154,7 @@ class FilteredIStream(_IStreamAdaptor):
         line = None
         while line is None:
             # Repeat until a line passes all filters.
-            line = self._stream.next()
+            line = next(self._stream)
             for callback in self._filters:
                 # Apply each filter in order. Stop as soon as the line fails
                 # a filter.
@@ -187,7 +185,7 @@ class GzippedIStream(_IStreamAdaptor):
         self._buffer = ""
         return
             
-    def next(self):
+    def __next__(self):
         """ Return the next line of text.
         
         """

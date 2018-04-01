@@ -7,8 +7,6 @@ precedence over the version in this project directory. Use a virtualenv test
 environment or setuptools develop mode to test against the development version.
 
 """
-from itertools import izip
-
 import pytest
 
 from serial.core.filter import *  # tests __all__
@@ -36,7 +34,7 @@ class _RecordFilterTest(object):
 
         """
         keys = "value", "accept"
-        return (dict(izip(keys, item)) for item in cls._DATA)
+        return (dict(list(zip(keys, item))) for item in cls._DATA)
 
     def test_call(self, testobj, data):
         """ Test the __call__ method for each test record and blacklist option.
@@ -44,7 +42,7 @@ class _RecordFilterTest(object):
         """
         filter, blacklist = testobj
         expect = data if data["accept"] is not blacklist else None
-        assert expect == filter(data)
+        assert expect == list(filter(data))
         return
 
     def test_call_missing(self, testobj, data):
@@ -55,7 +53,7 @@ class _RecordFilterTest(object):
         data = data.copy()  # record is NOT test-independent
         del data["value"]
         expect = data if blacklist else None
-        assert expect == filter(data)
+        assert expect == list(filter(data))
         return
 
 
@@ -116,7 +114,7 @@ class RangeFilterTest(_RecordFilterTest):
             expect = data if start <= data["value"] else None
         else:
             assert False  # shouldn't get here
-        assert expect == filter(data)
+        assert expect == list(filter(data))
         return
 
 
@@ -132,7 +130,7 @@ class _TextFilterTest(object):
 
         """
         keys = "text", "accept"
-        return (dict(izip(keys, item)) for item in cls._DATA)
+        return (dict(list(zip(keys, item))) for item in cls._DATA)
 
     def test_call(self, testobj, data):
         """ Test the __call__ method for each test string and blacklist option.
@@ -141,7 +139,7 @@ class _TextFilterTest(object):
         filter, blacklist = testobj
         text = data["text"]
         expect = text if data["accept"] is not blacklist else None
-        assert expect == filter(text)
+        assert expect == list(filter(text))
         return
 
 

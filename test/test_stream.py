@@ -49,10 +49,10 @@ class _IStreamTest(object):
 
     """
     def test_next(self, stream, lines):
-        """ Test the next() method.
+        """ Test the __next__() method.
 
         """
-        assert stream.next() == lines[0]
+        assert next(stream) == lines[0]
 
     def test_iter(self, stream, lines):
         """ Test the __iter__() method.
@@ -67,7 +67,7 @@ class _IStreamTest(object):
         """
         stream.close()
         with pytest.raises(ValueError) as exinfo:
-            stream.next()
+            next(stream)
         assert "closed file" in str(exinfo.value)
         return
 
@@ -92,7 +92,7 @@ class BufferedIStreamTest(_IStreamTest):
         """
         for _ in range(self.BUFLEN):
             # Stay within the buffer limits.
-            stream.next()
+            next(stream)
         stream.rewind(self.BUFLEN)
         assert list(stream) == lines
 

@@ -3,14 +3,12 @@
 Readers convert lines of text to data records.
 
 """
-from __future__ import absolute_import
-
 from collections import deque
 from contextlib import contextmanager
 from functools import partial
 from itertools import chain
-from itertools import imap
-from itertools import izip
+
+
 from re import compile
 
 
@@ -61,7 +59,7 @@ class _Reader(object):
             self._user_filters.extend(callbacks)
         return
 
-    def next(self):
+    def __next__(self):
         """ Read the next record while applying filtering.
 
         """
@@ -112,8 +110,8 @@ class DictReader(_Reader):
         if keys:
             keys = list(keys)
             values = lambda record: (record[key] for key in keys)
-            items = (izip(keys, values(record)) for record in records)
-            self._records = imap(dict, items)
+            items = (zip(keys, values(record)) for record in records)
+            self._records = map(dict, items)
         else:
             self._records = iter(records)
         return
@@ -138,8 +136,8 @@ class ObjectReader(_Reader):
         super(ObjectReader, self).__init__()
         keys = list(attrs)
         values = lambda object: (getattr(object, name) for name in keys)
-        items = (izip(keys, values(object)) for object in objects)
-        self._records = imap(dict, items)
+        items = (zip(keys, values(object)) for object in objects)
+        self._records = map(dict, items)
         return
 
     def _get(self):
@@ -170,7 +168,7 @@ class _TabularReader(_Reader):
         """
         # This assumes that first argument for all derived class constructors
         # is the stream; if not, this will need to be overridden.
-        if isinstance(stream, basestring):
+        if isinstance(stream, str):
             # Treat this as a file path.
             stream = open(stream, "r")
         yield cls(stream, *args, **kwargs)
@@ -329,7 +327,7 @@ class ChainReader(_Reader):
         """ Return the next parsed record from the sequence.
         
         """
-        return self._records.next()
+        return next(self._records)
     
     def _stream(self, stream):
         """ Return an open stream based on the given argument.
@@ -340,7 +338,7 @@ class ChainReader(_Reader):
         sequence.
         
         """
-        if isinstance(stream, basestring):
+        if isinstance(stream, str):
             # Treat this as a file path.
             stream = open(stream, "r")
         return stream
