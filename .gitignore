@@ -13,6 +13,11 @@ dist/
 .python-version
 
 
+# Ignore pytest cache files.
+
+.pytest_cache/
+
+
 # Ignore virtualenv environments.
 
 venv*/
