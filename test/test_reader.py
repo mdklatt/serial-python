@@ -7,7 +7,7 @@ precedence over the version in this project directory. Use a virtualenv test
 environment or setuptools develop mode to test against the development version.
 
 """
-from io import BytesIO
+from io import StringIO
 from collections import namedtuple
 
 import pytest
@@ -165,13 +165,13 @@ class DelimitedReaderTest(_TabularReaderTest):
         """ Return an input stream containing test data.
 
         """
-        return BytesIO("123, abc, def\n456, ghi, jkl\n789, mno, pqr\n")
+        return StringIO("123, abc, def\n456, ghi, jkl\n789, mno, pqr\n")
 
     def test_iter_escape(self, kwargs, records):
         """ Test the __iter__() method with an escaped delimiter.
 
         """
-        stream = BytesIO("123, abc\,, def\n456, ghi, jkl\n789, mno, pqr\n")
+        stream = StringIO("123, abc\,, def\n456, ghi, jkl\n789, mno, pqr\n")
         kwargs["esc"] = "\\"
         reader = self.TEST_CLASS(stream, **kwargs)
         records[0]["arr"] = [{"x": "abc,", "y": "def"}]
@@ -202,7 +202,7 @@ class FixedWidthReaderTest(_TabularReaderTest):
         """ Return a test data stream.
 
         """
-        return BytesIO(" 123 abc def\n 456 ghi jkl\n 789 mno pqr\n")
+        return StringIO(" 123 abc def\n 456 ghi jkl\n 789 mno pqr\n")
 
 
 class ChainReaderTest(object):
@@ -217,7 +217,7 @@ class ChainReaderTest(object):
         """
         # Data for a FixedWidthReader
         data = " 123 abc def\n 456 ghi jkl\n", " 789 mno pqr\n"
-        return list(map(BytesIO, data))
+        return map(StringIO, data)
 
     @classmethod
     def reader(cls, stream):

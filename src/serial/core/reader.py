@@ -7,8 +7,7 @@ from collections import deque
 from contextlib import contextmanager
 from functools import partial
 from itertools import chain
-
-
+from re import escape
 from re import compile
 
 
@@ -195,7 +194,7 @@ class _TabularReader(_Reader):
         exception is raised on EOF.
 
         """
-        tokens = self._split(self._stream.next().rstrip(self._endl))
+        tokens = self._split(next(self._stream).rstrip(self._endl))
         return {field.name: field.decode(token) for (field, token) in
                 zip(self._fields, tokens)}
 
@@ -225,11 +224,11 @@ class DelimitedReader(_TabularReader):
         """
         super(DelimitedReader, self).__init__(stream, fields, endl)
         if esc:
-            # Regex patterns need to be encoded in case the escape character 
+            # Regex patterns need to be escaped in case the escape character
             # has a special meaning.
-            patt = "{0:s}{1:s}".format(esc, delim).encode("string-escape")
+            patt = "{0:s}{1:s}".format(escape(esc), delim)
             unescape = partial(compile(patt).sub, delim)
-            patt = "(?<!{0:s}){1:s}".format(esc, delim).encode("string-escape")
+            patt = "(?<!{0:s}){1:s}".format(escape(esc), delim)
             split = compile(patt).split
             self._tokenize = lambda line: [unescape(s) for s in split(line)]
         else:
