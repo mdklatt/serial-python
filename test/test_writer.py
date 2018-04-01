@@ -7,7 +7,7 @@ precedence over the version in this project directory. Use a virtualenv test
 environment or setuptools develop mode to test against the development version.
 
 """
-from io import BytesIO
+from io import StringIO
 
 import pytest
 
@@ -35,7 +35,7 @@ def modify_filter(record):
     """ A filter function to modify records.
 
     """
-    record["int"] /= 2
+    record["int"] //= 2
     return record
 
 
@@ -50,7 +50,7 @@ class _WriterTest(object):
     @classmethod
     @pytest.fixture
     def stream(cls):
-        return BytesIO()
+        return StringIO()
 
     def test_write(self, stream, kwargs, records):
         """ Test the write() method.
