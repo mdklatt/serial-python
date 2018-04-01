@@ -1,7 +1,7 @@
 ===========
 serial-core
 ===========
-.. |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=master
+.. |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=py27
    :alt: Travis CI build status
    :target: `travis`_
 .. _travis: https://travis-ci.org/mdklatt/serial-python
@@ -9,6 +9,9 @@ serial-core
 
 
 |travis.png|
+
+**Python 2.7 support is deprecated.**
+**This branch is not actively maintained.**
 
 
 The `serial`_ Python library provides extensible tools for reading and writing
@@ -73,4 +76,4 @@ Install the library from `GitHub`_:
 
 ..  code-block:: shell
 
-    $ pip install git+git://github.com/mdklatt/serial-python.git
+    $ pip install git+git://github.com/mdklatt/serial-python.git@py27
