@@ -1,7 +1,7 @@
 ===========
 serial-core
 ===========
-.. |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=py27
+.. |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=master
    :alt: Travis CI build status
    :target: `travis`_
 .. _travis: https://travis-ci.org/mdklatt/serial-python
@@ -10,14 +10,16 @@ serial-core
 
 |travis.png|
 
-**Python 2.7 support is deprecated.**
-**This branch is not actively maintained.**
-
-
 The `serial`_ Python library provides extensible tools for reading and writing
 record-oriented data in various formats. The core library provided here is
 contained in the ``serial.core`` package. Library extensions will be contained
 in their own packages under the ``serial`` namespace.
+
+
+.. _py27: https://github.com/mdklatt/serial-python/tree/py27
+
+The `py27`_ branch is for Python 2.7 compatibility; it is no longer actively
+maintained.
 
 
 Features
@@ -32,7 +34,7 @@ Features
 Basic Example
 =============
 
-..  code-block:: python
+.. code-block:: python
 
     """ Read a comma-delimited file.
 
@@ -60,9 +62,6 @@ Requirements
 .. _Sphinx: http://sphinx-doc.org
 .. _pytest: http://pytest.org
 
-Python 2.7 is required. While an attempt has been made to maximize forward
-compatibility with Python 3, this is not guaranteed.
-
 - `Sphinx`_ (optional; required to build documentation)
 - `pytest`_ (optional; required to run test suite)
 
@@ -74,6 +73,6 @@ Installation
 
 Install the library from `GitHub`_:
 
-..  code-block:: shell
+.. code-block:: shell
 
-    $ pip install git+git://github.com/mdklatt/serial-python.git@py27
+    $ pip install git+git://github.com/mdklatt/serial-python.git

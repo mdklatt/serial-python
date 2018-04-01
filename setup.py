@@ -24,9 +24,10 @@ def version():
 
     """
     path = join("src", "serial", "core", "__version__.py")
+    namespace = {}
     with open(path) as stream:
-        exec(stream.read())
-    return __version__
+        exec(stream.read(), namespace)
+    return namespace["__version__"]
 
 
 class _CustomCommand(Command):
