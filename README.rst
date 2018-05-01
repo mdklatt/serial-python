@@ -1,7 +1,8 @@
-===========
+###########
 serial-core
-===========
-.. |travis.png| image:: https://travis-ci.org/mdklatt/cookiecutter-python-lib.png?branch=master
+###########
+
+.. |travis.png| image:: https://travis-ci.org/mdklatt/serial-python.png?branch=master
    :alt: Travis CI build status
    :target: `travis`_
 .. _travis: https://travis-ci.org/mdklatt/serial-python
@@ -22,6 +23,7 @@ The `py27`_ branch is for Python 2.7 compatibility; it is no longer actively
 maintained.
 
 
+========
 Features
 ========
 - Read/write delimited and fixed-width data
@@ -31,6 +33,7 @@ Features
 - Sorting
 
 
+=============
 Basic Example
 =============
 
@@ -57,6 +60,7 @@ Basic Example
             print("{name:s} is {age:d} years old".format(**record))
 
 
+============
 Requirements
 ============
 .. _Sphinx: http://sphinx-doc.org
@@ -66,7 +70,7 @@ Requirements
 - `pytest`_ (optional; required to run test suite)
 
 
-
+============
 Installation
 ============
 .. _GitHub: https://github.com/mdklatt/serial-python
