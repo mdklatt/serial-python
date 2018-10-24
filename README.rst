@@ -2,14 +2,14 @@
 serial-core
 ###########
 
-.. |travis.png| image:: https://travis-ci.org/mdklatt/serial-python.png?branch=master
+.. |travis badge| image:: https://travis-ci.org/mdklatt/serial-python.png?branch=master
    :alt: Travis CI build status
    :target: `travis`_
 .. _travis: https://travis-ci.org/mdklatt/serial-python
 .. _serial: http://github.com/mdklatt/serial-python
 
 
-|travis.png|
+|travis badge|
 
 The `serial`_ Python library provides extensible tools for reading and writing
 record-oriented data in various formats. The core library provided here is
@@ -61,22 +61,12 @@ Basic Example
 
 
 ============
-Requirements
-============
-.. _Sphinx: http://sphinx-doc.org
-.. _pytest: http://pytest.org
-
-- `Sphinx`_ (optional; required to build documentation)
-- `pytest`_ (optional; required to run test suite)
-
-
-============
 Installation
 ============
 .. _GitHub: https://github.com/mdklatt/serial-python
 
 Install the library from `GitHub`_:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ python -m pip install git+git://github.com/mdklatt/serial-python.git
