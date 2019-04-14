@@ -125,7 +125,7 @@ class DelimitedWriterTest(_WriterTest):
         kwargs["esc"] = "\\"
         writer = self.TEST_CLASS(stream, **kwargs)
         writer.dump(records)
-        assert stream.getvalue() == "123,abc\,,defX456,ghi,jklX"
+        assert stream.getvalue() == "123,abc\\,,defX456,ghi,jklX"
         return
 
 

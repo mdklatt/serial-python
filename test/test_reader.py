@@ -171,7 +171,7 @@ class DelimitedReaderTest(_TabularReaderTest):
         """ Test the __iter__() method with an escaped delimiter.
 
         """
-        stream = StringIO("123, abc\,, def\n456, ghi, jkl\n789, mno, pqr\n")
+        stream = StringIO("123, abc\\,, def\n456, ghi, jkl\n789, mno, pqr\n")
         kwargs["esc"] = "\\"
         reader = self.TEST_CLASS(stream, **kwargs)
         records[0]["arr"] = [{"x": "abc,", "y": "def"}]
