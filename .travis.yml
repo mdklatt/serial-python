@@ -17,7 +17,6 @@ sudo: false
 
 install:
   - python -m pip install pipenv
-  - python -m pip install .
   - pipenv install --dev
 
 script:

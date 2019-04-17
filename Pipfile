@@ -3,9 +3,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[packages]
+"e1839a8" = {editable = true, path = "."}
+
 [dev-packages]
-pytest = "*"
-sphinx = "*"
+pytest = ">=4"
+sphinx = ">=2"
 
 [requires]
 python_version = "3.6"
