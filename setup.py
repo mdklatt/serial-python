@@ -7,7 +7,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 
-_CONFIG = {
+_config = {
     "name": "serial-core",
     "author": "Michael Klatt",
     "author_email": "mdklatt@alumni.ou.edu",
@@ -17,21 +17,21 @@ _CONFIG = {
 }
 
 
-def version():
-    """ Get the local package version.
-
-    """
-    file = Path("src", "serial", "core", "__version__.py")
-    namespace = {}
-    exec(file.read_text(), namespace)
-    return namespace["__version__"]
-
-
 def main():
-    """ Execute the setup commands.
+    """ Execute the setup command.
 
     """
-    setup(version=version(), **_CONFIG)
+    def version():
+        """ Get the local package version. """
+        namespace = {}
+        path = Path("src", "serial", "core", "__version__.py")
+        exec(path.read_text(), namespace)
+        return namespace["__version__"]
+
+    _config.update({
+        "version": version(),
+    })
+    setup(**_config)
     return 0
 
 
