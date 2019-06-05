@@ -17,11 +17,11 @@ _config = {
 }
 
 
-def main():
+def main() -> int:
     """ Execute the setup command.
 
     """
-    def version():
+    def version() -> str:
         """ Get the local package version. """
         namespace = {}
         path = Path("src", "serial", "core", "__version__.py")
