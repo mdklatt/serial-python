@@ -22,6 +22,20 @@ def pytest_generate_tests(metafunc):
     return
 
 
+class CountFilterTest(object):
+    """ Unit testing for the CountFilter class.
+
+    """
+    def test_call(self):
+        """ Test the __call__ method().
+
+        """
+        filter = CountFilter("count", 10)
+        expect = [{"count": 10}, {"count": 11}]
+        assert expect == list(map(filter, ({}, {})))
+        return
+
+
 class _MatchFilterTest(object):
     """ Abstract base class for testing match filters.
 

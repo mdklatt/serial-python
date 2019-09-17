@@ -5,8 +5,39 @@ from re import compile
 from typing import Optional
 
 
-__all__ = ("BoolFilter", "FieldFilter", "RangeFilter",
+__all__ = ("BoolFilter", "CountFilter", "FieldFilter", "RangeFilter",
            "RegexFilter", "SliceFilter")
+
+
+class CountFilter(object):
+    """ Add a count field.
+
+    This will count the number of records that pass through this filter, which
+    may not be the same as the total number of records read or written due to
+    the actions of other filters.
+
+    Use this with a Reader or Writer via its filter() method.
+
+    """
+    def __init__(self, field: str, start=1):
+        """ Initialize this object
+
+        :param field: output field
+        :param start: start value
+        """
+        self._field = field
+        self._count = start
+        return
+
+    def __call__(self, record: dict) -> dict:
+        """ Increment the count.
+
+        :param record: input record
+        :return: modified record
+        """
+        record[self._field] = self._count
+        self._count += 1
+        return record
 
 
 class _MatchFilter(object):
