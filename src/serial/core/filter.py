@@ -2,34 +2,38 @@
 
 """
 from re import compile
+from typing import Optional
 
 
 __all__ = ("BoolFilter", "FieldFilter", "RangeFilter",
            "RegexFilter", "SliceFilter")
 
 
-class _RecordFilter(object):
-    """ Abstract base class for record filters.
-    
-    Record filters are intended for use with a Reader or Writer via their
-    filter() method.
+class _MatchFilter(object):
+    """ Abstract filter base class for matching records.
     
     """
-    def __init__(self, field, blacklist=False):
+    def __init__(self, field: str, blacklist=False):
         """ Initialize this object.
         
         By default, records that match on the value for the given field are 
-        passed through and all other records are dropped (whitelisting). If 
-        blacklist is True this is reversed (blacklisting).
-        
+        passed through and all other records are dropped (whitelisting).
+
+        :param field: input field
+        :param blacklist: True to blacklist matching records
         """
         self._field = field
         self._blacklist = blacklist
         return
         
-    def __call__(self, record):
-        """ Execute the filter.
-        
+    def __call__(self, record: dict) -> Optional[dict]:
+        """ Match a record.
+
+        Matching records will be passed along for whitelisting and dropped for
+        blacklisting.
+
+        :param record: input record
+        :return: input record or None
         """
         try:
             match = self._match(record[self._field])
@@ -37,78 +41,94 @@ class _RecordFilter(object):
             match = False
         return record if match != self._blacklist else None
         
-    def _match(self, value):
+    def _match(self, value) -> bool:
         """ Return True if the given field value is a match for the filter.
-        
-        Matching records will be passed along for whitelisting and dropped for
-        blacklisting.
         
         """
         raise NotImplementedError
     
 
-class BoolFilter(_RecordFilter):
+class BoolFilter(_MatchFilter):
     """ Filter records by the boolean value of a specific field.
 
     Accept values that are not false-y (False, 0, None, empty string, etc.) for
     whitelisting and reject them for blacklisting.
 
+    Use this with a Reader or Writer via its filter() method.
+
     """
-    def __init__(self, field, blacklist=False):
+    def __init__(self, field: str, blacklist=False):
         """ Initialize this object.
 
+        :param field: input field
+        :param blacklist: True to blacklist matching records
         """
         super(BoolFilter, self).__init__(field, blacklist)
         return
 
-    def _match(self, value):
-        """ Return True if the value is not false-y,
+    def _match(self, value) -> bool:
+        """ Convert the value to a bool.
 
+        :return: True if the value is not false-y
         """
         return bool(value)
 
 
-class FieldFilter(_RecordFilter):
+class FieldFilter(_MatchFilter):
     """ Filter records by the value of a specific field.
-    
+
+    Use this with a Reader or Writer via its filter() method.
+
     """
-    def __init__(self, field, values, blacklist=False):
+    def __init__(self, field: str, values, blacklist=False):
         """ Initialize this object.
-                
+
+        :param field: input field
+        :param values: values to match
+        :param blacklist: True to blacklist matching records
         """
         super(FieldFilter, self).__init__(field, blacklist)
         self._values = set(values)
         return
 
-    def _match(self, value):
-        """ Return True if the value matches the set of filter values.
-        
+    def _match(self, value) -> bool:
+        """ Match a value against the filter values.
+
+        :return: True for matching vale
         """
         return value in self._values
 
 
-class RangeFilter(_RecordFilter):
+class RangeFilter(_MatchFilter):
     """ Filter records based on a range of values.
-    
+
+    Use this with a Reader or Writer via its filter() method.
+
     """
-    def __init__(self, field, start=None, stop=None, blacklist=False):
+    def __init__(self, field: str, start=None, stop=None, blacklist=False):
         """ Initialize this object.
         
         Records are matched against the range [start, stop). If start or stop 
         is None that end of the range is considered to be unlimited.
-        
+
+        :param field: input field
+        :param start: range start (inclusive)
+        :param stop: range stop (exclusive)
+        :param blacklist: True to blacklist matching records
         """
         super(RangeFilter, self).__init__(field, blacklist)
         self._start = start
         self._stop = stop
         return
         
-    def _match(self, value):
-        """ Return True if the value is within the filter range.
-        
+    def _match(self, value) -> bool:
+        """ Match the record against the filter range.
+
+        :return: True if the value is within the range
         """
-        return ((self._start is None or self._start <= value) and
-                (self._stop is None or value < self._stop))
+        lower = self._start is None or self._start <= value
+        upper = self._stop is None or value < self._stop
+        return lower and upper
 
 
 class RegexFilter(object):
@@ -117,21 +137,24 @@ class RegexFilter(object):
     This is intended for use with a FilteredIStream or FilteredOStream.
     
     """
-    def __init__(self, regex, blacklist=False):
+    def __init__(self, regex: str, blacklist=False):
         """ Initialize this object.
         
         By default, lines that match the regular expression are passed through
-        and all other lines are dropped (whitelisting). If blacklist is True 
-        this is reversed (blacklisting).
-        
+        and all other lines are dropped (whitelisting).
+
+        :param regex: regular expression to match
+        :param blacklist: True to blacklist matching records
         """
         self._regex = compile(regex)
         self._blacklist = blacklist
         return
         
-    def __call__(self, line):
-        """ Execute the filter.
-        
+    def __call__(self, line: str) -> Optional[str]:
+        """ Match a line.
+
+        :param line: input line
+        :return: input line or None
         """
         match = self._regex.search(line) is not None
         return line if match != self._blacklist else None
@@ -148,9 +171,11 @@ class SliceFilter(object):
         
         The slice expression can be a pair of numbers or a slice object. By
         default, lines where the slice matches one of the values are passed
-        through and all other lines are dropped (whitelisting). If blacklist
-        is True this is reversed (blacklisting).
-        
+        through and all other lines are dropped (whitelisting).
+
+        :param expr: slice expression
+        :param values: values to match
+        :param blacklist: True to blacklist matching records
         """
         try:
             # Create a slice from a [beg, end) pair.
@@ -161,9 +186,11 @@ class SliceFilter(object):
         self._blacklist = blacklist
         return
         
-    def __call__(self, line):
-        """ Execute the filter.
-        
+    def __call__(self, line: str) -> Optional[str]:
+        """ Match a line.
+
+        :param line: input line
+        :return: input line or None
         """
         match = line[self._slice] in self._values
         return line if match != self._blacklist else None

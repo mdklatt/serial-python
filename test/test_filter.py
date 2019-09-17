@@ -22,8 +22,8 @@ def pytest_generate_tests(metafunc):
     return
 
 
-class _RecordFilterTest(object):
-    """ Abstract base class for testing record filters.
+class _MatchFilterTest(object):
+    """ Abstract base class for testing match filters.
 
     """
     _DATA = None  # must be defined by derived classes
@@ -57,7 +57,7 @@ class _RecordFilterTest(object):
         return
 
 
-class BoolFilterTest(_RecordFilterTest):
+class BoolFilterTest(_MatchFilterTest):
     """ Unit testing for the BoolFilter class.
 
     """
@@ -72,7 +72,7 @@ class BoolFilterTest(_RecordFilterTest):
         return BoolFilter("value", blacklist), blacklist
 
 
-class FieldFilterTest(_RecordFilterTest):
+class FieldFilterTest(_MatchFilterTest):
     """ Unit testing for the FieldFilter class.
 
     """
@@ -88,7 +88,7 @@ class FieldFilterTest(_RecordFilterTest):
         return FieldFilter("value", values, blacklist), blacklist
 
 
-class RangeFilterTest(_RecordFilterTest):
+class RangeFilterTest(_MatchFilterTest):
     """ Unit testing for the RangeFilter class.
 
     """
