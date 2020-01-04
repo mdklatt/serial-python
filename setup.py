@@ -20,6 +20,7 @@ _config = {
 def main() -> int:
     """ Execute the setup command.
 
+    :return: exit status
     """
     def version() -> str:
         """ Get the local package version. """

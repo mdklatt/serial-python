@@ -7,7 +7,7 @@ language: python
 python:
   - "3.6"
   - "3.7"
-  - "3.8-dev"
+  - "3.8"
 
 branches:
   only:
@@ -19,6 +19,7 @@ dist: xenial
 install:
   - python -m pip install pipenv
   - pipenv install --dev
+  - pipenv run pip install -e .
 
 script:
   - pipenv run pytest --verbose test/
