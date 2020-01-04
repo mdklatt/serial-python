@@ -167,9 +167,10 @@ class _TabularReader(_Reader):
         """
         # This assumes that first argument for all derived class constructors
         # is the stream; if not, this will need to be overridden.
-        if isinstance(stream, str):
-            # Treat this as a file path.
-            stream = open(stream, "r")
+        try:
+            stream = open(stream, "rt")
+        except TypeError:  # not a valid path argument
+            pass  # assume this is already an open stream
         yield cls(stream, *args, **kwargs)
         try:
             stream.close()

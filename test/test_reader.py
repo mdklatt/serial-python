@@ -1,17 +1,12 @@
 """ Testing for the the reader.py module
 
 The script can be executed on its own or incorporated into a larger test suite.
-However the tests are run, be aware of which version of the module is actually
-being tested. If the library is installed in site-packages, that version takes
-precedence over the version in this project directory. Use a virtualenv test
-environment or setuptools develop mode to test against the development version.
 
 """
 from io import StringIO
 from collections import namedtuple
 
 import pytest
-
 from serial.core import IntField
 from serial.core import ListField
 from serial.core import StringField
@@ -23,7 +18,8 @@ def records():
     return [
         {"int": 123, "arr": [{"x": "abc", "y": "def"}]},
         {"int": 456, "arr": [{"x": "ghi", "y": "jkl"}]},
-        {"int": 789, "arr": [{"x": "mno", "y": "pqr"}]}]
+        {"int": 789, "arr": [{"x": "mno", "y": "pqr"}]}
+    ]
 
 
 def stop_filter(record):
