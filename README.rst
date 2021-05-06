@@ -2,7 +2,7 @@
 serial-core
 ###########
 
-.. |travis badge| image:: https://travis-ci.org/mdklatt/serial-python.png?branch=master
+.. |travis badge| image:: https://travis-ci.org/mdklatt/serial-python.png?branch=main
    :alt: Travis CI build status
    :target: `travis`_
 .. _travis: https://travis-ci.org/mdklatt/serial-python
