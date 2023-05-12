@@ -1,0 +1,2 @@
+# Python requirements for the local dev envrionment.
+pytest==7.1.3
