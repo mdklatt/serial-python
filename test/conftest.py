@@ -1,4 +1,4 @@
-""" Common test fixtures.
+""" Global test configuration for this subdirectory.
 
 """
 import pytest

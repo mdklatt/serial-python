@@ -9,7 +9,6 @@ environment or setuptools develop mode to test against the development version.
 """
 import pytest
 
-from _fixture import writer
 from serial.core.reduce import *  # tests __all__
 
 
