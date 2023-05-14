@@ -8,24 +8,10 @@ dist/
 *.pyo
 
 
-# Ignore pyenv files.
+# Ignore Python environments.
 
 .python-version
-
-
-# Ignore pytest cache files.
-
-.pytest_cache/
-
-
-# Ignore virtualenv environments.
-
 .venv*/
-
-
-# Ignore Vagrant runtime files.
-
-.vagrant/
 
 
 # Ignore settings for various IDEs.
@@ -39,3 +25,4 @@ nbproject/
 # Ignore OS metadata files.
 
 .DS_Store
+Thumbs.db
