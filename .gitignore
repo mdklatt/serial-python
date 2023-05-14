@@ -14,7 +14,12 @@ dist/
 .venv*/
 
 
-# Ignore settings for various IDEs.
+# Ignore Make artifacts.
+
+**/.make-update
+
+
+# Ignore IDE settings.
 
 .idea/
 .project/
