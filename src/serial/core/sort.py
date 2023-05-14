@@ -11,7 +11,7 @@ from .buffer import _WriterBuffer
 __all__ = "SortReader", "SortWriter"
 
 
-class _Sorter(object):
+class _Sorter:
     """ Abstract base class for SortReader and SortWriter.
     
     """

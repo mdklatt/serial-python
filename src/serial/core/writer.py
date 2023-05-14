@@ -10,7 +10,7 @@ from itertools import chain
 __all__ = "DelimitedWriter", "FixedWidthWriter"
 
 
-class _Writer(object):
+class _Writer:
     """ Abstract base class for all serial data writers.
 
     Serial data consists of sequential records. A _Writer provides an interface

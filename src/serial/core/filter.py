@@ -9,7 +9,7 @@ __all__ = ("BoolFilter", "CountFilter", "FieldFilter", "RangeFilter",
            "RegexFilter", "SliceFilter")
 
 
-class CountFilter(object):
+class CountFilter:
     """ Add a count field.
 
     This will count the number of records that pass through this filter, which
@@ -40,7 +40,7 @@ class CountFilter(object):
         return record
 
 
-class _MatchFilter(object):
+class _MatchFilter:
     """ Abstract filter base class for matching records.
     
     """
@@ -162,7 +162,7 @@ class RangeFilter(_MatchFilter):
         return lower and upper
 
 
-class RegexFilter(object):
+class RegexFilter:
     """ Filter lines using a regular expression.
     
     This is intended for use with a FilteredIStream or FilteredOStream.
@@ -191,7 +191,7 @@ class RegexFilter(object):
         return line if match != self._blacklist else None
 
 
-class SliceFilter(object):
+class SliceFilter:
     """ Filter lines by slice.
     
     This is intended for use with a FilteredIStream or FilteredOStream.

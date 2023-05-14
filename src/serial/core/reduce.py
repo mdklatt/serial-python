@@ -10,7 +10,7 @@ from .buffer import _WriterBuffer
 __all__ = "AggregateReader", "AggregateWriter"
 
 
-class _Aggregator(object):
+class _Aggregator:
     """ Base class for AggregateReader and AggregateWriter.
     
     During aggregation, incoming records are grouped, reduction functions are

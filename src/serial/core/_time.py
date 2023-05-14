@@ -3,7 +3,7 @@
 This is internal to the serial.core implementation.
 
 """
-class TimeFormat(object):
+class TimeFormat:
     """ Convert datetime-like objects to formatted strings. 
     
     This is a replacement for datetime.strftime that handles years before 1900.    

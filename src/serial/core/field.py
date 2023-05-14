@@ -15,7 +15,7 @@ __all__ = ("ConstField", "IntField", "FloatField", "StringField",
            "DatetimeField", "RecordField", "ListField", "ArrayField")
 
 
-class _ScalarField(object):
+class _ScalarField:
     """ Base class for scalar field types. 
 
     """
@@ -243,7 +243,7 @@ class DatetimeField(_ScalarField):
         return token[:self.width].rjust(self.width) if self._fixed else token
 
 
-class ListField(object):
+class ListField:
     """ An array of composite field elements.
 
     """

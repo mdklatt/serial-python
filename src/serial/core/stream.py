@@ -9,7 +9,7 @@ __all__ = ("BufferedIStream", "FilteredIStream", "FilteredOStream",
            "GzippedIStream")
 
 
-class _StreamAdaptor(object):
+class _StreamAdaptor:
     """ Abstract base class for a stream adaptor.
     
     """

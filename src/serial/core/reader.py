@@ -15,7 +15,7 @@ __all__ = ("DictReader", "ObjectReader", "DelimitedReader", "FixedWidthReader",
            "ChainReader")
 
 
-class _Reader(object):
+class _Reader:
     """ Abstract base class for all serial data readers.
 
     Serial data consists of sequential records. A _Reader provides an iterator
