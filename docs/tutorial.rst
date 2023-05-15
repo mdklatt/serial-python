@@ -53,26 +53,28 @@ with these fields individually can be tedious. For the sample data the
 format of each sensor field is the same, so they can all be treated as a
 single array. Each array element will have a value and a flag.
 
-An ``ArrayField`` must be initialized with the field definitions to use
+An ``ListField`` must be initialized with the field definitions to use
 for an array element. The position of the array itself is relative to
 the entire input line, but the positions of the element fields are
 relative to each other.
 
 ..  code-block:: python
 
-    from serial.core import ArrayField
+    from serial.core import ListField
 
-    array_fields = (
-        # Define each data array element.
+    list_fields = (
+        # Define each list element.
         FloatField("value", (0, 8)),  # leading space
-        StringField("flag", (8, 9)))
+        StringField("flag", (8, 9))
+    )
 
     sample_fields = (
         # Ignoring time zone field.
         StringField("stid", (0, 6)),
         StringField("date", (6, 16)),
         StringField("time", (16, 23)),
-        ArrayField("data", (27, 45), array_fields))
+        ListField("data", (27, 45), list_fields)
+    )
 
     ...
 
@@ -91,7 +93,8 @@ to None. *Variable-length arrays must be at the end of the record*.
         StringField("stid", (0, 7)),
         StringField("date", (7, 17)),
         StringField("time", (17, 23)),
-        ArrayField("data", (27, None), array_fields))  # variable length
+        ListField("data", (27, None), list_fields)  # variable length
+    )
 
 Datetime Fields
 ---------------
@@ -112,7 +115,8 @@ string <http://docs.python.org/2/library/datetime.html#strftime-strptime-behavio
         # Ignoring time zone field.
         StringField("stid", (0, 6)),
         DatetimeField("timestamp", (6, 23), "%Y-%m-%d %H:%M"),
-        ArrayField("data", (27, None), array_fields))  # variable length
+        ListField("data", (27, None), list_fields)  # variable length
+    )
 
 Default Values
 --------------
@@ -123,9 +127,10 @@ that field (``None`` by default).
 
 ..  code-block:: python
 
-    array_fields = (
+    list_fields = (
         FloatField("value", (0, 8)),
-        StringField("flag", (8, 9), default="M"))  # replace blanks with M
+        StringField("flag", (8, 9), default="M")  # replace blanks with M
+    )
 
 Writing Data
 ============
@@ -144,21 +149,23 @@ defined for a given data format using one set of field definitions.
 
     from serial.core import FixedWidthWriter 
 
-    array_fields = (
+    list_fields = (
         FloatField("value", (0, 8), "8.2f"),  # don't forget leading space
-        StringField("flag", (8, 9), "1s"))
+        StringField("flag", (8, 9), "1s")
+    )
 
     sample_fields = (
         # Output fields must be listed in sequential order. 
         StringField("stid", (0, 6), "6s"),
         DatetimeField("timestamp", (6, 23), "%Y-%m-%d %H:%M"),
         StringField("timezone", (23, 27), "3s", default="UTC"),
-        ArrayField("data", (27, None), array_fields))
+        ListField("data", (27, None), list_fields)
+    )
 
     with open("data.txt", "r") as istream, open("copy.txt", "w") as ostream:
         # Copy "data.txt" to "copy.txt".
-        reader = FixedWidthReader(istream, array_fields)
-        writer = FixedWidthWriter(ostream, array_fields)
+        reader = FixedWidthReader(istream, list_fields)
+        writer = FixedWidthWriter(ostream, list_fields)
         for record in reader:
             # Write each record to the stream.
             writer.write(record)
@@ -198,7 +205,7 @@ Delimited Data
 The ``DelimitedReader`` and ``DelimitedWriter`` classes can be used for
 reading and writing delimited data, e.g. a CSV file.
 
-::
+.. code-block::
 
     340010,2012-02-01 00:00,UTC,-999.00,M,-999.00,S
     340010,2012-03-01 00:00,UTC,72.00,,1.23,A
@@ -214,15 +221,17 @@ optional for most field types because a width is not required.
     from serial.core import DelimitedReader
     from serial.core import DelimitedWriter
 
-    array_fields = (
+    list_fields = (
         FloatField("value", 0, ".2f"),  # don't need width
-        StringField("flag", 1))  # default format
+        StringField("flag", 1)  # default format
+    )
 
     sample_fields = (
         StringField("stid", 0),  # default format
         DatetimeField("timestamp", 1, "%Y-%m-%d %H:%M"),  # format required
         StringField("timezone", 2, default="UTC"),  # default format
-        ArrayField("data", (3, None), array_fields))  # variable length
+        ListField("data", (3, None), list_fields)  # variable length
+    )
 
     ...
 
@@ -440,7 +449,7 @@ them directly using the ``_class_filters`` attribute.
     """
     from serial.core import DelimitedReader
     from serial.core import DelimitedWriter
-    from serial.core import ArrayField
+    from serial.core import ListField
     from serial.core import ConstField
     from serial.core import FloatField  
     from serial.core import StringField
@@ -449,9 +458,11 @@ them directly using the ``_class_filters`` attribute.
         StringField("stid", 0),
         DatetimeField("timestamp", 1, "%Y-%m-%d %H:%M"),
         ConstField("timezone", 2, "UTC"),
-        ArrayField("data", (3, None), (
+        ListField("data", (3, None), (
             FloatField("value", 0, ".2f"),
-            StringField("flag", 1))))
+            StringField("flag", 1))
+        )
+    )
 
     _DELIM = ","
 

@@ -313,23 +313,6 @@ class RecordFieldTest(object):
         return
 
 
-class ArrayFieldTest(object):
-    """ Unit testing for the ArrayField class.
-
-    ArrayField is now a deprecated alias for ListField, so normal tests are
-    ignored.
-
-    """
-    def test_init(self):
-        """ Test the __init__() method.
-
-        """
-        simplefilter("error", DeprecationWarning)  # raise exception
-        with pytest.raises(DeprecationWarning):
-            ArrayField(__name__, (0, 1), [])
-        return
-
-
 # Make the module executable.
 
 if __name__ == "__main__":

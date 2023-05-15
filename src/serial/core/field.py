@@ -12,7 +12,7 @@ from ._time import TimeFormat
 
 
 __all__ = ("ConstField", "IntField", "FloatField", "StringField",
-           "DatetimeField", "RecordField", "ListField", "ArrayField")
+           "DatetimeField", "RecordField", "ListField")
 
 
 class _ScalarField:
@@ -307,20 +307,6 @@ class ListField:
                 product(values, self._fields)]
 
 
-class ArrayField(ListField):
-    """ Alias for ListField to maintain backwards compatibility.
-    
-    """
-    def __init__(self, name, pos, fields, default=None):
-        """ Initialize this object.
-
-        """
-        super(ArrayField, self).__init__(name, pos, fields, default)
-        message = "ArrayField has been renamed to ListField"
-        warn(message, DeprecationWarning)
-        return
-
-                
 class RecordField(ListField):
     """ A composite field. 
 
