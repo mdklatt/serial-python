@@ -19,3 +19,8 @@ dev: $(VENV)/.make-update
 .PHONY: test
 test: dev
 	$(PYTEST) tests/
+
+
+.PHONY: docs
+docs: dev
+	cd docs && make html
